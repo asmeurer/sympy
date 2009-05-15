@@ -561,6 +561,7 @@ def solve_ODE_first_order(eq, f):
     from sympy.integrals.integrals import integrate
     x = f.args[0]
     f = f.func
+    C1 = Symbol('C1')
 
     #linear case: a(x)*f'(x)+b(x)*f(x)+c(x) = 0
     a = Wild('a', exclude=[f(x)])
@@ -571,7 +572,7 @@ def solve_ODE_first_order(eq, f):
     if r:
         t = C.exp(integrate(r[b]/r[a], x))
         tt = integrate(t*(-r[c]/r[a]), x)
-        return (tt + Symbol("C1"))/t
+        return (tt + C1)/t
 
     #Bernoulli case: a(x)*f'(x)+b(x)*f(x)+c(x)*f(x)^n = 0
     n = Wild('n', exclude=[f(x)])
@@ -580,7 +581,7 @@ def solve_ODE_first_order(eq, f):
     if r:
         t = C.exp((1-r[n])*integrate(r[b]/r[a],x))
         tt = (r[n]-1)*integrate(t*r[c]/r[a],x)
-        return ((tt + Symbol("C1"))/t)**(1/(1-r[n]))
+        return ((tt + C1)/t)**(1/(1-r[n]))
 
     #other cases of first order odes will be implemented here
 
@@ -594,6 +595,8 @@ def solve_ODE_second_order(eq, f):
     """
     x = f.args[0]
     f = f.func
+    C1 = Symbol('C1')
+    C2 = Symbol('C2')
 
     #constant coefficients case: af''(x)+bf'(x)+cf(x)=0
     a = Wild('a', exclude=[x])
@@ -602,19 +605,19 @@ def solve_ODE_second_order(eq, f):
 
     r = eq.match(a*f(x).diff(x,x) + c*f(x))
     if r:
-        return Symbol("C1")*C.sin(sqrt(r[c]/r[a])*x)+Symbol("C2")*C.cos(sqrt(r[c]/r[a])*x)
+        return C1*C.sin(sqrt(r[c]/r[a])*x)+C2*C.cos(sqrt(r[c]/r[a])*x)
 
     r = eq.match(a*f(x).diff(x,x) + b*diff(f(x),x) + c*f(x))
     if r:
         r1 = solve(r[a]*x**2 + r[b]*x + r[c], x)
         if r1[0].is_real:
             if len(r1) == 1:
-                return (Symbol("C1") + Symbol("C2")*x)*exp(r1[0]*x)
+                return (C1 + C2*x)*exp(r1[0]*x)
             else:
-                return Symbol("C1")*exp(r1[0]*x) + Symbol("C2")*exp(r1[1]*x)
+                return C1*exp(r1[0]*x) + C2*exp(r1[1]*x)
         else:
             r2 = abs((r1[0] - r1[1])/(2*S.ImaginaryUnit))
-            return (Symbol("C2")*C.cos(r2*x) + Symbol("C1")*C.sin(r2*x))*exp((r1[0] + r1[1])*x/2)
+            return (C2*C.cos(r2*x) + C1*C.sin(r2*x))*exp((r1[0] + r1[1])*x/2)
 
     #other cases of the second order odes will be implemented here
 
