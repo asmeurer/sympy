@@ -32,16 +32,16 @@ def checksol(eq, func, sol):
 def test_ode1():
     eq = Eq(f(x).diff(x), 0)
     sol1 = dsolve(eq.lhs, f(x))
-    assert sol1 == C1
     sol2 = dsolve(eq, f(x))
+    assert sol1 == C1
     assert sol2 == C1
     assert checksol(eq, f(x), sol2)
 
 def test_ode2():
     eq = Eq(3*f(x).diff(x) - 5, 0)
     sol1 = dsolve(eq.lhs, f(x))
-    assert sol1 == C1+5*x/3
     sol2 = dsolve(eq, f(x))
+    assert sol1 == C1+5*x/3
     assert sol2 == C1+5*x/3
     assert checksol(eq, f(x), sol2)
 
@@ -88,7 +88,8 @@ def test_ode9():
     # Type: first order linear form f'(x)+p(x)f(x)=q(x)
     eq = Eq(f(x).diff(x) + x*f(x), x**2)
     sol = dsolve(eq, f(x))
-    assert sol == exp(-x**2/2)*(sqrt(2)*sqrt(pi)*I*erf(I*x/sqrt(2))/2 + x*exp(x**2/2) + C1)
+    assert sol == exp(-x**2/2)*(sqrt(2)*sqrt(pi)*I*erf(I*x/sqrt(2))/2 \
+    + x*exp(x**2/2) + C1)
     assert checksol(eq, f(x), sol)
 
 def test_ode10():
@@ -119,8 +120,8 @@ def test_ode13():
     eq1 = Eq(3*f(x).diff(x) -1,0)
     eq2 = Eq(x*f(x).diff(x) -1,0)
     sol1 = dsolve(eq1, f(x))
-    assert sol1 == x/3 + C1
     sol2 = dsolve(eq2, f(x))
+    assert sol1 == x/3 + C1
     assert sol2 == log(x) + C1
     assert checksol(eq1, f(x), sol1)
     assert checksol(eq2, f(x), sol2)
@@ -135,11 +136,15 @@ def test_ode14():
 def test_ode15():
     # Type: Exact differential equation, p(x,f)+q(x,f)f'=0,
     # where dp/dy == dq/dx
-    assert dsolve(cos(f(x))-(x*sin(f(x))-f(x)**2)*f(x).diff(x),f(x)) == \
-    Eq(x*cos(f(x))+f(x)**3/3,C1)
-    assert dsolve(sin(x)*cos(f(x))+cos(x)*sin(f(x))*f(x).diff(x),f(x)) == \
-    Eq(f(x),acos((-C1)/cos(x)))
-    assert dsolve((2*x*f(x)+1)/f(x)+(f(x)-x)/f(x)**2*f(x).diff(x),f(x)) == \
-    Eq(log(f(x))+x/f(x)+x**2,C1)
-
-
+    eq1 = cos(f(x))-(x*sin(f(x))-f(x)**2)*f(x).diff(x)
+    eq2 = sin(x)*cos(f(x))+cos(x)*sin(f(x))*f(x).diff(x)
+    eq3 = (2*x*f(x)+1)/f(x)+(f(x)-x)/f(x)**2*f(x).diff(x)
+    sol1 =  dsolve(eq1,f(x))
+    sol2 = dsolve(eq2,f(x))
+    sol3 = dsolve(eq3,f(x))
+    assert sol1 == Eq(x*cos(f(x))+f(x)**3/3,C1)
+    assert sol2 == Eq(f(x),acos((-C1)/cos(x)))
+    assert sol3 == Eq(log(f(x))+x/f(x)+x**2,C1)
+    assert checksol(eq1, f(x), sol1)
+    assert checksol(eq2, f(x), sol2)
+    assert checksol(eq3, f(x), sol3)
