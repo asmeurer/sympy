@@ -667,7 +667,7 @@ def solve_ODE_first_order(eq, f):
         try:
             # See if the equation can be solved explicitly for f
             sol1 = solve(sol,y)
-        except (NotImplementedError, AssertionError):
+        except (NotImplementedError, AssertionError, TypeError):
             return sol.subs(y,f(x))
         else:
             if len(sol1) !=1:
