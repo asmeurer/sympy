@@ -480,14 +480,16 @@ def dsolve(eq, funcs):
         >>> x = Symbol('x') # x is the independent variable
 
         >>> f = Function("f")(x) # f is a function of x
-        >>> f_ = Derivative(f, x) # f_ will be the derivative of f with respect to x
+        >>> f_ = Derivative(f, x) # f_ will be the derivative of 
+        f with respect to x
 
         - This function just parses the equation "eq" and determines the type of
-        differential equation by its order, then it determines all the coefficients and then
-        calls the particular solver, which just accepts the coefficients.
+        differential equation by its order, then it determines all the 
+        coefficients and then calls the particular solver, which just accepts
+        the coefficients.
         - "eq" can be either an Equality, or just the left hand side (in which
           case the right hand side is assumed to be 0)
-        - see test_ode.py for many tests, that serve also as a set of examples
+        - see test_ode.py for many tests, which serve also as a set of examples
           how to use dsolve
 
     Examples
