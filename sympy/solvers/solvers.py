@@ -637,7 +637,7 @@ def solve_ODE_first_order(eq, f):
     if r:
         t = exp(integrate(r[b]/r[a], x))
         tt = integrate(t*(-r[c]/r[a]), x)
-        return (tt + C1)/t
+        return Equality(f(x),(tt + C1)/t)
 
     # Bernoulli case: a(x)*f'(x)+b(x)*f(x)+c(x)*f(x)^n = 0
     n = Wild('n', exclude=[f(x)])
@@ -647,7 +647,7 @@ def solve_ODE_first_order(eq, f):
     if r and r[n] != 1:
         t = C.exp((1-r[n])*integrate(r[b]/r[a],x))
         tt = (r[n]-1)*integrate(t*r[c]/r[a],x)
-        return ((tt + C1)/t)**(1/(1-r[n]))
+        return Equality(f(x),((tt + C1)/t)**(1/(1-r[n])))
 
     # Exact Differential Equation: P(x,y)+Q(x,y)*y'=0 where dP/dy == dQ/dx
     a = Wild('a', exclude=[f(x).diff(x)])
@@ -701,19 +701,19 @@ def solve_ODE_second_order(eq, f):
 
     r = eq.match(a*f(x).diff(x,x) + c*f(x))
     if r:
-        return C1*C.sin(sqrt(r[c]/r[a])*x)+C2*C.cos(sqrt(r[c]/r[a])*x)
+        return Equality(f(x),C1*C.sin(sqrt(r[c]/r[a])*x)+C2*C.cos(sqrt(r[c]/r[a])*x))
 
     r = eq.match(a*f(x).diff(x,x) + b*diff(f(x),x) + c*f(x))
     if r:
         r1 = solve(r[a]*x**2 + r[b]*x + r[c], x)
         if r1[0].is_real:
             if len(r1) == 1:
-                return (C1 + C2*x)*exp(r1[0]*x)
+                return Equality(f(x),(C1 + C2*x)*exp(r1[0]*x))
             else:
-                return C1*exp(r1[0]*x) + C2*exp(r1[1]*x)
+                return Equality(f(x),C1*exp(r1[0]*x) + C2*exp(r1[1]*x))
         else:
             r2 = abs((r1[0] - r1[1])/(2*S.ImaginaryUnit))
-            return (C2*C.cos(r2*x) + C1*C.sin(r2*x))*exp((r1[0] + r1[1])*x/2)
+            return Equality(f(x),(C2*C.cos(r2*x) + C1*C.sin(r2*x))*exp((r1[0] + r1[1])*x/2))
 
     #other cases of the second order odes will be implemented here
 
@@ -723,7 +723,7 @@ def solve_ODE_second_order(eq, f):
     tt = a*t.diff(x, x)/t
     r = eq.match(tt.expand())
     if r:
-        return -solve_ODE_1(f(x), x)
+        return Equality(f(x),-solve_ODE_1(f(x), x))
 
     t = x*exp(-f(x))
     tt = a*t.diff(x, x)/t
@@ -731,14 +731,14 @@ def solve_ODE_second_order(eq, f):
     if r:
         #check, that we've rewritten the equation correctly:
         #assert ( r[a]*t.diff(x,2)/t ) == eq.subs(f, t)
-        return solve_ODE_1(f(x), x)
+        return Equality(f(x),solve_ODE_1(f(x), x))
 
     neq = eq*exp(f(x))/exp(-f(x))
     r = neq.match(tt.expand())
     if r:
         #check, that we've rewritten the equation correctly:
         #assert ( t.diff(x,2)*r[a]/t ).expand() == eq
-        return solve_ODE_1(f(x), x)
+        return Equality(f(x),solve_ODE_1(f(x), x))
 
     raise NotImplementedError("solve_ODE_second_order: cannot solve " + str(eq))
 
