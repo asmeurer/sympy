@@ -174,6 +174,8 @@ def test_ode15():
 
 @XFAIL
 def test_ode16():
+    # This exact equation fails, but it should be caught by first order
+    # homogeneous when those are implemented.
     eq = x*sqrt(x**2+f(x)**2)-(x**2*f(x)/(f(x)-sqrt(x**2+f(x)**2)))*f(x).diff(x)
     sol = dsolve(eq, f(x))
     assert sol == Eq((x**2+y**2)**(3/2)/3+y**3/3,C1)
