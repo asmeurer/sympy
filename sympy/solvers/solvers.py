@@ -654,8 +654,8 @@ def solve_ODE_first_order(eq, f):
     b = Wild('b', exclude=[f(x).diff(x)])
     r = eq.match(a*diff(f(x),x)+b)
     y = Symbol('y', dummy=True)
-    x0 = Symbol('x0')
-    y0 = Symbol('y0')
+    x0 = Symbol('x0', dummy=True)
+    y0 = Symbol('y0', dummy=True)
     r[a] = r[a].subs(f(x),y)
     r[b] = r[b].subs(f(x),y)
     if r and a.diff(y) == b.diff(x) and r[b]!=0:
