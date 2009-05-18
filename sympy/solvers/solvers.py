@@ -533,7 +533,7 @@ def dsolve(eq, funcs):
 
         @param y: indeterminate function of one variable
 
-        - you can declare the derivative of an unknown function this way:
+        - You can declare the derivative of an unknown function this way:
         >>> from sympy import *
         >>> x = Symbol('x') # x is the independent variable
 
@@ -547,8 +547,12 @@ def dsolve(eq, funcs):
         the coefficients.
         - "eq" can be either an Equality, or just the left hand side (in which
           case the right hand side is assumed to be 0)
-        - see test_ode.py for many tests, which serve also as a set of examples
+        - See test_ode.py for many tests, which serve also as a set of examples
           how to use dsolve
+        - dsolve always returns an equality class.  If possible, it solves the
+          solution explicitly for the function being solved for. Otherwise, it
+          returns an implicit solution.
+        - Arbitrary constants are symbols named C1, C2, and so on.
 
     Examples
 
@@ -557,9 +561,9 @@ def dsolve(eq, funcs):
 
         >>> f = Function('f')
         >>> dsolve(Derivative(f(x),x,x)+9*f(x), f(x))
-        C1*sin(3*x) + C2*cos(3*x)
+        f(x) = C1*sin(3*x) + C2*cos(3*x)
         >>> dsolve(Eq(Derivative(f(x),x,x)+9*f(x)+1, 1), f(x))
-        C1*sin(3*x) + C2*cos(3*x)
+        f(x) = C1*sin(3*x) + C2*cos(3*x)
 
     """
 
