@@ -1,12 +1,12 @@
 from sympy import SYMPY_DEBUG
 
 from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
-        Derivative, Wild, Symbol, sympify
+        Derivative, Wild, Symbol, sympify, expand
 
 from sympy.core.numbers import igcd
 
 from sympy.utilities import make_list, all
-from sympy.functions import gamma, exp, sqrt
+from sympy.functions import gamma, exp, sqrt, log
 
 from sympy.simplify.cse_main import cse
 
@@ -1154,5 +1154,98 @@ def nsimplify(expr, constants=[], tolerance=None, full=False):
         return expr
 
     return re + im*S.ImaginaryUnit
+
+def logcombine(expr, assumePosReal=False):
+    """
+    Takes logarithms and combines them using the following rules:
+
+    - log(x)+log(y) == log(x*y)
+    - a*log(x) == log(x**a)
+
+    These identities are only valid if x and y are positive and if a is real, so
+    the function will not combine the terms unless the arguments have the proper
+    assumptions on them.  Use logcombine(func, assumePosReal=True) to
+    automatically assume that the arguments of logs are positive and that
+    coefficents are real.  Note that this will not change any assumptions
+    already in place, so if the coefficient is imaginary or the argument
+    negative, combine will still not combine the equations.  Change the
+    assumptions on the variables to make them combine.
+
+    Examples:
+    >>> from sympy import *
+    >>> a,x,y,z = symbols('axyz')
+    >>> logcombine(a*log(x)+log(y)-log(z))
+    -log(z) + a*log(x) + log(y)
+    >>> logcombine(a*log(x)+log(y)-log(z), assumePosReal=True)
+    log(y*x**a/z)
+    >>> x,y,z = symbols('xyz', positive=True)
+    >>> a = Symbol('a', real=True)
+    >>> logcombine(a*log(x)+log(y)-log(z))
+    log(y*x**a/z)
+    """
+    # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).  This needs to be a
+    # seperate function call to avoid infinite recursion.
+    return _logcombine(expand(expr), assumePosReal=assumePosReal)
+
+def _logcombine(expr, assumePosReal=False):
+
+    def _getlogargs(expr):
+        """
+        Returns the arguments of the logarithm in an expression.
+        Example:
+        _getlogargs(a*log(x*y) -> x*y
+        """
+        if expr.is_Function and expr.func == log:
+            return expr.args[0]
+        else:
+            for i in expr.args:
+                if i.has(log):
+                    return _getlogargs(i)
+        return None
+
+    if type(expr) in (int, float) or expr.is_Number or expr.is_Rational or \
+    expr.is_NumberSymbol:
+       return expr
+    if expr.is_Add:
+        argslist = 1
+        notlogs = 0
+        coeflogs = 0
+        for i in expr.args:
+            if i.is_Function and i.func == log:
+                if (i.args[0].is_positive or (assumePosReal and not \
+                i.args[0].is_nonpositive)):
+                    argslist *= _logcombine(i.args[0], assumePosReal=assumePosReal)
+                else:
+                    notlogs += i
+            elif i.has(log):
+                largs = _getlogargs(i)
+                if largs.is_positive and i.extract_multiplicatively(log(largs)).\
+                is_real or (assumePosReal and not largs.is_nonpositive and not \
+                i.extract_multiplicatively(log(largs)).is_real==False):
+                    coeflogs += _logcombine(i, assumePosReal=assumePosReal)
+                else:
+                    notlogs += i
+            else:
+                notlogs += i
+        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal=assumePosReal)
+        return notlogs + alllogs
+
+    if expr.is_Mul:
+        a = Wild('a', exclude=[log])
+        x = Wild('x')
+        coef = expr.match(a*log(x))
+        if coef and (coef[a].is_real or expr.is_Number or expr.is_NumberSymbol \
+        or type(coef[a]) in (int, float) or (assumePosReal and not \
+        coef[a].is_imaginary)):
+            return log(coef[x]**coef[a])
+        else:
+            return expr
+    if expr.is_Function:
+        return expr.func(_logcombine(expr.args[0], assumePosReal=assumePosReal))
+    if expr.is_Pow:
+        return _logcombine(expr.args[0], assumePosReal=assumePosReal)**\
+        _logcombine(expr.args[1], assumePosReal=assumePosReal)
+    else:
+        return expr
 
 

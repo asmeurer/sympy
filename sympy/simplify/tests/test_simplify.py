@@ -1,7 +1,8 @@
 from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
-        solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, S, diff
+        solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
+        S, diff, logcombine
 
 from sympy.utilities.pytest import XFAIL
 
@@ -363,3 +364,21 @@ def test_diff():
     assert simplify(2*f(x)*f(x).diff(x)-diff(f(x)**2,x)) == 0
     assert simplify(diff(1/f(x),x)+f(x).diff(x)/f(x)**2) == 0
     assert simplify(f(x).diff(x,y)-f(x).diff(y,x)) == 0
+
+def test_logcombine():
+    x, y = symbols("xy")
+    a = Symbol("a")
+    z, w = symbols("zw", positive=True)
+    b = Symbol("b", real=True)
+    assert logcombine(log(x)+2*log(y)) == log(x) + 2*log(y)
+    assert logcombine(log(x)+2*log(y), assumePosReal=True) == log(x*y**2)
+    assert logcombine(a*log(w)+log(z)) == a*log(w) + log(z)
+    assert logcombine(b*log(z)+b*log(x)) == log(z**b) + b*log(x)
+    assert logcombine(b*log(z)-log(w)) == log(z**b/w)
+    assert logcombine(cos(-2*log(z)+b*log(w))) == cos(log(w**b/z**2))
+    assert logcombine(log(log(x)-log(y))-log(z), assumePosReal=True) == log(log((x/y)**(1/z)))
+    assert logcombine((2+I)*log(x), assumePosReal=True) == I*log(x)+log(x**2)
+    assert logcombine((x**2+log(x)-log(y))/(x*y), assumePosReal=True) == log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
+    assert logcombine(log(x)*2*log(y)+log(z), assumePosReal=True) == log(z*y**log(x**2))
+
+
