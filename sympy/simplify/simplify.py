@@ -935,7 +935,7 @@ def powsimp(expr, deep=False):
     Examples
     ========
         >>> from sympy import *
-        >>> x,n = map(Symbol, 'xn')
+        >>> x,n = symbols('xn')
         >>> e = x**n * (x*n)**(-n) * n
         >>> powsimp(e)
         n**(1 - n)
