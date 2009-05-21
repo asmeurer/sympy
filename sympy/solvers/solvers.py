@@ -672,6 +672,7 @@ def solve_ODE_first_order(eq, f):
 
         try:
             # See if the equation can be solved explicitly for f
+            # This part of the code will change when solve returns RootOf.
             sol1 = solve(sol,y)
         except (NotImplementedError, AssertionError):
             return sol.subs(y,f(x))
