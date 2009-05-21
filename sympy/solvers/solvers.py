@@ -622,11 +622,10 @@ def deriv_degree(expr, func):
 def solve_ODE_first_order(eq, f):
     """
     solves many kinds of first order odes, different methods are used
-    depending on the form of the given equation. Now the linear
-    and Bernoulli cases are implemented.
+    depending on the form of the given equation. Now the linear,
+    Bernoulli, and exact cases are implemented.
     """
     from sympy.integrals.integrals import integrate
-    C1 = Symbol("C1")
     x = f.args[0]
     f = f.func
     C1 = Symbol('C1')
