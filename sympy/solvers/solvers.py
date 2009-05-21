@@ -538,7 +538,7 @@ def dsolve(eq, funcs):
         >>> x = Symbol('x') # x is the independent variable
 
         >>> f = Function("f")(x) # f is a function of x
-        >>> f_ = Derivative(f, x) # f_ will be the derivative of
+        >>> f_ = Derivative(f, x) # f_ will be the derivative of \
         f with respect to x
 
         - This function just parses the equation "eq" and determines the type of
@@ -561,9 +561,9 @@ def dsolve(eq, funcs):
 
         >>> f = Function('f')
         >>> dsolve(Derivative(f(x),x,x)+9*f(x), f(x))
-        f(x) = C1*sin(3*x) + C2*cos(3*x)
+        f(x) == C1*sin(3*x) + C2*cos(3*x)
         >>> dsolve(Eq(Derivative(f(x),x,x)+9*f(x)+1, 1), f(x))
-        f(x) = C1*sin(3*x) + C2*cos(3*x)
+        f(x) == C1*sin(3*x) + C2*cos(3*x)
 
     """
 
@@ -644,10 +644,13 @@ def solve_ODE_first_order(eq, f):
 
     r = eq.match(a*diff(f(x),x) + b*f(x) + c*f(x)**n)
 
-    if r and r[n] != 1:
-        t = C.exp((1-r[n])*integrate(r[b]/r[a],x))
-        tt = (r[n]-1)*integrate(t*r[c]/r[a],x)
-        return Equality(f(x),((tt + C1)/t)**(1/(1-r[n])))
+    if r:
+        if r[n] != 1:
+            t = C.exp((1-r[n])*integrate(r[b]/r[a],x))
+            tt = (r[n]-1)*integrate(t*r[c]/r[a],x)
+            return Equality(f(x),((tt + C1)/t)**(1/(1-r[n])))
+        if r[n] == 1:
+            return Equality(f(x),C1*exp(integrate(-(r[b]+r[c]), x)))
 
     # Exact Differential Equation: P(x,y)+Q(x,y)*y'=0 where dP/dy == dQ/dx
     a = Wild('a', exclude=[f(x).diff(x)])
@@ -671,7 +674,7 @@ def solve_ODE_first_order(eq, f):
         try:
             # See if the equation can be solved explicitly for f
             sol1 = solve(sol,y)
-        except (NotImplementedError, AssertionError, TypeError):
+        except (NotImplementedError, AssertionError):
             return sol.subs(y,f(x))
         else:
             if len(sol1) !=1:
@@ -744,8 +747,8 @@ def solve_ODE_second_order(eq, f):
 
 def solve_ODE_1(f, x):
     """ (x*exp(-f(x)))'' = 0 """
-    C1 = Symbol("C1")
-    C2 = Symbol("C2")
+    C1 = Symbol('C1')
+    C2 = Symbol('C2')
     return -log(C1+C2/x)
 
 
@@ -868,7 +871,8 @@ a,b,c,d,e,f,g,h = [Wild(t, exclude=[x]) for t in 'abcdefgh']
 patterns = None
 
 def _generate_patterns():
-    """Generates patterns for transcendental equations.
+    """
+    Generates patterns for transcendental equations.
 
     This is lazily calculated (called) in the tsolve() function and stored in
     the patterns global variable.
