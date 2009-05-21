@@ -365,7 +365,7 @@ def test_diff():
     assert simplify(diff(1/f(x),x)+f(x).diff(x)/f(x)**2) == 0
     assert simplify(f(x).diff(x,y)-f(x).diff(y,x)) == 0
 
-def test_logcombine():
+def test_logcombine_1():
     x, y = symbols("xy")
     a = Symbol("a")
     z, w = symbols("zw", positive=True)
@@ -380,5 +380,14 @@ def test_logcombine():
     assert logcombine((2+I)*log(x), assumePosReal=True) == I*log(x)+log(x**2)
     assert logcombine((x**2+log(x)-log(y))/(x*y), assumePosReal=True) == log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
     assert logcombine(log(x)*2*log(y)+log(z), assumePosReal=True) == log(z*y**log(x**2))
+    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2,3)*y**Rational(3,2)), assumePosReal=True) == log(x**(1/(pi*x**Rational(2,3)*y**Rational(3,2)))*y**(-1/(pi*x**Rational(2,3)*y**Rational(3,2)))) + (x**4 + y**4)**Rational(1,2)/(pi*x**Rational(2,3)*y**Rational(3,2)) + x**Rational(1,3)/(pi*y**Rational(1,2))
+
+
+@XFAIL
+def test_logcombine_2():
+    # The same as one of the tests above, but with Rational(a,b) replaced with a/b.
+    # This fails because of a bug in matches.  See issue 1274.
+    x, y = symbols("xy")
+    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**(2/3)*y**(3/2)), assumePosReal=True) == log(x**(1/(pi*x**(2/3)*y**(3/2)))*y**(-1/(pi*x**(2/3)*y**(3/2)))) + (x**4 + y**4)**(1/2)/(pi*x**(2/3)*y**(3/2)) + x**(1/3)/(pi*y**(1/2))
 
 

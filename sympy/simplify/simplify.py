@@ -1231,8 +1231,8 @@ def _logcombine(expr, assumePosReal=False):
         return notlogs + alllogs
 
     if expr.is_Mul:
-        a = Wild('a', exclude=[log])
-        x = Wild('x')
+        a = Wild('a', exclude=[log], dummy=True)
+        x = Wild('x', dummy=True)
         coef = expr.match(a*log(x))
         if coef and (coef[a].is_real or expr.is_Number or expr.is_NumberSymbol \
         or type(coef[a]) in (int, float) or (assumePosReal and not \
