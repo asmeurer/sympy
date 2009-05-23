@@ -2,7 +2,7 @@ from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
         solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
-        S, diff, oo, logcombine, Eq, Integer
+        S, diff, oo, logcombine, Eq, Integer, gamma, acos
 
 from sympy.utilities.pytest import XFAIL
 
@@ -418,6 +418,11 @@ def test_logcombine_1():
     assert logcombine(log(x)*2*log(y)+log(z), assumePosReal=True) == log(z*y**log(x**2))
     assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2,3)*y**Rational(3,2)), assumePosReal=True) == log(x**(1/(pi*x**Rational(2,3)*y**Rational(3,2)))*y**(-1/(pi*x**Rational(2,3)*y**Rational(3,2)))) + (x**4 + y**4)**Rational(1,2)/(pi*x**Rational(2,3)*y**Rational(3,2)) + x**Rational(1,3)/(pi*y**Rational(1,2))
     assert logcombine(Eq(log(x), -2*log(y)), assumePosReal=True) == Eq(log(x*y**2), Integer(0))
+    assert logcombine(Eq(y, x*acos(-log(x/y))), assumePosReal=True) == Eq(y, x*acos(log(y/x)))
+    assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), assumePosReal=True) == acos(log(y/x))*gamma(log(y/x))
+    assert logcombine((2+3*I)*log(x), assumePosReal=True) == log(x**2)+3*I*log(x)
+    assert logcombine(Eq(y, -log(x)), assumePosReal=True) == Eq(y, log(1/x))
+
 
 
 @XFAIL
