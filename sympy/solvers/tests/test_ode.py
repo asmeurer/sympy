@@ -34,8 +34,8 @@ def checksol(eq, func, sol):
     else:
         # If we cannot substitute f, try seeing if the nth derivative is equal
         n = deriv_degree(eq, func)
-        return simplify(diff(sol.lhs,x,n)-diff(sol.rhs,x,n)) == \
-        simplify(eq)
+        return simplify(diff(sol.lhs,x,n)-diff(sol.rhs,x,n) - eq) == 0\
+        or simplify(trigsimp(diff(sol.lhs,x,n)-diff(sol.rhs,x,n)) - trigsimp(eq)) == 0
     if s == 0:
         return True
     if isinstance(s, bool):
