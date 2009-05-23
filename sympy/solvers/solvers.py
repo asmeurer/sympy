@@ -826,11 +826,26 @@ def homogeneous_order(eq, *symbols):
     A function f(x,y,...) is homogeneous of order n if
     f(xt,yt,t*...) == t**n*f(x,y,...).  It is implemented recursively.
 
+    Functions can be symbols, but every argument of the function must also be
+    a symbol, and the arguments of the function that appear in the expression
+    must match those given in the list of symbols.  If a declared function
+    appears with different arguments than given in the list of symbols, None is
+    returned.
+    Example:
+    >>> from sympy import *
+    >>> from sympy.solvers.solvers import homogeneous_order
+    >>> x = Symbol('x')
+    >>> y = Symbol('y')
+    >>> f = Function('f')
+    >>> homogeneous_order(f(x), f(x)) == None
+    True
+    >>> homogeneous_order(f(x,y), f(y, x), x, y) == None
+    True
+    >>> homogeneous_order(f(x), f(x), x)
+    1
+
     Returns the order n if g is homogeneous and None if it is not homogeneous.
     Examples:
-    >>> from sympy import *
-    >>> x = Symbol('x')
-    >>> f = Function('f')
     >>> homogeneous_order(x**2*f(x)/sqrt(x**2+f(x)**2), x, f(x))
     2
     >>> homogeneous_order(x**2+f(x), x, f(x)) == None
