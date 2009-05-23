@@ -1210,7 +1210,16 @@ def _logcombine(expr, assumePosReal=False):
        return expr
 
     if isinstance(expr, Equality):
-        return Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal=assumePosReal), Integer(0))
+        retval = Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal=\
+        assumePosReal), Integer(0))
+        # If logcombine couldn't do much with the equality, try to make it like
+        # it was.  Hopefully extract_additively won't become smart enought to
+        # take logs apart :)
+        right = retval.lhs.extract_additively(expr.lhs)
+        if right:
+            return Equality(expr.lhs, logcombine(-right))
+        else:
+            return retval
 
     if expr.is_Add:
         argslist = 1
@@ -1220,20 +1229,26 @@ def _logcombine(expr, assumePosReal=False):
             if i.is_Function and i.func == log:
                 if (i.args[0].is_positive or (assumePosReal and not \
                 i.args[0].is_nonpositive)):
-                    argslist *= _logcombine(i.args[0], assumePosReal=assumePosReal)
+                    argslist *= _logcombine(i.args[0], assumePosReal=\
+                    assumePosReal)
                 else:
                     notlogs += i
-            elif i.has(log):
+            elif i.is_Mul and any(map(lambda t: getattr(t,'func', False)==log,\
+            i.args)):
                 largs = _getlogargs(i)
                 if largs.is_positive and i.extract_multiplicatively(log(largs)).\
                 is_real or (assumePosReal and not largs.is_nonpositive and not \
-                i.extract_multiplicatively(log(largs)).is_real==False):
+                getattr(i.extract_multiplicatively(log(largs)),'is_real',\
+                False)==False):
                     coeflogs += _logcombine(i, assumePosReal=assumePosReal)
                 else:
                     notlogs += i
+            elif i.has(log):
+                notlogs += _logcombine(i, assumePosReal=assumePosReal)
             else:
                 notlogs += i
-        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal=assumePosReal)
+        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal=\
+        assumePosReal)
         return notlogs + alllogs
 
     if expr.is_Mul:
@@ -1245,9 +1260,13 @@ def _logcombine(expr, assumePosReal=False):
         coef[a].is_imaginary)):
             return log(coef[x]**coef[a])
         else:
-            return expr
+            return _logcombine(expr.args[0], assumePosReal=assumePosReal)*\
+            reduce(lambda x, y: _logcombine(x, assumePosReal=assumePosReal)*\
+            _logcombine(y, assumePosReal=assumePosReal), expr.args[1:], 1)
+
     if expr.is_Function:
-        return expr.func(_logcombine(expr.args[0], assumePosReal=assumePosReal))
+        return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal=\
+        assumePosReal), expr.args))
     if expr.is_Pow:
         return _logcombine(expr.args[0], assumePosReal=assumePosReal)**\
         _logcombine(expr.args[1], assumePosReal=assumePosReal)
