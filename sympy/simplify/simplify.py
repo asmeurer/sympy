@@ -4,6 +4,7 @@ from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
         Derivative, Wild, Symbol, sympify, expand
 
 from sympy.core.numbers import igcd
+from sympy.core.relational import Equality
 
 from sympy.utilities import make_list, all
 from sympy.functions import gamma, exp, sqrt, log
@@ -1207,6 +1208,10 @@ def _logcombine(expr, assumePosReal=False):
     if type(expr) in (int, float) or expr.is_Number or expr.is_Rational or \
     expr.is_NumberSymbol:
        return expr
+
+    if isinstance(expr, Equality):
+        return Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal=assumePosReal), Integer(0))
+
     if expr.is_Add:
         argslist = 1
         notlogs = 0

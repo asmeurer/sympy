@@ -2,7 +2,7 @@ from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
         solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
-        S, diff, logcombine
+        S, diff, logcombine, Eq, Integer
 
 from sympy.utilities.pytest import XFAIL
 
@@ -381,6 +381,7 @@ def test_logcombine_1():
     assert logcombine((x**2+log(x)-log(y))/(x*y), assumePosReal=True) == log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
     assert logcombine(log(x)*2*log(y)+log(z), assumePosReal=True) == log(z*y**log(x**2))
     assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2,3)*y**Rational(3,2)), assumePosReal=True) == log(x**(1/(pi*x**Rational(2,3)*y**Rational(3,2)))*y**(-1/(pi*x**Rational(2,3)*y**Rational(3,2)))) + (x**4 + y**4)**Rational(1,2)/(pi*x**Rational(2,3)*y**Rational(3,2)) + x**Rational(1,3)/(pi*y**Rational(1,2))
+    assert logcombine(Eq(log(x), -2*log(y)), assumePosReal=True) == Eq(log(x*y**2), Integer(0))
 
 
 @XFAIL
