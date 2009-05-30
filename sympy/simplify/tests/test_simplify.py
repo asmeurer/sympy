@@ -389,7 +389,6 @@ def test_logcombine_1():
     assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x), assumePosReal=True) == Integral((sin(x**2)+cos(x**3))/x,x)
 
 
-
 @XFAIL
 def test_logcombine_2():
     # The same as one of the tests above, but with Rational(a,b) replaced with a/b.
@@ -397,4 +396,10 @@ def test_logcombine_2():
     x, y = symbols("xy")
     assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**(2/3)*y**(3/2)), assumePosReal=True) == log(x**(1/(pi*x**(2/3)*y**(3/2)))*y**(-1/(pi*x**(2/3)*y**(3/2)))) + (x**4 + y**4)**(1/2)/(pi*x**(2/3)*y**(3/2)) + x**(1/3)/(pi*y**(1/2))
 
+@XFAIL
+def test_logcombine_3():
+    # This fails because of the work around issue 1445, logcombine will not
+    # expand expressions with Integrals, so the real part of a complex number
+    # is not pulled into the log in that case, even with assumePosReal=True.
+    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x)+ (2+3*I)*log(x), assumePosReal=True) == log(x**2)+3*I*log(x) + Integral((sin(x**2)+cos(x**3))/x,x)
 
