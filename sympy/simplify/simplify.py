@@ -1277,7 +1277,9 @@ def logcombine(expr, assumePosReal=False):
     """
     # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).  This needs to be a
     # separate function call to avoid infinite recursion.
-    return _logcombine(expand(expr), assumePosReal=assumePosReal)
+    if not expr.has(C.Integral): # This is to work around to issue 1445
+        expr = expand(expr)
+    return _logcombine(expr, assumePosReal=assumePosReal)
 
 def _logcombine(expr, assumePosReal=False):
 
@@ -1296,7 +1298,7 @@ def _logcombine(expr, assumePosReal=False):
         return None
 
     if type(expr) in (int, float) or expr.is_Number or expr.is_Rational or \
-    expr.is_NumberSymbol:
+    expr.is_NumberSymbol or type(expr) == C.Integral:
        return expr
 
     if isinstance(expr, Equality):
@@ -1357,8 +1359,10 @@ def _logcombine(expr, assumePosReal=False):
     if expr.is_Function:
         return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal=\
         assumePosReal), expr.args))
+
     if expr.is_Pow:
         return _logcombine(expr.args[0], assumePosReal=assumePosReal)**\
         _logcombine(expr.args[1], assumePosReal=assumePosReal)
-    else:
-        return expr
+
+    return expr
+
