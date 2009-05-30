@@ -884,7 +884,7 @@ def _homogeneous_order(eq, *symbols):
     # These are all constants
     if type(eq) in (int, float) or eq.is_Number or eq.is_Integer or \
     eq.is_Rational or eq.is_NumberSymbol or eq.is_Real:
-        return 0
+        return sympify(0)
 
     # Break the equation into additive parts
     if eq.is_Add:
@@ -903,7 +903,7 @@ def _homogeneous_order(eq, *symbols):
         if o == None:
             return None
         else:
-            n.add(o*eq.args[1])
+            n.add(sympify(o*eq.args[1]))
 
     t = Symbol('t', dummy=True, positive=True) # It is sufficient that t > 0
     r = Wild('r', exclude=[t])
@@ -912,11 +912,11 @@ def _homogeneous_order(eq, *symbols):
 
     if eqs.is_Mul:
         if t not in eqs:
-            n.add(0)
+            n.add(sympify(0))
         else:
             m = eqs.match(r*t**a)
             if m:
-                n.add(m[a])
+                n.add(sympify(m[a]))
             else:
                 s = 0
                 for i in eq.args:
@@ -925,7 +925,7 @@ def _homogeneous_order(eq, *symbols):
                         return None
                     else:
                         s += o
-                n.add(s)
+                n.add(sympify(s))
 
     if eq.is_Function:
         if eq.func == log:
@@ -939,22 +939,22 @@ def _homogeneous_order(eq, *symbols):
                 for i in eq.args[0].args:
                     if i.args[1].args[0] == -1:
                         arg *= 1/i.args[0]
-                        pows.add(-1*i.args[1])
+                        pows.add(sympify(-1*i.args[1]))
                     else:
                         arg *= i.args[0]
-                        pows.add(i.args[1])
+                        pows.add(sympify(i.args[1]))
                 if len(pows) != 1:
                     return None
                 else:
                     return _homogeneous_order(pows.pop()*log(arg), *symbols)
             else:
                 if _homogeneous_order(eq.args[0], *symbols) == 0:
-                    return 0
+                    return sympify(0)
                 else:
                     return None
         else:
             if _homogeneous_order(eq.args[0], *symbols) == 0:
-                return 0
+                return sympify(0)
             else:
                 return None
 
@@ -962,6 +962,8 @@ def _homogeneous_order(eq, *symbols):
         return None
     else:
         return n.pop()
+
+    return None
 
 x = Symbol('x', dummy=True)
 a,b,c,d,e,f,g,h = [Wild(t, exclude=[x]) for t in 'abcdefgh']
