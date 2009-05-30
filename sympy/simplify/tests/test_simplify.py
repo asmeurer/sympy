@@ -2,7 +2,7 @@ from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
         solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
-        S, diff, logcombine, Eq, Integer, gamma, acos
+        S, diff, logcombine, Eq, Integer, gamma, acos, Integral
 
 from sympy.utilities.pytest import XFAIL
 
@@ -386,6 +386,7 @@ def test_logcombine_1():
     assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), assumePosReal=True) == acos(log(y/x))*gamma(log(y/x))
     assert logcombine((2+3*I)*log(x), assumePosReal=True) == log(x**2)+3*I*log(x)
     assert logcombine(Eq(y, -log(x)), assumePosReal=True) == Eq(y, log(1/x))
+    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x), assumePosReal=True) == Integral((sin(x**2)+cos(x**3))/x,x)
 
 
 
