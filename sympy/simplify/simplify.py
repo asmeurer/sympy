@@ -1279,7 +1279,7 @@ def logcombine(expr, assumePosReal=False):
     # separate function call to avoid infinite recursion.
     if not expr.has(C.Integral): # This is to work around to issue 1445
         expr = expand(expr)
-    return _logcombine(expr, assumePosReal=assumePosReal)
+    return _logcombine(expr, assumePosReal)
 
 def _logcombine(expr, assumePosReal=False):
 
@@ -1332,11 +1332,11 @@ def _logcombine(expr, assumePosReal=False):
                 is_real or (assumePosReal and not largs.is_nonpositive and not \
                 getattr(i.extract_multiplicatively(log(largs)),'is_real',\
                 False)==False):
-                    coeflogs += _logcombine(i, assumePosReal=assumePosReal)
+                    coeflogs += _logcombine(i, assumePosReal)
                 else:
                     notlogs += i
             elif i.has(log):
-                notlogs += _logcombine(i, assumePosReal=assumePosReal)
+                notlogs += _logcombine(i, assumePosReal)
             else:
                 notlogs += i
         alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal=\
@@ -1352,17 +1352,17 @@ def _logcombine(expr, assumePosReal=False):
         coef[a].is_imaginary)):
             return log(coef[x]**coef[a])
         else:
-            return _logcombine(expr.args[0], assumePosReal=assumePosReal)*\
-            reduce(lambda x, y: _logcombine(x, assumePosReal=assumePosReal)*\
-            _logcombine(y, assumePosReal=assumePosReal), expr.args[1:], 1)
+            return _logcombine(expr.args[0], assumePosReal)*\
+            reduce(lambda x, y: _logcombine(x, assumePosReal)*\
+            _logcombine(y, assumePosReal), expr.args[1:], 1)
 
     if expr.is_Function:
         return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal=\
         assumePosReal), expr.args))
 
     if expr.is_Pow:
-        return _logcombine(expr.args[0], assumePosReal=assumePosReal)**\
-        _logcombine(expr.args[1], assumePosReal=assumePosReal)
+        return _logcombine(expr.args[0], assumePosReal)**\
+        _logcombine(expr.args[1], assumePosReal)
 
     return expr
 
