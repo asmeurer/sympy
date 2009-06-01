@@ -1338,7 +1338,7 @@ def _logcombine(expr, assume_pos_real=False):
 
                 if  all(getattr(t,'is_positive') for t in largs)\
                     and getattr(i.extract_multiplicatively(loglargs),'is_real', False)\
-                    or (assume_pos_rea\
+                    or (assume_pos_real\
                         and not all(getattr(t,'is_nonpositive') for t in largs)\
                         and not getattr(i.extract_multiplicatively(loglargs),\
                         'is_real')==False):
