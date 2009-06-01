@@ -1212,8 +1212,8 @@ def _logcombine(expr, assumePosReal=False):
        return expr
 
     if isinstance(expr, Equality):
-        retval = Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal=\
-        assumePosReal), Integer(0))
+        retval = Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal),\
+        Integer(0))
         # If logcombine couldn't do much with the equality, try to make it like
         # it was.  Hopefully extract_additively won't become smart enought to
         # take logs apart :)
@@ -1249,8 +1249,7 @@ def _logcombine(expr, assumePosReal=False):
                 notlogs += _logcombine(i, assumePosReal)
             else:
                 notlogs += i
-        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal=\
-        assumePosReal)
+        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal)
         return notlogs + alllogs
 
     if expr.is_Mul:
@@ -1262,13 +1261,13 @@ def _logcombine(expr, assumePosReal=False):
         coef[a].is_imaginary)):
             return log(coef[x]**coef[a])
         else:
-            return _logcombine(expr.args[0], assumePosReal)*\
-            reduce(lambda x, y: _logcombine(x, assumePosReal)*\
-            _logcombine(y, assumePosReal), expr.args[1:], 1)
+            return _logcombine(expr.args[0], assumePosReal)*reduce(lambda x, y:\
+             _logcombine(x, assumePosReal)*_logcombine(y, assumePosReal),\
+             expr.args[1:], 1)
 
     if expr.is_Function:
-        return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal=\
-        assumePosReal), expr.args))
+        return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal)\
+        , expr.args))
 
     if expr.is_Pow:
         return _logcombine(expr.args[0], assumePosReal)**\
