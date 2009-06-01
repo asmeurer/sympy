@@ -1247,7 +1247,7 @@ def nsimplify(expr, constants=[], tolerance=None, full=False):
 
     return re + im*S.ImaginaryUnit
 
-def logcombine(expr, assumePosReal=False):
+def logcombine(expr, assume_pos_real=False):
     """
     Takes logarithms and combines them using the following rules:
 
@@ -1256,7 +1256,7 @@ def logcombine(expr, assumePosReal=False):
 
     These identities are only valid if x and y are positive and if a is real, so
     the function will not combine the terms unless the arguments have the proper
-    assumptions on them.  Use logcombine(func, assumePosReal=True) to
+    assumptions on them.  Use logcombine(func, assume_pos_real=True) to
     automatically assume that the arguments of logs are positive and that
     coefficients are real.  Note that this will not change any assumptions
     already in place, so if the coefficient is imaginary or the argument
@@ -1268,7 +1268,7 @@ def logcombine(expr, assumePosReal=False):
     >>> a,x,y,z = symbols('axyz')
     >>> logcombine(a*log(x)+log(y)-log(z))
     -log(z) + a*log(x) + log(y)
-    >>> logcombine(a*log(x)+log(y)-log(z), assumePosReal=True)
+    >>> logcombine(a*log(x)+log(y)-log(z), assume_pos_real=True)
     log(y*x**a/z)
     >>> x,y,z = symbols('xyz', positive=True)
     >>> a = Symbol('a', real=True)
@@ -1302,7 +1302,7 @@ def _logcombine(expr, assumePosReal=False):
        return expr
 
     if isinstance(expr, Equality):
-        retval = Equality(_logcombine(expr.lhs-expr.rhs, assumePosReal),\
+        retval = Equality(_logcombine(expr.lhs-expr.rhs, assume_pos_real),\
         Integer(0))
         # If logcombine couldn't do much with the equality, try to make it like
         # it was.  Hopefully extract_additively won't become smart enought to
@@ -1319,27 +1319,27 @@ def _logcombine(expr, assumePosReal=False):
         coeflogs = 0
         for i in expr.args:
             if i.is_Function and i.func == log:
-                if (i.args[0].is_positive or (assumePosReal and not \
+                if (i.args[0].is_positive or (assume_pos_real and not \
                 i.args[0].is_nonpositive)):
-                    argslist *= _logcombine(i.args[0], assumePosReal=\
-                    assumePosReal)
+                    argslist *= _logcombine(i.args[0], assume_pos_real=\
+                    assume_pos_real)
                 else:
                     notlogs += i
             elif i.is_Mul and any(map(lambda t: getattr(t,'func', False)==log,\
             i.args)):
                 largs = _getlogargs(i)
                 if largs.is_positive and i.extract_multiplicatively(log(largs)).\
-                is_real or (assumePosReal and not largs.is_nonpositive and not \
+                is_real or (assume_pos_real and not largs.is_nonpositive and not \
                 getattr(i.extract_multiplicatively(log(largs)),'is_real',\
                 False)==False):
-                    coeflogs += _logcombine(i, assumePosReal)
+                    coeflogs += _logcombine(i, assume_pos_real)
                 else:
                     notlogs += i
             elif i.has(log):
-                notlogs += _logcombine(i, assumePosReal)
+                notlogs += _logcombine(i, assume_pos_real)
             else:
                 notlogs += i
-        alllogs = _logcombine(log(argslist)+coeflogs, assumePosReal)
+        alllogs = _logcombine(log(argslist)+coeflogs, assume_pos_real)
         return notlogs + alllogs
 
     if expr.is_Mul:
@@ -1347,21 +1347,21 @@ def _logcombine(expr, assumePosReal=False):
         x = Wild('x', dummy=True)
         coef = expr.match(a*log(x))
         if coef and (coef[a].is_real or expr.is_Number or expr.is_NumberSymbol \
-        or type(coef[a]) in (int, float) or (assumePosReal and not \
+        or type(coef[a]) in (int, float) or (assume_pos_real and not \
         coef[a].is_imaginary)):
             return log(coef[x]**coef[a])
         else:
-            return _logcombine(expr.args[0], assumePosReal)*reduce(lambda x, y:\
-             _logcombine(x, assumePosReal)*_logcombine(y, assumePosReal),\
+            return _logcombine(expr.args[0], assume_pos_real)*reduce(lambda x, y:\
+             _logcombine(x, assume_pos_real)*_logcombine(y, assume_pos_real),\
              expr.args[1:], 1)
 
     if expr.is_Function:
-        return apply(expr.func,map(lambda t: _logcombine(t, assumePosReal)\
+        return apply(expr.func,map(lambda t: _logcombine(t, assume_pos_real)\
         , expr.args))
 
     if expr.is_Pow:
-        return _logcombine(expr.args[0], assumePosReal)**\
-        _logcombine(expr.args[1], assumePosReal)
+        return _logcombine(expr.args[0], assume_pos_real)**\
+        _logcombine(expr.args[1], assume_pos_real)
 
     return expr
 
