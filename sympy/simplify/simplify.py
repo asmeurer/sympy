@@ -1279,15 +1279,16 @@ def logcombine(expr, assume_pos_real=False):
     # separate function call to avoid infinite recursion.
     if not expr.has(C.Integral): # This is to work around to issue 1445
         expr = expand(expr)
-    return _logcombine(expr, assumePosReal)
+    return _logcombine(expr, assume_pos_real)
 
-def _logcombine(expr, assumePosReal=False):
+def _logcombine(expr, assume_pos_real=False):
 
     def _getlogargs(expr):
         """
         Returns the arguments of the logarithm in an expression.
         Example:
-        _getlogargs(a*log(x*y) -> x*y
+        _getlogargs(a*log(x*y))
+        x*y
         """
         if expr.is_Function and expr.func == log:
             return expr.args[0]
