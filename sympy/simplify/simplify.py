@@ -1155,4 +1155,38 @@ def nsimplify(expr, constants=[], tolerance=None, full=False):
 
     return re + im*S.ImaginaryUnit
 
+def combine(expr):
+    """
+    Combines exponentials of a common base that are multiplied.
+                                                 x   y                    x + y
+    That is, it takes an expression of the form b * b and converts it to b
 
+    Example:
+    >>> from sympy import *
+    >>> x, y = symbols('xy')
+    >>> exp(x)*exp(y)
+    exp(x)*exp(y)
+    >>> combine(exp(x)*exp(y))
+    exp(x + y)
+    """
+    if expr.is_Add:
+        exprsum = sympify(0)
+        for i in expr.args:
+            exprsum += combine(i)
+        return exprsum
+    exp_dict = {}
+    if expr.is_Mul:
+        for i in expr.args:
+            b, e = i.as_base_exp()
+            if b in exp_dict:
+                exp_dict[b] += e
+            else:
+                exp_dict[b] = e
+        newexpr = sympify(1)
+        for b, e in exp_dict.items():
+            newexpr *= Pow(b,e)
+        return newexpr
+    if expr.is_Function:
+        return expr.func(combine(expr.args[0]))
+
+    return expr
