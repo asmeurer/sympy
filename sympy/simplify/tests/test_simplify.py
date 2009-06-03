@@ -2,7 +2,7 @@ from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
         solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
-        S, diff, logcombine, Eq, Integer, gamma, acos, Integral
+        S, diff, logcombine, Eq, Integer, gamma, acos, Integral, combine, \
 
 from sympy.utilities.pytest import XFAIL
 
@@ -364,6 +364,16 @@ def test_diff():
     assert simplify(2*f(x)*f(x).diff(x)-diff(f(x)**2,x)) == 0
     assert simplify(diff(1/f(x),x)+f(x).diff(x)/f(x)**2) == 0
     assert simplify(f(x).diff(x,y)-f(x).diff(y,x)) == 0
+
+def test_combine():
+    x = Symbol("x")
+    y = Symbol("y")
+    assert exp(x)*exp(y) == exp(x)*exp(y)
+    assert combine(exp(x)*exp(y)) == exp(x+y)
+    assert combine(exp(x)*exp(y)*2**x*2**y) == exp(x+y)*2**(x+y)
+    assert combine(exp(x)*exp(y)*sin(x)+sin(y)+2**x*2**y) == exp(x+y)*sin(x)+sin(y)+2**(x+y)
+    assert combine(sin(exp(x)*exp(y))) == sin(exp(x+y))
+    assert combine(x**2*x**y) == x**(2+y)
 
 def test_logcombine_1():
     x, y = symbols("xy")
