@@ -290,3 +290,12 @@ def test_function_evalf():
     assert eq(exp(-0.5+1.5*I).evalf(15), Real("0.0429042815937374") + Real("0.605011292285002")*I, 1e-13)
     assert eq(log(pi+sqrt(2)*I).evalf(15), Real("1.23699044022052") + Real("0.422985442737893")*I, 1e-13)
     assert eq(cos(100).evalf(15), Real("0.86231887228768"), 1e-13)
+
+def test_function_non_commutative():
+    x = Symbol('x', commutative=False)
+    f = Function('f')
+    assert f(x).is_commutative == False
+    assert sin(x).is_commutative == False
+    assert exp(x).is_commutative == False
+    assert log(x).is_commutative == False
+
