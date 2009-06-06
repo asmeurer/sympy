@@ -3,6 +3,7 @@ from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
         simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
         solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
         S, diff, logcombine, Eq, Integer, gamma, acos, Integral, combine, \
+        distribute
 
 from sympy.utilities.pytest import XFAIL
 
@@ -215,9 +216,22 @@ def test_separate():
     assert separate((exp((x*y)**z)*exp(y))**2) == exp(2*(x*y)**z)*exp(2*y)
     assert separate((exp((x*y)**z)*exp(y))**2, deep=True) == exp(2*x**z*y**z)*exp(2*y)
 
-@XFAIL
-def test_separate_X1():
     assert separate((exp(x)*exp(y))**z) == exp(x*z)*exp(y*z)
+
+def test_distribute():
+    x, y, z = symbols('xyz')
+    assert distribute(x*(y+z)) == x*y + x*z
+    assert distribute(x*(y+z)*y*(x+z)) == x**2*y**2 + x*y*z**2 + x*z*y**2 + y*z*x**2
+    assert distribute(x+y) == x+y
+    assert distribute(x*y) == x*y
+    assert distribute((x+1)*(x+2)*(x+3)*(x+4)*(x+5)*(x+6)*(x+7)*(x+8)) == 40320 + 109584*x + 118124*x**2 + 67284*x**3 + 22449*x**4 + 4536*x**5 + 546*x**6 + 36*x**7 + x**8
+    assert distribute((x+y)*(x+z)) == x*y + x*z + y*z + x**2
+    assert distribute((x+1)*(y+1)) == 1 + x + y + x*y
+    assert distribute(sin(x)*(sin(x)+cos(x)**2/sin(x))) == cos(x)**2 + sin(x)**2
+    assert distribute((x+y+z)*(x+1)*y) == x*y + y*z + x*y*z + y**2 + x*y**2 + y*x**2
+    assert distribute((log(x**2)+log(y))*z) == z*log(y) + z*log(x**2)
+    assert distribute(exp(x+y)*(x+y)) == x*exp(x + y) + y*exp(x + y)
+
 
 def test_powsimp():
     x,y,n = symbols('xyn')
