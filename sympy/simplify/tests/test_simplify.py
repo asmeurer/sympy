@@ -231,7 +231,7 @@ def test_distribute():
     assert distribute((x+y+z)*(x+1)*y) == x*y + y*z + x*y*z + y**2 + x*y**2 + y*x**2
     assert distribute((log(x**2)+log(y))*z) == z*log(y) + z*log(x**2)
     assert distribute(exp(x+y)*(x+y)) == x*exp(x + y) + y*exp(x + y)
-
+    assert distribute((x*(x+y)**(x*(x+y)))) == x*(x + y)**(x*(x + y))
 
 def test_powsimp():
     x,y,n = symbols('xyn')
