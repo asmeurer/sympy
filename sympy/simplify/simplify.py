@@ -1,7 +1,7 @@
 from sympy import SYMPY_DEBUG
 
 from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
-        Derivative, Wild, Symbol, sympify, expand
+        Derivative, Wild, Symbol, sympify, expand, expand_mul, expand_func
 
 from sympy.core.numbers import igcd
 from sympy.core.relational import Equality
@@ -1069,7 +1069,7 @@ def powsimp(expr, deep=False, combine='all'):
             else:
                 # combine is 'all', get stuff ready for 'base'
                 if deep:
-                    newexpr = distribute(newexpr)
+                    newexpr = expand_mul(newexpr, recursive=False)
                 if newexpr.is_Add:
                     return powsimp(Mul(*nc_part), deep, combine='base')*Add(*(powsimp(i, deep, combine='base') for i in newexpr.args))
                 else:
@@ -1080,7 +1080,7 @@ def powsimp(expr, deep=False, combine='all'):
         else:
             # combine is 'base'
             if deep:
-                expr = distribute(expr)
+                expr = expand_mul(expr, recursive=False)
             if expr.is_Add:
                 return Add(*(powsimp(i, deep, combine) for i in expr.args))
             else:
@@ -1179,7 +1179,7 @@ def hypersimp(f, k):
     g = f.subs(k, k+1) / f
 
     g = g.rewrite(gamma)
-    g = g.expand(func=True, basic=False)
+    g = expand_func(g)
 
     if g.is_rational_function(k):
         return Poly.cancel(g, k)
@@ -1325,10 +1325,10 @@ def logcombine(expr, assume_pos_real=False):
     >>> logcombine(a*log(x)+log(y)-log(z))
     log(y*x**a/z)
     """
-    # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).  This needs to be a
-    # separate function call to avoid infinite recursion.
-    if not expr.has(C.Integral): # This is to work around to issue 1445
-        expr = expand(expr)
+    # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).
+    expr = expand_mul(expr, recursive=False)
+    # This needs to be a separate function call to avoid infinite recursion from
+    # expand_mul.
     return _logcombine(expr, assume_pos_real)
 
 def _logcombine(expr, assume_pos_real=False):

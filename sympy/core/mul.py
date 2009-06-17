@@ -412,11 +412,43 @@ class Mul(AssocOp):
                 terms = [added]
         return terms
 
-    def _eval_expand_basic(self):
-        plain, sums, rewrite = [], [], False
+    def _eval_expand_basic(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_basic(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
 
+    def _eval_expand_power_exp(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_power_exp(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_power_base(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_power_base(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_mul(self, recursive=True, **hints):
+        plain, sums, rewrite = [], [], False
         for factor in self.args:
-            terms = factor._eval_expand_basic()
+            if recursive:
+                terms = factor.expand(recursive=recursive, **hints)
+            else:
+                terms = factor
 
             if terms is not None:
                 factor = terms
@@ -447,6 +479,56 @@ class Mul(AssocOp):
                 return Add(*(Mul(plain, term) for term in terms), **self.assumptions0)
             else:
                 return Mul(*plain, **self.assumptions0)
+
+    def _eval_expand_multinomial(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_multinomial(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_log(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_log(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_complex(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_complex(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_trig(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_trig(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_func(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_func(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
 
     def _eval_derivative(self, s):
         terms = list(self.args)

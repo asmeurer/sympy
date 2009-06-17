@@ -144,6 +144,14 @@ class Integral(Basic):
 
         return function
 
+    def _eval_expand_basic(self, recursive=True, **hints):
+        from sympy import flatten
+        if not recursive:
+            return self
+        else:
+            return Integral(self.function.expand(recursive=recursive, **hints),\
+            flatten(*self.limits))
+
     def _eval_derivative(self, sym):
         """Evaluate the derivative of the current Integral object.
         We follow these steps:

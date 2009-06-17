@@ -226,39 +226,67 @@ class Pow(Basic):
         from sympy.functions.elementary.complexes import conjugate as c
         return c(self.base)**self.exp
 
-    def _eval_expand_complex(self, *args):
-        if self.exp.is_Integer:
-            exp = self.exp
-            re, im = self.base.as_real_imag()
-            if exp >= 0:
-                base = re + S.ImaginaryUnit*im
-            else:
-                mag = re**2 + im**2
-                base = re/mag - S.ImaginaryUnit*(im/mag)
-                exp = -exp
-            return (base**exp).expand()
-        elif self.exp.is_Rational:
-            # NOTE: This is not totally correct since for x**(p/q) with
-            #       x being imaginary there are actually q roots, but
-            #       only a single one is returned from here.
-            re, im = self.base.as_real_imag()
+    def _eval_expand_basic(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_basic(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
 
-            r = (re**2 + im**2)**S.Half
-            t = C.atan2(im, re)
-
-            rp, tp = r**self.exp, t*self.exp
-
-            return rp*C.cos(tp) + rp*C.sin(tp)*S.ImaginaryUnit
+    def _eval_expand_power_exp(self, recursive=True, *args, **hints):
+        """a**(n+m) -> a**n*a**m"""
+        if recursive:
+            b = self.base.expand(recursive=recursive, **hints)
+            e = self.exp.expand(recursive=recursive, **hints)
         else:
-            return C.re(self) + S.ImaginaryUnit*C.im(self)
+            b = self.base
+            e = self.exp
+        if e.is_Add:
+            expr = 1
+            for x in e.args:
+                if recursive:
+                    x = x.expand(recursive=recursive, **hints)
+                expr *= (self.base**x)
+            return expr
+        return b**e
 
-    def _eval_expand_basic(self):
-        """
-        (a*b)**n -> a**n * b**n
-        (a+b+..) ** n -> a**n + n*a**(n-1)*b + .., n is positive integer
-        """
-        b = self.base._eval_expand_basic()
-        e = self.exp._eval_expand_basic()
+    def _eval_expand_power_base(self, recursive=True, **hints):
+        """(a*b)**n -> a**n * b**n"""
+        b = self.base
+        if recursive:
+            e = self.exp.expand(recursive=recursive, **hints)
+        else:
+            e = self.exp
+        if b.is_Mul:
+            if recursive:
+                return Mul(*(Pow(t.expand(recursive=recursive, **hints), e)\
+                for t in b.args))
+            else:
+                return Mul(*(Pow(t, e) for t in b.args))
+        else:
+            return b**e
+
+    def _eval_expand_mul(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_mul(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_multinomial(self, recursive=True, **hints):
+        """(a+b+..) ** n -> a**n + n*a**(n-1)*b + .., n is positive integer"""
+        if recursive:
+            b = self.base.expand(recursive=recursive, **hints)
+            e = self.exp.expand(recursive=recursive, **hints)
+        else:
+            b = self.base
+            e = self.exp
 
         if b is None:
             base = self.base
@@ -375,6 +403,68 @@ class Pow(Basic):
             return coeff * base**tail
         else:
             return result
+
+    def _eval_expand_log(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_log(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_complex(self, recursive=True, **hints):
+        if self.exp.is_Integer:
+            exp = self.exp
+            re, im = self.base.as_real_imag()
+            if exp >= 0:
+                base = re + S.ImaginaryUnit*im
+            else:
+                mag = re**2 + im**2
+                base = re/mag - S.ImaginaryUnit*(im/mag)
+                exp = -exp
+            return (base**exp).expand()
+        elif self.exp.is_Rational:
+            # NOTE: This is not totally correct since for x**(p/q) with
+            #       x being imaginary there are actually q roots, but
+            #       only a single one is returned from here.
+            re, im = self.base.as_real_imag()
+
+            r = (re**2 + im**2)**S.Half
+            t = C.atan2(im, re)
+
+            rp, tp = r**self.exp, t*self.exp
+
+            return rp*C.cos(tp) + rp*C.sin(tp)*S.ImaginaryUnit
+        else:
+            if recursive:
+                hints['complex'] = False
+                return C.re(self.expand(recursive, **hints)) + \
+                S.ImaginaryUnit*C.im(self. expand(recursive, **hints))
+            else:
+                return C.re(self) + S.ImaginaryUnit*C.im(self)
+            return C.re(self) + S.ImaginaryUnit*C.im(self)
+
+    def _eval_expand_trig(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_trig(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_func(self, recursive=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_func(recursive=recursive, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
 
     def _eval_derivative(self, s):
         dbase = self.base.diff(s)
