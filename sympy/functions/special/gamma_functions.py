@@ -61,8 +61,11 @@ class gamma(Function):
                         return 2**n*sqrt(S.Pi) / coeff
 
 
-    def _eval_expand_func(self, *args):
-        arg = self.args[0].expand()
+    def _eval_expand_func(self, recursive=True, **hints):
+        if recursive:
+            arg = self.args[0].expand(recursive, **hints)
+        else:
+            arg = self.args[0]
 
         if arg.is_Add:
             for i, coeff in enumerate(arg.args[:]):
@@ -194,8 +197,13 @@ class polygamma(Function):
                                 return (-1)**(n+1)*C.Factorial(n)*zeta(n+1, z)
 
 
-    def _eval_expand_func(self, *args):
-        n, z = self.args[0], self.args[1].expand(func=True)
+    def _eval_expand_func(self, recursive=True, **hints):
+        if recursive:
+            hints['func'] = False
+            n = self.args[0].expand(recursive, **hints)
+            z = self.args[1].expand(recursive, **hints)
+        else:
+            n, z = self.args[0], self.args[1].expand(recursive, func=True)
 
         if n.is_Integer and n.is_nonnegative:
             if z.is_Add:

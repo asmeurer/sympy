@@ -1,7 +1,7 @@
 from sympy import SYMPY_DEBUG
 
 from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
-        Derivative, Wild, Symbol, sympify
+        Derivative, Wild, Symbol, sympify, expand, expand_mul, expand_func
 
 from sympy.core.numbers import igcd
 
@@ -1067,7 +1067,7 @@ def powsimp(expr, deep=False, combine='all'):
             else:
                 # combine is 'all', get stuff ready for 'base'
                 if deep:
-                    newexpr = distribute(newexpr)
+                    newexpr = expand_mul(newexpr, recursive=False)
                 if newexpr.is_Add:
                     return powsimp(Mul(*nc_part), deep, combine='base')*Add(*(powsimp(i, deep, combine='base') for i in newexpr.args))
                 else:
@@ -1078,7 +1078,7 @@ def powsimp(expr, deep=False, combine='all'):
         else:
             # combine is 'base'
             if deep:
-                expr = distribute(expr)
+                expr = expand_mul(expr, recursive=False)
             if expr.is_Add:
                 return Add(*(powsimp(i, deep, combine) for i in expr.args))
             else:
@@ -1177,7 +1177,7 @@ def hypersimp(f, k):
     g = f.subs(k, k+1) / f
 
     g = g.rewrite(gamma)
-    g = g.expand(func=True, basic=False)
+    g = expand_func(g)
 
     if g.is_rational_function(k):
         return Poly.cancel(g, k)
@@ -1309,6 +1309,47 @@ def combine(expr):
     >>> combine(exp(x)*exp(y))
     exp(x + y)
     """
+    # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).
+    expr = expand_mul(expr, recursive=False)
+    # This needs to be a separate function call to avoid infinite recursion from
+    # expand_mul.
+    return _logcombine(expr, assume_pos_real)
+
+def _logcombine(expr, assume_pos_real=False):
+
+    def _getlogargs(expr):
+        """
+        Returns the arguments of the logarithm in an expression.
+        Example:
+        _getlogargs(a*log(x*y))
+        x*y
+        """
+        if isinstance(expr, log):
+            return [expr.args[0]]
+        else:
+            args = []
+            for i in expr.args:
+                if i.has(log):
+                    args.append(_getlogargs(i))
+            return flatten(args)
+        return None
+
+    if type(expr) in (int, float) or expr.is_Number or expr.is_Rational or \
+        expr.is_NumberSymbol or type(expr) == C.Integral:
+            return expr
+
+    if isinstance(expr, Equality):
+        retval = Equality(_logcombine(expr.lhs-expr.rhs, assume_pos_real),\
+        Integer(0))
+        # If logcombine couldn't do much with the equality, try to make it like
+        # it was.  Hopefully extract_additively won't become smart enought to
+        # take logs apart :)
+        right = retval.lhs.extract_additively(expr.lhs)
+        if right:
+            return Equality(expr.lhs, logcombine(-right))
+        else:
+            return retval
+
     if expr.is_Add:
         exprsum = sympify(0)
         for i in expr.args:

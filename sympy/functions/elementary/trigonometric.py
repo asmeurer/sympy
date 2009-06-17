@@ -196,16 +196,26 @@ class sin(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate())
 
-    def _eval_expand_complex(self, *args):
+    def _eval_expand_complex(self, recursive=True, **hints):
         if self.args[0].is_real:
-            return self
-        re, im = self.args[0].as_real_imag()
+            if recursive:
+                hints['complex'] = False
+                return self.expand(recursive, **hints)
+            else:
+                return self
+        if recursive:
+            re, im = self.args[0].expand(recursive, **hints).as_real_imag()
+        else:
+            re, im = self.args[0].as_real_imag()
         return sin(re)*C.cosh(im) + S.ImaginaryUnit*cos(re)*C.sinh(im)
 
-    def _eval_expand_trig(self, *args):
-        arg = self.args[0].expand()
+    def _eval_expand_trig(self, recursive=True, **hints):
+        if recursive:
+            arg = self.args[0].expand(recursive, **hints)
+        else:
+            arg = self.args[0]
         x = None
-        if arg.is_Add:
+        if arg.is_Add: # TODO, implement more if recursive stuff here
             x = arg.args[0]
             y = C.Add(*arg.args[1:])
         else:
@@ -423,17 +433,27 @@ class cos(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate())
 
-    def _eval_expand_complex(self, *args):
+    def _eval_expand_complex(self, recursive=True, **hints):
         if self.args[0].is_real:
-            return self
-        re, im = self.args[0].as_real_imag()
+            if recursive:
+                hints['complex'] = False
+                return self.expand(recursive, **hints)
+            else:
+                return self
+        if recursive:
+            re, im = self.args[0].expand(recursive, **hints).as_real_imag()
+        else:
+            re, im = self.args[0].as_real_imag()
         return cos(re)*C.cosh(im) - \
             S.ImaginaryUnit*sin(re)*C.sinh(im)
 
-    def _eval_expand_trig(self, *args):
-        arg = self.args[0].expand()
+    def _eval_expand_trig(self, recursive=True, **hints):
+        if recursive:
+            arg = self.args[0].expand()
+        else:
+            arg = self.args[0]
         x = None
-        if arg.is_Add:
+        if arg.is_Add: # TODO, implement more if recursive stuff here
             x = arg.args[0]
             y = C.Add(*arg.args[1:])
             return (cos(x)*cos(y) - sin(y)*sin(x)).expand(trig=True)
@@ -592,15 +612,22 @@ class tan(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate())
 
-    def _eval_expand_complex(self, *args):
+    def _eval_expand_complex(self, recursive=True, **hints):
         if self.args[0].is_real:
-            return self
-        re, im = self.args[0].as_real_imag()
+            if recursive:
+                hints['complex'] = False
+                return self.expand(recursive, **hints)
+            else:
+                return self
+        if recursive:
+            re, im = self.args[0].expand(recursive, **hints).as_real_imag()
+        else:
+            re, im = self.args[0].as_real_imag()
         denom = cos(re)**2 + C.sinh(im)**2
         return (sin(re)*cos(re) + \
             S.ImaginaryUnit*C.sinh(im)*C.cosh(im))/denom
 
-    def _eval_expand_trig(self, *args):
+    def _eval_expand_trig(self, recursive=True, **hints):
         return self
 
     def _eval_rewrite_as_exp(self, arg):
@@ -743,10 +770,17 @@ class cot(Function):
         assert len(self.args) == 1
         return self.func(self.args[0].conjugate())
 
-    def _eval_expand_complex(self, *args):
+    def _eval_expand_complex(self, recursive=True, **hints):
         if self.args[0].is_real:
-            return self
-        re, im = self.args[0].as_real_imag()
+            if recursive:
+                hints['complex'] = False
+                return self.expand(recursive, **hints)
+            else:
+                return self
+        if recursive:
+            re, im = self.args[0].expand(recursive, **hints).as_real_imag()
+        else:
+            re, im = self.args[0].as_real_imag()
         denom = sin(re)**2 + C.sinh(im)**2
         return (sin(re)*cos(re) - \
             S.ImaginaryUnit*C.sinh(im)*C.cosh(im))/denom
