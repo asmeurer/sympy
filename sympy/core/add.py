@@ -365,6 +365,96 @@ class Add(AssocOp):
     def _eval_conjugate(self):
         return Add(*[t.conjugate() for t in self.args])
 
+    def _eval_expand_basic(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_basic(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_power_exp(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_power_exp(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_power_base(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_power_base(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_mul(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_mul(deep=deep, **hints)
+            except AttributeError, s:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_multinomial(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_multinomial(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_log(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_log(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_complex(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_complex(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_trig(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_trig(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
+    def _eval_expand_func(self, deep=True, **hints):
+        sargs, terms = self.args[:], []
+        for term in sargs:
+            try:
+                newterm = term._eval_expand_func(deep=deep, **hints)
+            except AttributeError:
+                newterm = term
+            terms.append(newterm)
+        return self.new(*terms)
+
     def __neg__(self):
         return Add(*[-t for t in self.args])
 
