@@ -226,64 +226,64 @@ class Pow(Basic):
         from sympy.functions.elementary.complexes import conjugate as c
         return c(self.base)**self.exp
 
-    def _eval_expand_basic(self, recursive=True, **hints):
+    def _eval_expand_basic(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_basic(recursive=recursive, **hints)
+                newterm = term._eval_expand_basic(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_power_exp(self, recursive=True, *args, **hints):
+    def _eval_expand_power_exp(self, deep=True, *args, **hints):
         """a**(n+m) -> a**n*a**m"""
-        if recursive:
-            b = self.base.expand(recursive=recursive, **hints)
-            e = self.exp.expand(recursive=recursive, **hints)
+        if deep:
+            b = self.base.expand(deep=deep, **hints)
+            e = self.exp.expand(deep=deep, **hints)
         else:
             b = self.base
             e = self.exp
         if e.is_Add:
             expr = 1
             for x in e.args:
-                if recursive:
-                    x = x.expand(recursive=recursive, **hints)
+                if deep:
+                    x = x.expand(deep=deep, **hints)
                 expr *= (self.base**x)
             return expr
         return b**e
 
-    def _eval_expand_power_base(self, recursive=True, **hints):
+    def _eval_expand_power_base(self, deep=True, **hints):
         """(a*b)**n -> a**n * b**n"""
         b = self.base
-        if recursive:
-            e = self.exp.expand(recursive=recursive, **hints)
+        if deep:
+            e = self.exp.expand(deep=deep, **hints)
         else:
             e = self.exp
         if b.is_Mul:
-            if recursive:
-                return Mul(*(Pow(t.expand(recursive=recursive, **hints), e)\
+            if deep:
+                return Mul(*(Pow(t.expand(deep=deep, **hints), e)\
                 for t in b.args))
             else:
                 return Mul(*(Pow(t, e) for t in b.args))
         else:
             return b**e
 
-    def _eval_expand_mul(self, recursive=True, **hints):
+    def _eval_expand_mul(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_mul(recursive=recursive, **hints)
+                newterm = term._eval_expand_mul(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_multinomial(self, recursive=True, **hints):
+    def _eval_expand_multinomial(self, deep=True, **hints):
         """(a+b+..) ** n -> a**n + n*a**(n-1)*b + .., n is positive integer"""
-        if recursive:
-            b = self.base.expand(recursive=recursive, **hints)
-            e = self.exp.expand(recursive=recursive, **hints)
+        if deep:
+            b = self.base.expand(deep=deep, **hints)
+            e = self.exp.expand(deep=deep, **hints)
         else:
             b = self.base
             e = self.exp
@@ -404,17 +404,17 @@ class Pow(Basic):
         else:
             return result
 
-    def _eval_expand_log(self, recursive=True, **hints):
+    def _eval_expand_log(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_log(recursive=recursive, **hints)
+                newterm = term._eval_expand_log(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_complex(self, recursive=True, **hints):
+    def _eval_expand_complex(self, deep=True, **hints):
         if self.exp.is_Integer:
             exp = self.exp
             re, im = self.base.as_real_imag()
@@ -438,29 +438,29 @@ class Pow(Basic):
 
             return rp*C.cos(tp) + rp*C.sin(tp)*S.ImaginaryUnit
         else:
-            if recursive:
+            if deep:
                 hints['complex'] = False
-                return C.re(self.expand(recursive, **hints)) + \
-                S.ImaginaryUnit*C.im(self. expand(recursive, **hints))
+                return C.re(self.expand(deep, **hints)) + \
+                S.ImaginaryUnit*C.im(self. expand(deep, **hints))
             else:
                 return C.re(self) + S.ImaginaryUnit*C.im(self)
             return C.re(self) + S.ImaginaryUnit*C.im(self)
 
-    def _eval_expand_trig(self, recursive=True, **hints):
+    def _eval_expand_trig(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_trig(recursive=recursive, **hints)
+                newterm = term._eval_expand_trig(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_func(self, recursive=True, **hints):
+    def _eval_expand_func(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_func(recursive=recursive, **hints)
+                newterm = term._eval_expand_func(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)

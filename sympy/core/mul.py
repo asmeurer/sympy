@@ -412,41 +412,41 @@ class Mul(AssocOp):
                 terms = [added]
         return terms
 
-    def _eval_expand_basic(self, recursive=True, **hints):
+    def _eval_expand_basic(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_basic(recursive=recursive, **hints)
+                newterm = term._eval_expand_basic(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_power_exp(self, recursive=True, **hints):
+    def _eval_expand_power_exp(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_power_exp(recursive=recursive, **hints)
+                newterm = term._eval_expand_power_exp(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_power_base(self, recursive=True, **hints):
+    def _eval_expand_power_base(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_power_base(recursive=recursive, **hints)
+                newterm = term._eval_expand_power_base(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_mul(self, recursive=True, **hints):
+    def _eval_expand_mul(self, deep=True, **hints):
         plain, sums, rewrite = [], [], False
         for factor in self.args:
-            if recursive:
-                terms = factor.expand(recursive=recursive, **hints)
+            if deep:
+                terms = factor.expand(deep=deep, **hints)
             else:
                 terms = factor
 
@@ -480,51 +480,51 @@ class Mul(AssocOp):
             else:
                 return Mul(*plain, **self.assumptions0)
 
-    def _eval_expand_multinomial(self, recursive=True, **hints):
+    def _eval_expand_multinomial(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_multinomial(recursive=recursive, **hints)
+                newterm = term._eval_expand_multinomial(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_log(self, recursive=True, **hints):
+    def _eval_expand_log(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_log(recursive=recursive, **hints)
+                newterm = term._eval_expand_log(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_complex(self, recursive=True, **hints):
+    def _eval_expand_complex(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_complex(recursive=recursive, **hints)
+                newterm = term._eval_expand_complex(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_trig(self, recursive=True, **hints):
+    def _eval_expand_trig(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_trig(recursive=recursive, **hints)
+                newterm = term._eval_expand_trig(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_func(self, recursive=True, **hints):
+    def _eval_expand_func(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_func(recursive=recursive, **hints)
+                newterm = term._eval_expand_func(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)

@@ -325,100 +325,100 @@ class Function(Basic):
                 return False
         return True
 
-    def _eval_expand_basic(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_basic(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_basic(recursive=recursive, **hints)
+                newterm = term._eval_expand_basic(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_power_exp(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_power_exp(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_power_exp(recursive=recursive, **hints)
+                newterm = term._eval_expand_power_exp(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_power_base(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_power_base(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_power_base(recursive=recursive, **hints)
+                newterm = term._eval_expand_power_base(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_mul(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_mul(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_mul(recursive=recursive, **hints)
+                newterm = term._eval_expand_mul(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_multinomial(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_multinomial(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_multinomial(recursive=recursive, **hints)
+                newterm = term._eval_expand_multinomial(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_log(self, recursive=True, **hints):
-        if not recursive:
+    def _eval_expand_log(self, deep=True, **hints):
+        if not deep:
             return self
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_log(recursive=recursive, **hints)
+                newterm = term._eval_expand_log(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_complex(self, recursive=True, **hints):
-        if recursive:
-            func = self.func(*[ a.expand(recursive, **hints) for a in self.args ])
+    def _eval_expand_complex(self, deep=True, **hints):
+        if deep:
+            func = self.func(*[ a.expand(deep, **hints) for a in self.args ])
         else:
             func = self.func(*self.args)
         return C.re(func) + S.ImaginaryUnit * C.im(func)
 
-    def _eval_expand_trig(self, recursive=True, **hints):
+    def _eval_expand_trig(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_trig(recursive=recursive, **hints)
+                newterm = term._eval_expand_trig(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
         return self.new(*terms)
 
-    def _eval_expand_func(self, recursive=True, **hints):
+    def _eval_expand_func(self, deep=True, **hints):
         sargs, terms = self.args[:], []
         for term in sargs:
             try:
-                newterm = term._eval_expand_func(recursive=recursive, **hints)
+                newterm = term._eval_expand_func(deep=deep, **hints)
             except AttributeError:
                 newterm = term
             terms.append(newterm)
@@ -808,111 +808,122 @@ def diff(f, x, times = 1, evaluate=True):
     return Derivative(f,x,times, **{'evaluate':evaluate})
 
 @vectorize(0)
-def expand(e, recursive=True, power_base=True, power_exp=True, mul=True, \
+def expand(e, deep=True, power_base=True, power_exp=True, mul=True, \
            log=True, multinomial=True, basic=True, **hints):
-    """Expand an expression using hints.
+    """
+    Expand an expression using hints.
 
-       Currently supported hints are log, power_exp, power_base,
-       multinomial, log, mul, complex, trig, func, and basic.  log, power_exp,
-       power_base, multinomial, mul, and basic are evaluated by default.
-       If you want to not evaluate those expansions, you need to set them
-       all to false.
+    Currently supported hints are log, power_exp, power_base,
+    multinomial, log, mul, complex, trig, func, and basic.  log, power_exp,
+    power_base, multinomial, mul, and basic are evaluated by default.
+    If you want to not evaluate those expansions, you need to set them
+    all to false.
 
-       basic is a generic keyword for methods that want to be expanded
-       automatically.  Currently, no class that is part of SymPy uses
-       basic.  If you want your class expand methods to run automatically and
-       they don't fit one of the already automatic methods, wrap it around
-       _eval_expand_basic.
+    basic is a generic keyword for methods that want to be expanded
+    automatically.  Currently, no class that is part of SymPy uses
+    basic.  If you want your class expand methods to run automatically and
+    they don't fit one of the already automatic methods, wrap it around
+    _eval_expand_basic.
 
-       Also see expand_log, expand_mul, expand_complex,
-       expand_trig, and expand_func, which are wrappers around those
-       expansion methods.  Hints are applied with arbitrary order so your
-       code shouldn't depend on the way hints are passed to this
-       method.
+    Also see expand_log, expand_mul, expand_complex,
+    expand_trig, and expand_func, which are wrappers around those
+    expansion methods.  Hints are applied with arbitrary order so your
+    code shouldn't depend on the way hints are passed to this
+    method.
 
-       If recursive is set to True, things like arguments of functions are
-       recursively expanded.  User recursive=False to only expand on the top
-       level.
+    If deep is set to True, things like arguments of functions are
+    recursively expanded.  User deep=False to only expand on the top
+    level.
 
-       >>> from sympy import *
-       >>> x,y = symbols('xy')
+    >>> from sympy import *
+    >>> x,y = symbols('xy')
 
-       mul - Distributes multiplication over addition.
-       >>> (y*(x + z)).expand(mul=True)
-       x*y + y*z
+    mul - Distributes multiplication over addition.
+    >>> (y*(x + z)).expand(mul=True)
+    x*y + y*z
 
-       complex - Split and expression into real and imaginary parts
-       >>> (x+y).expand(complex=True)
-       I*im(x) + I*im(y) + re(x) + re(y)
-       >>> cos(x).expand(complex=True)
-       cos(re(x))*cosh(im(x)) - I*sin(re(x))*sinh(im(x))
+    complex - Split and expression into real and imaginary parts
+    >>> (x+y).expand(complex=True)
+    I*im(x) + I*im(y) + re(x) + re(y)
+    >>> cos(x).expand(complex=True)
+    cos(re(x))*cosh(im(x)) - I*sin(re(x))*sinh(im(x))
 
-       power_exp - Expand addition in exponents into multiplied bases.
-       >>> exp(x+y).expand(power_exp=True)
-       exp(x)*exp(y)
-       >>> (2**(x+y)).expand(power_exp=True
-       2**x*2**y
+    power_exp - Expand addition in exponents into multiplied bases.
+    >>> exp(x+y).expand(power_exp=True)
+    exp(x)*exp(y)
+    >>> (2**(x+y)).expand(power_exp=True
+    2**x*2**y
 
-       power_base - Split powers of multiplied bases.
-       >>> ((x*y)**z)).expand(power_base=True)
-       x**z*y**z
+    power_base - Split powers of multiplied bases.
+    >>> ((x*y)**z)).expand(power_base=True)
+    x**z*y**z
 
-       log - Pull out powers of logs as exponents and split multiplied arguments
-       of logs into addition of logs.  Note that this only works if the
-       arguments of the log function have the proper assumptions such that this
-       is a correct expansion.  Namely, the arguments must be positive and the
-       exponents must be positive.
-       >>> log(x**2*y).expand(log=True)
-       log(x**2*y)
-       >>> x, y = symbols('xy', positive=True)
-       >>> log(x**2*y).expand(log=True)
-       2*log(x)+log(y)
+    log - Pull out powers of logs as exponents and split multiplied arguments
+    of logs into addition of logs.  Note that this only works if the
+    arguments of the log function have the proper assumptions such that this
+    is a correct expansion.  Namely, the arguments must be positive and the
+    exponents must be real.
+    >>> log(x**2*y).expand(log=True)
+    log(x**2*y)
+    >>> x, y = symbols('xy', positive=True)
+    >>> log(x**2*y).expand(log=True)
+    2*log(x)+log(y)
 
-       trig - Do trigonometric expansion.
-       >>> cos(x+y).expand(trig=True)
-       cos(x)*cos(y) - sin(x)*sin(y)
+    trig - Do trigonometric expansion.
+    >>> cos(x+y).expand(trig=True)
+    cos(x)*cos(y) - sin(x)*sin(y)
 
-       func - Expand other functions
-       >>> gamma(x+1).expand(func=True)
-       x*gamma(x)
+    func - Expand other functions
+    >>> gamma(x+1).expand(func=True)
+    x*gamma(x)
 
-       multinomial - Expand (x + y + ...)**n where n is a positive integer
-       >>> ((x+y+z)**2).expand(multinomial=True)
-       2*x*y + 2*x*z + 2*y*z + x**2 + y**2 + z**2
+    multinomial - Expand (x + y + ...)**n where n is a positive integer
+    >>> ((x+y+z)**2).expand(multinomial=True)
+    2*x*y + 2*x*z + 2*y*z + x**2 + y**2 + z**2
 
-       You can pick and choose the methods.
-       >>> (exp(x+y)*(x+y)).expand()
-       x*exp(x)*exp(y) + y*exp(x)*exp(y)
-       >>> (exp(x+y)*(x+y)).expand(power_exp=False)
-       x*exp(x + y) + y*exp(x + y)
-       >>> (exp(x+y)*(x+y)).expand(mul=False)
-       (x + y)*exp(x)*exp(y)
+    You can pick and choose the methods.
+    >>> (exp(x+y)*(x+y)).expand()
+    x*exp(x)*exp(y) + y*exp(x)*exp(y)
+    >>> (exp(x+y)*(x+y)).expand(power_exp=False)
+    x*exp(x + y) + y*exp(x + y)
+    >>> (exp(x+y)*(x+y)).expand(mul=False)
+    (x + y)*exp(x)*exp(y)
 
-       Use recursive=False to only expand on the top level.
-       >>> exp(x+exp(x+y)).expand()
-       exp(x)*exp(exp(x)*exp(y))
-       >>> exp(x+exp(x+y)).expand(recursive=False)
-       exp(x)*exp(exp(x + y))
+    Use deep=False to only expand on the top level.
+    >>> exp(x+exp(x+y)).expand()
+    exp(x)*exp(exp(x)*exp(y))
+    >>> exp(x+exp(x+y)).expand(deep=False)
+    exp(x)*exp(exp(x + y))
 
-       Note that because hints are applied in arbitrary order, some hints may
-       prevent expansion by other hints if they are applied first.  In
-       particular, mul may distribute multiplications and prevent log and
-       power_base from expanding them.  The solution is to expand with mul=False
-       first, then run expand_mul if you need further expansion.
-       Examples:
-       >>> x, y, z = symbols('xyz', positive=True)
-       #>>> expand(log(x*(y+z))) # could be either one below
-       #log(x*y + x*z)
-       #log(x) + log(y + z)
-       >>> expand_log(log(x*y+x*z))
-       log(x*y+x*z)
-       >>> expand(log(x*(y+z), mul=False)
-       log(x) + log(y + z)
-       #>>> expand((x*(y+z))**x) # could be either one below
-       #(x*y + x*z)**x
-       #x**x*(y + z)**x
-       >>> expand((x*(y+z))**x, mul=False)
-       x**x*(y + z)**x
+    Note that because hints are applied in arbitrary order, some hints may
+    prevent expansion by other hints if they are applied first.  In
+    particular, mul may distribute multiplications and prevent log and
+    power_base from expanding them.  Also, if mul is applied before multinomial,
+    the expression might not be fully distributed.  The solution is to expand
+    with mul=False first, then run expand_mul if you need further expansion.
+    Examples:
+    >>> x, y, z = symbols('xyz', positive=True)
+    #>>> expand(log(x*(y+z))) # could be either one below
+    log(x*y + x*z)
+    log(x) + log(y + z)
+    >>> expand_log(log(x*y+x*z))
+    log(x*y+x*z)
+    >>> expand(log(x*(y+z), mul=False)
+    log(x) + log(y + z)
+
+    #>>> expand((x*(y+z))**x) # could be either one below
+    (x*y + x*z)**x
+    x**x*(y + z)**x
+    >>> expand((x*(y+z))**x, mul=False)
+    x**x*(y + z)**x
+
+    #>>> expand(x*(y+z)**2) # could be either one below
+    2*x*y*z + x*y**2 + x*z**2
+    x*(y + z)**2
+    >>> expand(x*(y+z)**2, mul=False
+    x*(2*y*z + y**2 + z**2)
+    >>> expand_mul(_)
+    2*x*y*z + x*y**2 + x*z**2
        """
     hints['power_base'] = power_base
     hints['power_exp'] = power_exp
@@ -920,11 +931,11 @@ def expand(e, recursive=True, power_base=True, power_exp=True, mul=True, \
     hints['log'] = log
     hints['multinomial'] = multinomial
     hints['basic'] = basic
-    return sympify(e).expand(recursive=recursive, **hints)
+    return sympify(e).expand(deep=deep, **hints)
 
 # These are simple wrappers around single hints.  Fell free to add ones for
 # power_exp, power_base, multinomial, or basic if you need them.
-def expand_mul(expr, recursive=True):
+def expand_mul(expr, deep=True):
     """
     Wrapper around expand that only uses the mul hint.  See the expand
     docstring for more information.
@@ -935,10 +946,10 @@ def expand_mul(expr, recursive=True):
     >>> expand_mul(exp(x+y)*(x+y)*log(x*y**2))
     x*exp(x + y)*log(x*y**2) + y*exp(x + y)*log(x*y**2)
     """
-    return sympify(expr).expand(recursive=recursive, mul=True, power_exp=False,\
+    return sympify(expr).expand(deep=deep, mul=True, power_exp=False,\
     power_base=False, basic=False, multinomial=False, log=False)
 
-def expand_log(expr, recursive=True):
+def expand_log(expr, deep=True):
     """
     Wrapper around expand that only uses the log hint.  See the expand
     docstring for more information.
@@ -949,10 +960,10 @@ def expand_log(expr, recursive=True):
     >>> expand_log(exp(x+y)*(x+y)*log(x*y**2))
     (x + y)*(2*log(y) + log(x))*exp(x + y)
     """
-    return sympify(expr).expand(recursive=recursive, log=True, mul=False,\
+    return sympify(expr).expand(deep=deep, log=True, mul=False,\
     power_exp=False, power_base=False, multinomial=False, basic=False)
 
-def expand_func(expr, recursive=True):
+def expand_func(expr, deep=True):
     """
     Wrapper around expand that only uses the func hint.  See the expand
     docstring for more information.
@@ -963,10 +974,10 @@ def expand_func(expr, recursive=True):
     >>> expand_func(gamma(x + 2))
     x*(1 + x)*gamma(x)
     """
-    return sympify(expr).expand(recursive=recursive, func=True, basic=False,\
+    return sympify(expr).expand(deep=deep, func=True, basic=False,\
     log=False, mul=False, power_exp=False, power_base=False, multinomial=False)
 
-def expand_trig(expr, recursive=True):
+def expand_trig(expr, deep=True):
     """
     Wrapper around expand that only uses the trig hint.  See the expand
     docstring for more information.
@@ -977,10 +988,10 @@ def expand_trig(expr, recursive=True):
     >>> expand_trig(sin(x+y)*(x+y))
     (x + y)*(cos(x)*sin(y) + cos(y)*sin(x))
     """
-    return sympify(expr).expand(recursive=recursive, trig=True, basic=False,\
+    return sympify(expr).expand(deep=deep, trig=True, basic=False,\
     log=False, mul=False, power_exp=False, power_base=False, multinomial=False)
 
-def expand_complex(expr, recursive=True):
+def expand_complex(expr, deep=True):
     """
     Wrapper around expand that only uses the complex hint.  See the expand
     docstring for more information.
@@ -991,7 +1002,7 @@ def expand_complex(expr, recursive=True):
     >>> expand_complex(z**(2*I))
     I*im(z**(2*I)) + re(z**(2*I))
     """
-    return sympify(expr).expand(recursive=recursive, complex=True, basic=False,\
+    return sympify(expr).expand(deep=deep, complex=True, basic=False,\
     log=False, mul=False, power_exp=False, power_base=False, multinomial=False)
 
 
