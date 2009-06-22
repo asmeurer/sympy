@@ -1373,34 +1373,34 @@ class Basic(AssumeMeths):
 
     # These should be overridden in subclasses
 
-    def _eval_expand_basic(self, recursive=True, **hints):
+    def _eval_expand_basic(self, deep=True, **hints):
         return self
 
-    def _eval_expand_power_exp(self, recursive=True, **hints):
+    def _eval_expand_power_exp(self, deep=True, **hints):
         return self
 
-    def _eval_expand_power_base(self, recursive=True, **hints):
+    def _eval_expand_power_base(self, deep=True, **hints):
         return self
 
-    def _eval_expand_mul(self, recursive=True, **hints):
+    def _eval_expand_mul(self, deep=True, **hints):
         return self
 
-    def _eval_expand_multinomial(self, recursive=True, **hints):
+    def _eval_expand_multinomial(self, deep=True, **hints):
         return self
 
-    def _eval_expand_log(self, recursive=True, **hints):
+    def _eval_expand_log(self, deep=True, **hints):
         return self
 
-    def _eval_expand_complex(self, recursive=True, **hints):
+    def _eval_expand_complex(self, deep=True, **hints):
         return self
 
-    def _eval_expand_trig(self, recursive=True, **hints):
+    def _eval_expand_trig(self, deep=True, **hints):
         return self
 
-    def _eval_expand_func(self, recursive=True, **hints):
+    def _eval_expand_func(self, deep=True, **hints):
         return self
 
-    def expand(self, recursive=True, power_base=True, power_exp=True, mul=True, \
+    def expand(self, deep=True, power_base=True, power_exp=True, mul=True, \
            log=True, multinomial=True, basic=True, **hints):
         """
         Expand an expression using hints.
@@ -1420,7 +1420,7 @@ class Basic(AssumeMeths):
             if hints[hint] == True:
                 func = getattr(expr, '_eval_expand_'+hint, None)
                 if func is not None:
-                    expr = func(recursive=recursive, **hints)
+                    expr = func(deep=deep, **hints)
         return expr
 
     def _eval_rewrite(self, pattern, rule, **hints):
@@ -1627,7 +1627,7 @@ class Basic(AssumeMeths):
            (-im(w) + re(z), im(z) + re(w))
 
         """
-        expr = self.expand(complex=True, recursive=False)
+        expr = self.expand(complex=True, deep=False)
 
         if not expr.is_Add:
             expr = [expr]

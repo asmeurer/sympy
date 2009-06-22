@@ -1067,7 +1067,7 @@ def powsimp(expr, deep=False, combine='all'):
             else:
                 # combine is 'all', get stuff ready for 'base'
                 if deep:
-                    newexpr = expand_mul(newexpr, recursive=False)
+                    newexpr = expand_mul(newexpr, deep=False)
                 if newexpr.is_Add:
                     return powsimp(Mul(*nc_part), deep, combine='base')*Add(*(powsimp(i, deep, combine='base') for i in newexpr.args))
                 else:
@@ -1078,7 +1078,7 @@ def powsimp(expr, deep=False, combine='all'):
         else:
             # combine is 'base'
             if deep:
-                expr = expand_mul(expr, recursive=False)
+                expr = expand_mul(expr, deep=False)
             if expr.is_Add:
                 return Add(*(powsimp(i, deep, combine) for i in expr.args))
             else:
@@ -1310,7 +1310,7 @@ def combine(expr):
     exp(x + y)
     """
     # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).
-    expr = expand_mul(expr, recursive=False)
+    expr = expand_mul(expr, deep=False)
     # This needs to be a separate function call to avoid infinite recursion from
     # expand_mul.
     return _logcombine(expr, assume_pos_real)

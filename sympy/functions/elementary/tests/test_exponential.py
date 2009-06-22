@@ -133,7 +133,7 @@ def test_log_expand():
     x, y, z = symbols('xyz', positive=True)
     assert log(x*(y+z)).expand(mul=False) == log(x)+log(y+z)
     assert log(log(x**2)*log(y*z)).expand() == log(2*log(x)*log(y) + 2*log(x)*log(z))
-    assert log(x**log(x**2)).expand(recursive=False) == log(x)*log(x**2)
+    assert log(x**log(x**2)).expand(deep=False) == log(x)*log(x**2)
     assert log(x**log(x**2)).expand() == 2*log(x)**2
     assert (log(x*(y+z))*(x+y)),expand(mul=True, log=True) == y*log(x) + y*log(y + z) + z*log(x) + z*log(y + z)
 

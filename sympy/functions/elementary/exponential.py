@@ -110,11 +110,11 @@ class exp(Function):
                 return p * x / n
         return x**n/C.Factorial()(n)
 
-    def _eval_expand_complex(self, recursive=True, **hints):
+    def _eval_expand_complex(self, deep=True, **hints):
         re, im = self.args[0].as_real_imag()
-        if recursive:
-            re = re.expand(recursive, **hints)
-            im = im.expand(recursive, **hints)
+        if deep:
+            re = re.expand(deep, **hints)
+            im = im.expand(deep, **hints)
         cos, sin = C.cos(im), C.sin(im)
         return exp(re) * cos + S.ImaginaryUnit * exp(re) * sin
 
@@ -234,16 +234,16 @@ class exp(Function):
             return S.One
         return exp(arg)
 
-    def _eval_expand_power_exp(self, recursive=True, **hints):
-        if recursive:
-            arg = self.args[0].expand(recursive=recursive, **hints)
+    def _eval_expand_power_exp(self, deep=True, **hints):
+        if deep:
+            arg = self.args[0].expand(deep=deep, **hints)
         else:
             arg = self.args[0]
         if arg.is_Add:
             expr = 1
             for x in arg.args:
-                if recursive:
-                    x = x.expand(recursive=recursive, **hints)
+                if deep:
+                    x = x.expand(deep=deep, **hints)
                 expr *= self.func(x)
             return expr
         return self.func(arg)
@@ -345,28 +345,29 @@ class log(Function):
     @staticmethod
     @cacheit
     def taylor_term(n, x, *previous_terms): # of log(1+x)
+        from sympy import powsimp
         if n<0: return S.Zero
         x = sympify(x)
         if n==0: return x
         if previous_terms:
             p = previous_terms[-1]
             if p is not None:
-                return (-n) * p * x / (n+1)
+                return powsimp((-n) * p * x / (n+1), deep=True, combine='exp')
         return (1-2*(n%2)) * x**(n+1)/(n+1)
 
-    def _eval_expand_log(self, recursive=True, **hints):
-        if recursive:
-            arg = self.args[0].expand(recursive=recursive, **hints)
+    def _eval_expand_log(self, deep=True, **hints):
+        if deep:
+            arg = self.args[0].expand(deep=deep, **hints)
         else:
             arg = self.args[0]
         if arg.is_Mul:
             expr = sympify(0)
             nonpos = sympify(1)
             for x in arg.args:
-                if recursive:
-                    x = x.expand(recursive=recursive, **hints)
+                if deep:
+                    x = x.expand(deep=deep, **hints)
                 if x.is_positive:
-                    expr += self.func(x)._eval_expand_log(recursive=recursive, **hints)
+                    expr += self.func(x)._eval_expand_log(deep=deep, **hints)
                 else:
                     nonpos *= x
             return expr + log(nonpos)
@@ -375,26 +376,26 @@ class log(Function):
                 # This should only run when base.is_positive, but it breaks
                 # nseries, so it will have to wait for the new assumptions system.
                 # See the variable obj2 in log._eval_nseries.
-                if recursive:
-                    b = arg.base.expand(recursive=recursive, **hints)
-                    e = arg.exp.expand(recursive=recursive, **hints)
+                if deep:
+                    b = arg.base.expand(deep=deep, **hints)
+                    e = arg.exp.expand(deep=deep, **hints)
                 else:
                     b = arg.base
                     e = arg.exp
-                return e * self.func(b)._eval_expand_log(recursive=recursive,\
+                return e * self.func(b)._eval_expand_log(deep=deep,\
                 **hints)
         return self.func(arg)
 
-    def _eval_expand_complex(self, recursive=True, **hints):
-        if recursive:
-            abs = C.abs(self.args[0].expand(recursive, **hints))
-            arg = C.arg(self.args[0].expand(recursive, **hints))
+    def _eval_expand_complex(self, deep=True, **hints):
+        if deep:
+            abs = C.abs(self.args[0].expand(deep, **hints))
+            arg = C.arg(self.args[0].expand(deep, **hints))
         else:
             abs = C.abs(self.args[0])
             arg = C.arg(self.args[0])
         if hints['log']: # Expand the log
             hints['complex'] = False
-            return log(abs).expand(recursive, **hints) + S.ImaginaryUnit * arg
+            return log(abs).expand(deep, **hints) + S.ImaginaryUnit * arg
         else:
             return log(abs) + S.ImaginaryUnit * arg
 
