@@ -628,14 +628,3 @@ def test_count_ops():
     assert f.count_ops() == Symbol('ADD') + 2*Symbol('MUL') + 2*Symbol('POW')
     assert f.count_ops(symbolic=False) == 5
 
-@XFAIL
-def test_issue_1454():
-    from sympy import *
-    assert not hasattr(x, 'k')
-    try:
-        i
-    except NameError:
-        pass
-    else:
-        raise ValueError, "Global variable i should not be defined."
-
