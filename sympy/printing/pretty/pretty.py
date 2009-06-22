@@ -56,6 +56,9 @@ class PrettyPrinter(Printer):
         except KeyError:
             return self.emptyPrinter(e)
 
+    def _print_Assume(self, e):
+        return prettyForm("Assume(%s, %s=%s)" % (e.expr, e.key, e.value))
+
     # Infinity inherits from Rational, so we have to override _print_XXX order
     _print_Infinity         = _print_Atom
     _print_NegativeInfinity = _print_Atom

@@ -21,7 +21,8 @@ SYMPY_DEBUG = __sympy_debug()
 
 import symbol as stdlib_symbol
 from sympy.core import *
-
+import assumptions # for assumptions.register_global()
+from assumptions import Assume
 from polys import *
 from series import *
 from functions import *
