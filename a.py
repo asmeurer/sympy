@@ -1,4 +1,4 @@
-from sympy import *
+from sympy import Basic, var, sympify, S, C
 
 class Constant(Basic):
     is_Order = True
@@ -65,7 +65,7 @@ class Constant(Basic):
         if expr is S.Zero:
             return expr
 
-        # create Order instance:
+        # create Constant instance:
         obj = Basic.__new__(cls, expr, *symbols, **assumptions)
 
         return obj
@@ -77,7 +77,7 @@ class Constant(Basic):
         return limit(f, x, 0, dir="+")
 
         but first trying some easy cases (like x**2) using heuristics, to avoid
-        infinite recursion. This is only needed in the Order class and series
+        infinite recursion. This is only needed in the Constant class and series
         expansion (that shouldn't rely on the Gruntz algorithm too much),
         that's why find_limit() is defined here.
         """
@@ -135,7 +135,7 @@ class Constant(Basic):
 
     def contains(self, expr):
         """
-        Return True if expr belongs to Order(self.expr, *self.symbols).
+        Return True if expr belongs to Constant(self.expr, *self.symbols).
         Return False if self belongs to expr.
         Return None if the inclusion relation cannot be determined (e.g. when self and
         expr have different symbols).
@@ -158,7 +158,7 @@ class Constant(Basic):
                 return None
             r = None
             for s in common_symbols:
-                l = Order.find_limit(powsimp(self.expr/expr.expr, deep=True,\
+                l = Constant.find_limit(powsimp(self.expr/expr.expr, deep=True,\
                 combine='exp'), s) != 0
                 if r is None:
                     r = l
@@ -166,7 +166,7 @@ class Constant(Basic):
                     if r != l:
                         return
             return r
-        obj = Order(expr, *self.symbols)
+        obj = Constant(expr, *self.symbols)
         return self.contains(obj)
 
     def _eval_subs(self, old, new):
@@ -175,13 +175,13 @@ class Constant(Basic):
         if isinstance(old, C.Symbol) and old in self.symbols:
             i = list(self.symbols).index(old)
             if isinstance(new, C.Symbol):
-                return Order(self.expr._eval_subs(old, new), *(self.symbols[:i]+(new,)+self.symbols[i+1:]))
-            return Order(self.expr._eval_subs(old, new), *(self.symbols[:i]+self.symbols[i+1:]))
-        return Order(self.expr._eval_subs(old, new), *self.symbols)
+                return Constant(self.expr._eval_subs(old, new), *(self.symbols[:i]+(new,)+self.symbols[i+1:]))
+            return Constant(self.expr._eval_subs(old, new), *(self.symbols[:i]+self.symbols[i+1:]))
+        return Constant(self.expr._eval_subs(old, new), *self.symbols)
 
 var("x")
 
-a = Order(x)
+a = Constant(x)
 print a
 print a+a
 print a*244
