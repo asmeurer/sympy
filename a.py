@@ -3,8 +3,6 @@ from sympy import *
 class Order(Basic):
     is_Order = True
 
-    __slots__ = []
-
     def __new__(cls, expr, *symbols, **assumptions):
         expr = sympify(expr).expand()
         if expr is S.NaN:
@@ -72,17 +70,6 @@ class Order(Basic):
 
         return obj
 
-    def _hashable_content(self):
-        if self.args[0].is_number:
-            return (self.args[0],)
-        return self.args
-
-    def oseries(self, order):
-        return self
-
-    def _eval_nseries(self, x, x0, n):
-        return self
-
     @classmethod
     def find_limit(cls, f, x):
         """Basically identical to:
@@ -136,11 +123,6 @@ class Order(Basic):
     @property
     def symbols(self):
         return self._args[1:]
-
-    def _eval_power(b, e):
-        if e.is_Number:
-            return Order(b.expr ** e, *b.symbols)
-        return
 
     def as_expr_symbols(self, order_symbols):
         if order_symbols is None:
