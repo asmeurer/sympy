@@ -1,6 +1,6 @@
 from sympy import *
 
-class Order(Basic):
+class Constant(Basic):
     is_Order = True
 
     def __new__(cls, expr, *symbols, **assumptions):
@@ -40,7 +40,7 @@ class Order(Basic):
                 new_symbols.append(z)
 
             if symbol_map:
-                r = Order(expr, *new_symbols, **assumptions)
+                r = Constant(expr, *new_symbols, **assumptions)
                 expr = r.expr.subs(symbol_map)
                 symbols = []
                 for s in r.symbols:
@@ -178,10 +178,6 @@ class Order(Basic):
                 return Order(self.expr._eval_subs(old, new), *(self.symbols[:i]+(new,)+self.symbols[i+1:]))
             return Order(self.expr._eval_subs(old, new), *(self.symbols[:i]+self.symbols[i+1:]))
         return Order(self.expr._eval_subs(old, new), *self.symbols)
-
-    def _sage_(self):
-        #XXX: SAGE doesn't have Order yet. Let's return 0 instead.
-        return Rational(0)._sage_()
 
 var("x")
 
