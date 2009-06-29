@@ -308,10 +308,17 @@ class Mul(AssocOp):
 
 
         # we are done
-        if len(c_part)==2 and c_part[0].is_Number and c_part[1].is_Add:
+        if len(c_part) == 2 and c_part[0].is_Number and c_part[1].is_Add:
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
             c_part = [Add(*[coeff*f for f in c_part[1].args])]
+
+        if len(c_part) == 3 and c_part[0] == S.NegativeOne and c_part[2].is_Add:
+            # Special case:
+            # (1+a)/-b -> (-1 - a)/b
+            coeff = c_part[0]
+            c_part = [Add(*[coeff*f for f in c_part[2].args])*c_part[1]]
+
 
         return c_part, nc_part, order_symbols
 
