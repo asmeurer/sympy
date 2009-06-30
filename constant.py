@@ -20,12 +20,12 @@ class Constant(Symbol):
         if other.is_Mul:
             # Mul case
             keep = []
-            for i in Mul.args:
+            for i in other.args:
                 if any((i.has(t) for t in self.args)):
                     keep.append(i)
             return Mul(self, *keep)
         else:
-            # Other case
+        # Other case
             if any((other.has(t) for t in self.args)):
                 return Mul(self,other)
             else:
@@ -35,12 +35,12 @@ class Constant(Symbol):
         if other.is_Mul:
             # Mul case
             keep = []
-            for i in Mul.args:
+            for i in other.args:
                 if any((i.has(t) for t in self.args)):
                     keep.append(i)
             return Mul(self, *keep)
         else:
-            # Other case
+       # Other case
             if any((other.has(t) for t in self.args)):
                 return Mul(self,other)
             else:
@@ -54,11 +54,22 @@ print 'y*a', y*a, y*a == a
 print 'x*a', x*a, x*a == x*a
 print 'a*y', a*y, a*y == a
 print 'a*x', a*x, a*x == x*a
+print 'y*a*x', y*a*x, y*a*x == a*x
+print 'a*y*(y+1)', a*y*(y+1), a*y*(y+1) == a
+print 'y*a*(y+1)', y*a*(y+1), y*a*(y+1) == a
+print 'x*(y*a)', x*(y*a), x*(y*a) == x*a
+print 'x*(a*y)', x*(a*y), x*(a*y) == x*a
+print 'a*(x*y)', a*(x*y), a*(x*y) == a*x
+print
+print "Failing tests:"
+print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
 print 'x*y*a', x*y*a, x*y*a == x*a
 print 'a*x*y', a*x*y, a*x*y == a*x
 print 'y*x*a', y*x*a, y*x*a == x*a
 print 'x*a*y', x*a*y, x*a*y == x*a
-print 'y*a*x', y*a*x, y*a*x == a*x
-print 'a*y*(y+1)', a*y*(y+1), a*y*(y+1) == a
-print 'y*a*(y+1)', y*a*(y+1), y*a*(y+1) == a
-print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
+print '(x*y)*a', (x*y)*a, (x*y)*a == x*a
+print '(a*x)*y', (a*x)*y, (a*x)*y == a*x
+print '(y*x)*a', (y*x)*a, (y*x)*a == x*a
+print 'y*(x*a)', y*(x*a), y*(x*a) == x*a
+print '(x*a)*y', (x*a)*y, (x*a)*y == x*a
+
