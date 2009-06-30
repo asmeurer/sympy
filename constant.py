@@ -14,7 +14,7 @@ class Constant(Symbol):
 
     def __new__(cls, name, *args, **assumptions):
         args = map(sympify, args)
-        return Basic.__new__(cls, args)
+        return Basic.__new__(cls, *args)
 
     def __mul__(self, other):
         if other.is_Mul:
@@ -26,7 +26,7 @@ class Constant(Symbol):
             return Mul(self, *keep)
         else:
             # Other case
-            if any((other.has(*t) for t in self.args)):
+            if any((other.has(t) for t in self.args)):
                 return Mul(self,other)
             else:
                 return self
@@ -41,7 +41,7 @@ class Constant(Symbol):
             return Mul(self, *keep)
         else:
             # Other case
-            if any((other.has(*t) for t in self.args)):
+            if any((other.has(t) for t in self.args)):
                 return Mul(self,other)
             else:
                 return self
@@ -50,15 +50,15 @@ x = Symbol('x')
 y = Symbol('y')
 a = Constant('C',x)
 # We want a (Constant) below to absorb the y's, but not the x's
-print 'y*a', y*a
-print 'x*a', x*a
-print 'a*y', a*y
-print 'a*x', a*x
-print 'x*y*a', x*y*a
-print 'a*x*y', a*x*y
-print 'x*y*a', x*y*a
-print 'x*a*y', x*a*y
-print 'y*a*x', y*a*x
-print 'a*y*(y+1)', a*y*(y+1)
-print 'y*a*(y+1)', a*y*(y+1)
-print 'y*(y+1)*a', y*(y+1)*a
+print 'y*a', y*a, y*a == a
+print 'x*a', x*a, x*a == x*a
+print 'a*y', a*y, a*y == a
+print 'a*x', a*x, a*x == x*a
+print 'x*y*a', x*y*a, x*y*a == x*a
+print 'a*x*y', a*x*y, a*x*y == a*x
+print 'y*x*a', y*x*a, y*x*a == x*a
+print 'x*a*y', x*a*y, x*a*y == x*a
+print 'y*a*x', y*a*x, y*a*x == a*x
+print 'a*y*(y+1)', a*y*(y+1), a*y*(y+1) == a
+print 'y*a*(y+1)', y*a*(y+1), y*a*(y+1) == a
+print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
