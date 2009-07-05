@@ -658,7 +658,11 @@ class Basic(AssumeMeths):
 
     @_sympifyit('other', NotImplemented)
     def __mul__(self, other):
-        return Mul(self, other)
+        if isinstance(other, Basic) and hasattr(other, '__rmul__'):
+            return other.__rmul__(self)
+        else:
+            return Mul(self, other)
+
     @_sympifyit('other', NotImplemented)
     def __rmul__(self, other):
         return Mul(other, self)

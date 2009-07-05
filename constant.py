@@ -17,6 +17,7 @@ class Constant(Symbol):
         return Basic.__new__(cls, *args)
 
     def __mul__(self, other):
+        print 'mul', self, other
         if other.is_Mul:
             # Mul case
             keep = []
@@ -32,6 +33,7 @@ class Constant(Symbol):
                 return self
 
     def __rmul__(self, other):
+        print 'rmul'
         if other.is_Mul:
             # Mul case
             keep = []
@@ -55,21 +57,22 @@ print 'x*a', x*a, x*a == x*a
 print 'a*y', a*y, a*y == a
 print 'a*x', a*x, a*x == x*a
 print 'y*a*x', y*a*x, y*a*x == a*x
+print 'x*y*a', x*y*a, x*y*a == x*a
+print 'y*x*a', y*x*a, y*x*a == x*a
 print 'a*y*(y+1)', a*y*(y+1), a*y*(y+1) == a
 print 'y*a*(y+1)', y*a*(y+1), y*a*(y+1) == a
 print 'x*(y*a)', x*(y*a), x*(y*a) == x*a
 print 'x*(a*y)', x*(a*y), x*(a*y) == x*a
 print 'a*(x*y)', a*(x*y), a*(x*y) == a*x
+print '(x*y)*a', (x*y)*a, (x*y)*a == x*a
+print '(y*x)*a', (y*x)*a, (y*x)*a == x*a
+print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
 print
 print "Failing tests:"
-print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
-print 'x*y*a', x*y*a, x*y*a == x*a
 print 'a*x*y', a*x*y, a*x*y == a*x
-print 'y*x*a', y*x*a, y*x*a == x*a
 print 'x*a*y', x*a*y, x*a*y == x*a
-print '(x*y)*a', (x*y)*a, (x*y)*a == x*a
 print '(a*x)*y', (a*x)*y, (a*x)*y == a*x
-print '(y*x)*a', (y*x)*a, (y*x)*a == x*a
 print 'y*(x*a)', y*(x*a), y*(x*a) == x*a
 print '(x*a)*y', (x*a)*y, (x*a)*y == x*a
-
+print
+print 'a*x*y', a*x*y
