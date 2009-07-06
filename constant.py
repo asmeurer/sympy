@@ -41,3 +41,5 @@ print 'x*C*y', x*C*y, x*C*y == x*C
 print '(C*x)*y', (C*x)*y, (C*x)*y == C*x
 print 'y*(x*C)', y*(x*C), y*(x*C) == x*C
 print '(x*C)*y', (x*C)*y, (x*C)*y == x*C
+print
+print 2*(C+y)

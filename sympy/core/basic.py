@@ -285,6 +285,7 @@ class Basic(AssumeMeths):
     is_NumberSymbol = False
     is_Order = False
     is_Derivative   = False
+    is_Constant = False
 
     def __new__(cls, *args, **assumptions):
         obj = object.__new__(cls)

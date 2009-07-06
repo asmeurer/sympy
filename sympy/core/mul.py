@@ -41,6 +41,8 @@ class Mul(AssocOp):
                             # e.g.  (3, y)  for  ... * 3  * ...
 
         order_symbols = None
+        
+        Constants = []
 
 
 
@@ -59,8 +61,10 @@ class Mul(AssocOp):
             if o.is_Order:
                 o, order_symbols = o.as_expr_symbols(order_symbols)
 
-#            if o.is_Constant:
-
+            if o.is_Constant:
+                # Separate Constants to simplify them later
+                Constants.append(o)
+                continue
 
             # Mul([...])
             if o.is_Mul:
@@ -309,7 +313,13 @@ class Mul(AssocOp):
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
             c_part = [Add(*[coeff*f for f in c_part[1].args])]
-
+        
+        # Now that we have simplified everything else, try simplifying Constants
+        if Constants:
+            # First, simplify constants with respect to themselves:
+            for i in Constants:
+                # The idea is that C(x, y) will 
+                pass
         return c_part, nc_part, order_symbols
 
 
