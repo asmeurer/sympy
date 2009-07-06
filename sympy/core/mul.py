@@ -59,6 +59,9 @@ class Mul(AssocOp):
             if o.is_Order:
                 o, order_symbols = o.as_expr_symbols(order_symbols)
 
+#            if o.is_Constant:
+
+
             # Mul([...])
             if o.is_Mul:
                 if o.is_commutative:

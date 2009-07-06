@@ -16,63 +16,28 @@ class Constant(Symbol):
         args = map(sympify, args)
         return Basic.__new__(cls, *args)
 
-    def __mul__(self, other):
-        print 'mul', self, other
-        if other.is_Mul:
-            # Mul case
-            keep = []
-            for i in other.args:
-                if any((i.has(t) for t in self.args)):
-                    keep.append(i)
-            return Mul(self, *keep)
-        else:
-        # Other case
-            if any((other.has(t) for t in self.args)):
-                return Mul(self,other)
-            else:
-                return self
-
-    def __rmul__(self, other):
-        print 'rmul'
-        if other.is_Mul:
-            # Mul case
-            keep = []
-            for i in other.args:
-                if any((i.has(t) for t in self.args)):
-                    keep.append(i)
-            return Mul(self, *keep)
-        else:
-       # Other case
-            if any((other.has(t) for t in self.args)):
-                return Mul(self,other)
-            else:
-                return self
 
 x = Symbol('x')
 y = Symbol('y')
-a = Constant('C',x)
-# We want a (Constant) below to absorb the y's, but not the x's
-print 'y*a', y*a, y*a == a
-print 'x*a', x*a, x*a == x*a
-print 'a*y', a*y, a*y == a
-print 'a*x', a*x, a*x == x*a
-print 'y*a*x', y*a*x, y*a*x == a*x
-print 'x*y*a', x*y*a, x*y*a == x*a
-print 'y*x*a', y*x*a, y*x*a == x*a
-print 'a*y*(y+1)', a*y*(y+1), a*y*(y+1) == a
-print 'y*a*(y+1)', y*a*(y+1), y*a*(y+1) == a
-print 'x*(y*a)', x*(y*a), x*(y*a) == x*a
-print 'x*(a*y)', x*(a*y), x*(a*y) == x*a
-print 'a*(x*y)', a*(x*y), a*(x*y) == a*x
-print '(x*y)*a', (x*y)*a, (x*y)*a == x*a
-print '(y*x)*a', (y*x)*a, (y*x)*a == x*a
-print 'y*(y+1)*a', y*(y+1)*a, y*(y+1)*a == a
-print
-print "Failing tests:"
-print 'a*x*y', a*x*y, a*x*y == a*x
-print 'x*a*y', x*a*y, x*a*y == x*a
-print '(a*x)*y', (a*x)*y, (a*x)*y == a*x
-print 'y*(x*a)', y*(x*a), y*(x*a) == x*a
-print '(x*a)*y', (x*a)*y, (x*a)*y == x*a
-print
-print 'a*x*y', a*x*y
+C = Constant('C',x)
+# We want C (Constant) below to absorb the y's, but not the x's
+print 'y*C', y*C, y*C == C
+print 'x*C', x*C, x*C == x*C
+print 'C*y', C*y, C*y == C
+print 'C*x', C*x, C*x == x*C
+print 'y*C*x', y*C*x, y*C*x == C*x
+print 'x*y*C', x*y*C, x*y*C == x*C
+print 'y*x*C', y*x*C, y*x*C == x*C
+print 'C*y*(y+1)', C*y*(y+1), C*y*(y+1) == C
+print 'y*C*(y+1)', y*C*(y+1), y*C*(y+1) == C
+print 'x*(y*C)', x*(y*C), x*(y*C) == x*C
+print 'x*(C*y)', x*(C*y), x*(C*y) == x*C
+print 'C*(x*y)', C*(x*y), C*(x*y) == C*x
+print '(x*y)*C', (x*y)*C, (x*y)*C == x*C
+print '(y*x)*C', (y*x)*C, (y*x)*C == x*C
+print 'y*(y+1)*C', y*(y+1)*C, y*(y+1)*C == C
+print 'C*x*y', C*x*y, C*x*y == C*x
+print 'x*C*y', x*C*y, x*C*y == x*C
+print '(C*x)*y', (C*x)*y, (C*x)*y == C*x
+print 'y*(x*C)', y*(x*C), y*(x*C) == x*C
+print '(x*C)*y', (x*C)*y, (x*C)*y == x*C
