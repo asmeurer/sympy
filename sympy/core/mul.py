@@ -42,7 +42,7 @@ class Mul(AssocOp):
 
         order_symbols = None
         
-        Constants = []
+        constants = []
 
 
 
@@ -63,7 +63,7 @@ class Mul(AssocOp):
 
             if o.is_Constant:
                 # Separate Constants to simplify them later
-                Constants.append(o)
+                constants.append(o)
                 continue
 
             # Mul([...])
@@ -315,11 +315,31 @@ class Mul(AssocOp):
             c_part = [Add(*[coeff*f for f in c_part[1].args])]
         
         # Now that we have simplified everything else, try simplifying Constants
-        if Constants:
+        if constants:
+            print constants
             # First, simplify constants with respect to themselves:
-            for i in Constants:
-                # The idea is that C(x, y) will 
-                pass
+            constantsymbols = set()
+            for i in constants:
+                # The idea is that, if for example, C1 is independent of x
+                # and C2 is independent of y, then C1*C2 will just be independent
+                # of both.  So we can combine all constants into one, which
+                # is independent of everything that they all are independent of.
+                # We arbitrarily combine them into the one given first
+                # (which is actually the last one in the list).
+                for j in i.args:
+                    constantsymbols.add(j)
+            constantsymbols = tuple(constantsymbols)
+            constant = constants[len(constants) - 1].new(
+            constants[len(constants) - 1].name, *constantsymbols)
+
+            # Next, we "absorb" anything that doesn't have any of the symbols
+            # the constant is independent of into the constant.
+            new_c_part = [constant]
+            for i in c_part:
+                if any(((t in i) for t in constantsymbols)):
+                    new_c_part.append(i)
+            c_part = new_c_part
+
         return c_part, nc_part, order_symbols
 
 
