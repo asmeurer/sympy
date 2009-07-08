@@ -172,7 +172,7 @@ class Add(AssocOp):
                 if any(((t in i) for t in constantsymbols)):
                     cons_seq.append(i)
             newseq = cons_seq
-
+            coeff = S.Zero # Constants always absorb numbers
         
         # order args canonically
         # Currently we sort things using hashes, as it is quite fast. A better

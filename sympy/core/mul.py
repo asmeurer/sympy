@@ -330,7 +330,7 @@ class Mul(AssocOp):
                     constantsymbols.add(j)
             constantsymbols = tuple(constantsymbols)
             constant = constants[0].new(constants[0].name, *constantsymbols)
-            # TODO: combine assumptions (using new assumptions system)
+            # TODO: combine assumptions (preferably using new assumptions system)
 
             # Next, we "absorb" anything that doesn't have any of the symbols
             # the constant is independent of into the constant.

@@ -71,4 +71,5 @@ print 'C+2', C+2, C+2 == C
 print '2+C', 2+C, 2+C == C
 print 'C+y', C+y, C+y == C
 print 'C+x', C+x, C+x == Constant('C', x) + x
+print 'C+x+y+x*y+2', C+x+y+x*y+2, C+x+y+x*y+2 == C+x+x*y
 
