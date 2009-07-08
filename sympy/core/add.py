@@ -25,6 +25,8 @@ class Add(AssocOp):
         coeff = S.Zero  # standalone term
                         # e.g. 3 + ...
         order_factors = []
+        
+        constants = []
 
         for o in seq:
 
@@ -37,6 +39,11 @@ class Add(AssocOp):
                 if o is None:
                     continue
                 order_factors = [o]+[o1 for o1 in order_factors if not o.contains(o1)]
+                continue
+
+            # C1
+            elif o.is_Constant:
+                constants.append(o)
                 continue
 
             # 3
@@ -139,7 +146,34 @@ class Add(AssocOp):
                     coeff = S.Zero
                     break
 
+        # Simplify Constants.  This code is nearly identical to code from Mul
+        if constants:
+            #print 'newseq', newseq
+            #print 'seq', seq
+            # First, simplify constants with respect to themselves:
+            constantsymbols = set()
+            for i in constants:
+                # The idea is that, if for example, C1 is independent of x
+                # and C2 is independent of y, then C1*C2 will just be independent
+                # of both.  So we can combine all constants into one, which
+                # is independent of everything that they all are independent of.
+                # We arbitrarily combine them into the one given first
+                # (which is actually the last one in the list).
+                for j in i.args:
+                    constantsymbols.add(j)
+            constantsymbols = tuple(constantsymbols)
+            constant = constants[0].new(constants[0].name, *constantsymbols)
+            # TODO: combine assumptions (using new assumptions system)
 
+            # Next, we "absorb" anything that doesn't have any of the symbols
+            # the constant is independent of into the constant.
+            cons_seq = [constant]
+            for i in newseq:
+                if any(((t in i) for t in constantsymbols)):
+                    cons_seq.append(i)
+            newseq = cons_seq
+
+        
         # order args canonically
         # Currently we sort things using hashes, as it is quite fast. A better
         # solution is not to sort things at all - but this needs some more

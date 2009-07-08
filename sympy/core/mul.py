@@ -61,10 +61,6 @@ class Mul(AssocOp):
             if o.is_Order:
                 o, order_symbols = o.as_expr_symbols(order_symbols)
 
-            if o.is_Constant:
-                # Separate Constants to simplify them later
-                constants.append(o)
-                continue
 
             # Mul([...])
             if o.is_Mul:
@@ -83,6 +79,11 @@ class Mul(AssocOp):
                     # process scheduled non-commutative objects
                     seq.append(NC_Marker)
 
+                continue
+
+            if o.is_Constant:
+                # Separate Constants to simplify them later
+                constants.append(o)
                 continue
 
             # 3
@@ -316,7 +317,6 @@ class Mul(AssocOp):
         
         # Now that we have simplified everything else, try simplifying Constants
         if constants:
-            print constants
             # First, simplify constants with respect to themselves:
             constantsymbols = set()
             for i in constants:
@@ -329,8 +329,8 @@ class Mul(AssocOp):
                 for j in i.args:
                     constantsymbols.add(j)
             constantsymbols = tuple(constantsymbols)
-            constant = constants[len(constants) - 1].new(
-            constants[len(constants) - 1].name, *constantsymbols)
+            constant = constants[0].new(constants[0].name, *constantsymbols)
+            # TODO: combine assumptions (using new assumptions system)
 
             # Next, we "absorb" anything that doesn't have any of the symbols
             # the constant is independent of into the constant.
