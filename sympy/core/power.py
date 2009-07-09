@@ -92,6 +92,9 @@ class Pow(Basic):
         return self._args[1]
 
     def _eval_power(self, other):
+        print self, other
+        if self.base.is_Constant or self.exp.is_Constant or other.is_Constant:
+            return _eval_power_constant(self, other)
         if other == S.NegativeOne:
             return Pow(self.base, self.exp * other)
         if self.exp.is_integer and other.is_integer:
@@ -103,6 +106,27 @@ class Pow(Basic):
         if self.exp.is_real and other.is_real and abs(self.exp) < S.One:
             return Pow(self.base, self.exp * other)
         return
+    
+    def _eval_power_constant(self, other):
+        # First combine constants together.  
+        if self.base.is_Constant and self.exp.is_Constant:
+            constantsymbols = set(self.base.args).union(set(self.exp.args))
+            if other.is_Constant:
+                constantsymbols = constantsymbols.union(other.args)
+                return self.base.new(self.base.name, constantsymbols)
+            else:
+                return Pow(self.base.new(self.base.name, constantsymbols),
+                other)
+        # Then combine constant with other terms. If we combine self.base
+        # into self.exp and return Pow(self.<constant term>, other)
+        # other should be simplified into self (if necessary) in the next
+        # pass.  If self.base is Constant, self.exp doesn't combine into
+        # self.base and other does, it will not combine.  The same for the
+        # other way around.  e.g., C**2**x and x**2**C, where C does not
+        # absorb x, will be left alone.
+        if self.base.is_Constant and not any((t in self.exp) for
+        t in self.base.args):
+            return Pow(self.base, other)
 
     def _eval_is_comparable(self):
         c1 = self.base.is_comparable

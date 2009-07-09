@@ -1,4 +1,4 @@
-from sympy import Basic, Symbol, S, sympify, any, Mul, sin
+from sympy import Basic, Symbol, S, sympify, any, Mul, sin, Pow
 
 
 class Constant(Symbol):
@@ -21,6 +21,18 @@ class Constant(Symbol):
     
     def __str__(self):
         return self.name
+    
+    def _eval_power(self, other):
+        # First combine constants together.  
+        if other.is_Constant:
+            constantsymbols = set(self.args).union(set(other.args))
+            return self.new(self.name, *constantsymbols)
+        # Then combine constant with other terms. 
+        if not any((t in other) for t in self.args):
+            return self
+        else:
+            return None
+
 
 
 x = Symbol('x')
@@ -72,4 +84,14 @@ print '2+C', 2+C, 2+C == C
 print 'C+y', C+y, C+y == C
 print 'C+x', C+x, C+x == Constant('C', x) + x
 print 'C+x+y+x*y+2', C+x+y+x*y+2, C+x+y+x*y+2 == C+x+x*y
-
+print 
+print 'C**C', C**C, C**C == C
+print 'Pow(C,C)', Pow(C,C), Pow(C,C) == C
+print 'C0**C1', C0**C1, C0**C1 == Constant('C0', x, y, z)
+print 'C1**C0', C1**C0, C1**C0 == Constant('C1', x, y, z)
+print 'C**y', C**y, C**y == C
+print 'C**x', C**x, C**x == Constant('C', x)**x
+print 'C**2', C**2, C**2 == C
+print 'C**(x*y)', C**(x*y) == Constant('C', x)**(x*y)
+print 'x**C', x**C, x**C == x**Constant('C', x)
+print 'y**C', y**C, y**C == C
