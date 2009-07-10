@@ -121,4 +121,4 @@ print '2**C', 2**C, 2**C == C
 print 'S(2)**C', S(2)**C, S(2)**C == C
 print 'exp(C)', exp(C), exp(C) == C
 print 'exp(C+x)', exp(C+x), exp(C+x) == exp(C+x)
-print 'sin(C)', sin(C), sin(C) == C
+#print 'sin(C)', sin(C), sin(C) == C
