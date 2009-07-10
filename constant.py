@@ -1,4 +1,7 @@
-from sympy import Basic, Symbol, S, sympify, any, Mul, sin, Pow
+from sympy import Basic, Symbol, S, sympify, any, Mul, Pow
+from sympy.core.sympify import _sympifyit
+# remove the following. They are only for tests
+from sympy import sin, exp
 
 
 class Constant(Symbol):
@@ -25,6 +28,8 @@ class Constant(Symbol):
     def _eval_power(self, other):
         # First combine constants together.  
         if other.is_Constant:
+            # the same as in __rpow__ below, but is needed for direct call to 
+            # Pow(C1, C2)
             constantsymbols = set(self.args).union(set(other.args))
             return self.new(self.name, *constantsymbols)
         # Then combine constant with other terms. 
@@ -33,6 +38,17 @@ class Constant(Symbol):
         else:
             return None
 
+    @_sympifyit('other', NotImplemented)
+    def __rpow__(self, other):
+        # other**self
+        if other.is_Constant:
+            constantsymbols = set(self.args).union(set(other.args))
+            print 'rpow test'
+            return other.new(other.name, *constantsymbols)
+        if not any((t in other) for t in self.args):
+            return self
+        else:
+            return Pow(other, self)
 
 
 x = Symbol('x')
@@ -95,3 +111,14 @@ print 'C**2', C**2, C**2 == C
 print 'C**(x*y)', C**(x*y) == Constant('C', x)**(x*y)
 print 'x**C', x**C, x**C == x**Constant('C', x)
 print 'y**C', y**C, y**C == C
+print 'x**y**C', x**y**C, x**y**C == x**C
+print '(x**y)**C', (x**y)**C, (x**y)**C == (x**y)**Constant('C', x)
+print 'x**(y**C)', x**(y**C), x**(y**C) == x**C
+print 'x**C**y', x**C**y, x**C**y, x**C**y == x**C
+print 'x**(C**y)', x**(C**y), x**(C**y) == x**C
+print '(x**C)**y', (x**C)**y, (x**C)**y == (x**Constant('C', x))**y
+print '2**C', 2**C, 2**C == C
+print 'S(2)**C', S(2)**C, S(2)**C == C
+print 'exp(C)', exp(C), exp(C) == C
+print 'exp(C+x)', exp(C+x), exp(C+x) == exp(C+x)
+print 'sin(C)', sin(C), sin(C) == C
