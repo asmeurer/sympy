@@ -52,6 +52,7 @@ def test_constant_add():
     assert C+y == C
     assert C+x == Constant('C', x) + x
     assert C+x+y+x*y+2 == C+x+x*y
+    assert C+x+2**x+y+2 == C+x+2**x
 
 def test_constant_power_as_base():
     assert C**C == C
