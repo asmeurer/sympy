@@ -37,6 +37,7 @@ from numbers import Rational, Integer
 from symbol import Symbol
 from multidimensional import vectorize
 from sympy.utilities.decorator import deprecated
+from sympy.utilities.iterables import any
 
 from sympy import mpmath
 
@@ -143,6 +144,25 @@ class Function(Basic):
             r = Basic.__new__(cls, *args, **options)
             r.nargs = len(args)
             return r
+        if any(t.is_Constant for t in args):
+            # We know that there are Constants in the args, so find them.
+            # We combine the constantsymbols of each, and if not other args
+            # contain those symbols, we returns a new Consant with those symbols.
+            # Otherwise, do not simplify.
+            constantsymbols = set([])
+            othersymbols = set([])
+            first = None
+            for i in args:
+                if i .is_Constant:
+                    if first == None:
+                        first = i # the first Constant is what we absorb into
+                    constantsymbols.union(set(i.args))
+                else:
+                    othersymbols.union(i.atoms(Symbol))
+            if constantsymbols.intersection(othersymbols):
+                pass
+            else:   
+                return first.new(first.name, tuple(constantsymbols))
         return Basic.__new__(cls, *args, **options)
 
     @property

@@ -5,6 +5,7 @@ from cache import cacheit
 from logic import fuzzy_not
 
 from symbol import Symbol
+from sympy.utilities.iterables import any
 
 # internal marker to indicate:
 #   "there are still non-commutative objects -- don't forget to processe them"

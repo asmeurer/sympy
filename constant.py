@@ -1,5 +1,5 @@
 from sympy import Basic, Symbol, S, sympify, any, Mul, Pow
-from sympy.core.sympify import _sympifyit
+from sympy.core.decorators import _sympifyit
 # remove the following. They are only for tests
 from sympy import sin, exp
 
@@ -121,4 +121,11 @@ print '2**C', 2**C, 2**C == C
 print 'S(2)**C', S(2)**C, S(2)**C == C
 print 'exp(C)', exp(C), exp(C) == C
 print 'exp(C+x)', exp(C+x), exp(C+x) == exp(C+x)
-#print 'sin(C)', sin(C), sin(C) == C
+print 'sin(C)', sin(C), sin(C) == C
+f = Function('f')
+print 'f(C)', f(C), f(C) == C
+print 'f(C, C1)', f(C, C1), f(C, C1) == Constant('C', x, z)
+print 'f(C, x)', f(C, x), f(C, x) == f(Constant('C', x), x)
+print 'f(C, C1, x)', f(C, C1, x), f(C, C1, x) == f(Constant('C', x), Constant('C1', x, z), x)
+print 'f(C, y)', f(C, y), f(C, y) == C
+print 'f(C, C1, y)', f(C, C1, y), f(C, C1, y) == Constant('C', x, z)

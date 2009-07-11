@@ -1662,8 +1662,14 @@ class Basic(AssumeMeths):
            >>> (2*I).as_coefficient(pi*I)
 
         """
+        from sympy.utilities.iterables import any
         if expr.is_Add:
             return None
+        elif self.is_Constant:
+            if any((i in expr) for i in self.args):
+               return None
+            else:
+                return self
         else:
             w = Wild('w')
 

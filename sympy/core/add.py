@@ -2,6 +2,7 @@ from basic import Basic, S, C
 from operations import AssocOp
 from cache import cacheit
 from symbol import Symbol
+from sympy.utilities.iterables import any
 
 class Add(AssocOp):
 
