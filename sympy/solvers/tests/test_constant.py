@@ -44,6 +44,7 @@ def test_constant_mul():
     assert C1.name == 'C1'
     assert C1*C1 == Constant('C1', x, z)
     assert C0*C1*C2 == Constant('C0', x, y, z)
+    assert C*x*2**x != C*x
 
 def test_constant_add():
     assert C+C == C
