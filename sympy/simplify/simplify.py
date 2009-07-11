@@ -1382,8 +1382,7 @@ def logcombine(expr, assume_pos_real=False):
     """
     # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).  This needs to be a
     # separate function call to avoid infinite recursion.
-    if not expr.has(C.Integral): # This is to work around to issue 1445
-        expr = expand(expr)
+    expr = expand_mul(expr, deep=False)
     return _logcombine(expr, assume_pos_real)
 
 def _logcombine(expr, assume_pos_real=False):
@@ -1417,7 +1416,7 @@ def _logcombine(expr, assume_pos_real=False):
         # take logs apart :)
         right = retval.lhs.extract_additively(expr.lhs)
         if right:
-            return Equality(expr.lhs, logcombine(-right))
+            return Equality(expr.lhs, _logcombine(-right, assume_pos_real))
         else:
             return retval
 
@@ -1429,8 +1428,7 @@ def _logcombine(expr, assume_pos_real=False):
             if isinstance(i, log):
                 if (i.args[0].is_positive or (assume_pos_real and not \
                 i.args[0].is_nonpositive)):
-                    argslist *= _logcombine(i.args[0], assume_pos_real=\
-                    assume_pos_real)
+                    argslist *= _logcombine(i.args[0], assume_pos_real)
                 else:
                     notlogs += i
             elif i.is_Mul and any(map(lambda t: getattr(t,'func', False)==log,\

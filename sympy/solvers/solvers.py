@@ -23,12 +23,12 @@ from sympy.core.relational import Equality
 from sympy.core.function import Derivative, diff, Function
 from sympy.core.numbers import ilcm
 
-from sympy.functions import sqrt, log, exp, LambertW
-from sympy.simplify import simplify, collect, logcombine
+from sympy.functions import sqrt, log, exp, LambertW, sin, cos
+from sympy.simplify import simplify, collect, logcombine, separatevars
 from sympy.matrices import Matrix, zeros
 from sympy.polys import roots
 
-from sympy.utilities import any, all
+from sympy.utilities import any, all, numbered_symbols
 from sympy.utilities.lambdify import lambdify
 from sympy.mpmath import findroot
 
@@ -582,6 +582,8 @@ def dsolve(eq, funcs):
         else:
             f = funcs
 
+        if len(f.args) != 1:
+            raise NotImplementedError("Only functions of one variable are supported")
         x = f.args[0]
         f = f.func
 
@@ -592,14 +594,55 @@ def dsolve(eq, funcs):
         #order odes can be handled.
         order = deriv_degree(eq, f(x))
 
-        if  order > 2 :
+        #if order > 1:
+         #   return solve_ODE_higher_order(eq, f(x), order)
+        if  order > 2:
            raise NotImplementedError("dsolve: Cannot solve " + str(eq))
         elif order == 2:
             return solve_ODE_second_order(eq, f(x))
         elif order == 1:
             return solve_ODE_first_order(eq, f(x))
         else:
-            raise NotImplementedError("Not a differential equation!")
+            raise NotImplementedError("Not a differential equation.")
+
+def classify_ode(expr, func):
+    """
+    Returns a tuple of possible dsolve classifications.
+
+    The first item in the tuple is the classification that dsolve uses to solve
+    the ode by default.  To make dsolve use a different classification, use
+    dsolve(ode, func, hint=<classification>).  To make dsolve apply all relevant
+    classification hints, use dsolve(ode, func, hint="all").  This will return
+    a dictionary of each method with its corresponding solution.  To have dsolve
+    try all methods and return the simplest one, use dsolve(ode, func,
+    hint="best").   This takes into account whether the solution is solvable in
+    the function, whether it contains any Integral classes, and which one is the
+    shortest in size.
+
+    Some classifications are duplicated with the word _alt at the end.  This
+    means that the dsolve method for that classification can produce more than
+    one solution.  Use the _alt classification to obtain the non-default
+    solution.  For example, first order differential equations with homogeneous
+    coefficients will return both "1st_homogeneous_coeff" and
+    "1st_homogeneous_coeff_alt".
+
+    Because all solutions should be mathematically equivalent, some dsolve hints
+    may return the exact same result for an ode.  Often, though, two different
+    hints will return the same solution formatted differently.  The two should
+    be equivalent.
+    """
+    # A list of hints in the order that they should be applied.  That means
+    # that, in general, hints earlier in the list should produce simpler results
+    # than those later for odes that fit both.  This is just based on my own
+    # empirical observations, so if you find that *in general*, a hint later in
+    # the list is better than one before it, fell free to modify the list.  Note
+    # however that you can easily override in dsolve (see the docstring).
+    hints = ("separable", "exact", "1st_linear", "Bernoulli",\
+    "1st_homogeneous_coeff", "1st_homogeneous_coeff_alt", "nth_homogeneous")
+
+    # This will have to wait for nth order homogeneous because I will need to
+    # clean up solve_ODE_second_order and solve_ODE_1 first.
+
 
 def deriv_degree(expr, func):
     """ get the order of a given ode, the function is implemented
@@ -633,7 +676,7 @@ def solve_ODE_first_order(eq, f):
     f = f.func
     C1 = Symbol('C1')
 
-    #linear case: a(x)*f'(x)+b(x)*f(x)+c(x) = 0
+    # Linear case: a(x)*y'+b(x)*y+c(x) == 0
     a = Wild('a', exclude=[f(x)])
     b = Wild('b', exclude=[f(x)])
     c = Wild('c', exclude=[f(x)])
@@ -644,7 +687,7 @@ def solve_ODE_first_order(eq, f):
         tt = integrate(t*(-r[c]/r[a]), x)
         return Equality(f(x),(tt + C1)/t)
 
-    # Bernoulli case: a(x)*f'(x)+b(x)*f(x)+c(x)*f(x)^n = 0
+    # Bernoulli case: a(x)*y'+b(x)*y+c(x)*y**n == 0
     n = Wild('n', exclude=[f(x)])
 
     r = eq.match(a*diff(f(x),x) + b*f(x) + c*f(x)**n)
@@ -654,18 +697,30 @@ def solve_ODE_first_order(eq, f):
             t = C.exp((1-r[n])*integrate(r[b]/r[a],x))
             tt = (r[n]-1)*integrate(t*r[c]/r[a],x)
             return Equality(f(x),((tt + C1)/t)**(1/(1-r[n])))
-        if r[n] == 1:
-            return Equality(f(x),C1*exp(integrate(-(r[b]+r[c]), x)))
+        #if r[n] == 1:
+         #   return Equality(f(x),C1*exp(integrate(-(r[b]+r[c]), x)))
 
-    # Exact Differential Equation: P(x,y)+Q(x,y)*y'=0 where dP/dy == dQ/dx
     a = Wild('a', exclude=[f(x).diff(x)])
     b = Wild('b', exclude=[f(x).diff(x)])
     r = eq.match(a+b*diff(f(x),x))
+    # This match is used for several cases below.
     if r:
         y = Symbol('y', dummy=True)
         r[a] = r[a].subs(f(x),y)
         r[b] = r[b].subs(f(x),y)
 
+        # Separable Case: y' == P(y)*Q(x)
+        r[a] = separatevars(r[a])
+        r[b] = separatevars(r[b])
+        # m1[coeff]*m1[x]*m1[y] + m2[coeff]*m2[x]*m2[y]*y'
+        m1 = separatevars(r[a], dict=True, symbols=(x, y))
+        m2 = separatevars(r[b], dict=True, symbols=(x, y))
+
+        if m1 and m2:
+            print 'separable'
+            return Equality(integrate(m2['coeff']*m2[y]/m1[y], y).subs(y, f(x)),\
+            integrate(-m1['coeff']*m1[x]/m2[x], x)+C1)
+        # Exact Differential Equation: P(x,y)+Q(x,y)*y'=0 where dP/dy == dQ/dx
         if simplify(r[a].diff(y)) == simplify(r[b].diff(x)) and r[a]!=0:
             x0 = Symbol('x0', dummy=True)
             y0 = Symbol('y0', dummy=True)
@@ -690,8 +745,8 @@ def solve_ODE_first_order(eq, f):
                 else:
                     return Equality(f(x),sol1[0].subs(y,f(x)))
 
-    # First order equation with homogeneous coefficients.
-        # This uses the same match from Exact above.
+        # First order equation with homogeneous coefficients:
+        # dy/dx == F(y/x) or dy/dx == F(x/y)
         ordera = homogeneous_order(r[a], x, y)
         orderb = homogeneous_order(r[b], x, y)
         if ordera == orderb and ordera != None:
@@ -735,9 +790,9 @@ def solve_ODE_first_order(eq, f):
                     sol1sr = map((lambda t: Equality(f(x), t.subs({u1:f(x)/x,\
                     y:f(x)}))), sol1s)
                     if len(sol1sr) == 1:
-                        return sol1sr[0]
+                        return logcombine(sol1sr[0], assume_pos_real=True)
                     else:
-                        return sol1sr
+                        return [logcombine(t, assume_pos_real=True) for t in sol1sr]
             # Second, try to return an evaluated integral:
             if sol1.has(C.Integral):
                 return sol2
@@ -756,9 +811,9 @@ def solve_ODE_first_order(eq, f):
                 sol1sr = map((lambda t: Equality(f(x), t.subs({u1:f(x)/x,\
                 y:f(x)}))), sol1s)
                 if len(sol1sr) == 1:
-                    return sol1sr[0]
+                    return logcombine(sol1sr[0], assume_pos_real=True)
                 else:
-                    return sol1sr
+                    return [logcombine(t, assume_pos_real=True) for t in sol1sr]
             try:
                 sol2s = map((lambda t: t.subs(y, f(x))),\
                 solve(sol2.lhs.subs(f(x),y)-sol2.rhs.subs(f(x),y), y))
@@ -770,20 +825,61 @@ def solve_ODE_first_order(eq, f):
                 sol2sr = map((lambda t: Equality(f(x), t.subs({u2:x/f(x),\
                 y:f(x)}))), sol2s)
                 if len(sol2sr) == 1:
-                    return sol2sr[0]
+                    return logcombine(sol2sr[0], assume_pos_real=True)
                 else:
-                    return sol2srs
-            # Finaly, try to return the shortest expression, naively computed
+                    return [logcombine(t, assume_pos_real=True) for t in sol2srs]
+
+            # Finally, try to return the shortest expression, naively computed
             # based on the length of the string version of the expression.  This
             # may favor combined fractions because they will not have duplicate
             # denominators, and may slightly favor expressions with fewer
-            # additions and subtractions, as those are seperated by spaces by
+            # additions and subtractions, as those are separated by spaces by
             # the printer.
             return min(sol1, sol2, key=(lambda x: len(str(x))))
 
     # Other cases of first order odes will be implemented here
 
     raise NotImplementedError("solve_ODE_first_order: Cannot solve " + str(eq))
+
+def solve_ODE_higher_order(eq, f, order):
+    x = f.args[0]
+    f = f.func
+    b = Wild('b', exclude=[f(x)])
+    j = 0
+    s = S(0)
+    wilds = []
+    constants = [numbered_symbols(prefix='C', function=Symbol) for i in\
+                 range(1, order + 1)]
+    for i in numbered_symbols(prefix='a', function=Wild, exclude=[f(x)]):
+        if j == order+1:
+            break
+        wilds.append(i)
+        s += i*f(x).diff(x,j)
+        j += 1
+    s += b
+
+    r = eq.match(s)
+    if r:
+        # The ODE is homogeneous
+        if all([not r[i].has(x) for i in wilds]):
+            # First, set up characteristic equation.
+            m = Symbol('m', dummy=True)
+            chareq = S(0)
+            for i in r:
+                if i == b:
+                    pass
+                else:
+                    chareq += r[i]*m**S(i.name[1:])
+            charroots = roots(chareq, m)
+            sol = S(0)
+            c = 0
+            for root, multiplicity in charroots.items():
+                for i in range(multiplicity):
+                    if i is complex:
+                        if im(i).could_extact_minus_sign():
+                            sol += x**i*exp(root[0]*x)*(sin(abs(root[1])*x)+cos(root[1]*x))
+            return sol
+
 
 def solve_ODE_second_order(eq, f):
     """
@@ -850,12 +946,11 @@ def solve_ODE_1(f, x):
     C2 = Symbol('C2')
     return -log(C1+C2/x)
 
-
 def homogeneous_order(eq, *symbols):
     """
     Determines if a function is homogeneous and if so of what order.
     A function f(x,y,...) is homogeneous of order n if
-    f(xt,yt,t*...) == t**n*f(x,y,...).  It is implemented recursively.
+    f(t*x,t*y,t*...) == t**n*f(x,y,...).  It is implemented recursively.
 
     Functions can be symbols, but every argument of the function must also be
     a symbol, and the arguments of the function that appear in the expression
@@ -889,12 +984,6 @@ def homogeneous_order(eq, *symbols):
     return _homogeneous_order(eq, *symbols)
 
 def _homogeneous_order(eq, *symbols):
-    def _dummyiter():
-        i = 0
-        while True:
-            yield Symbol('d%d' % i, dummmy=True)
-            i += 1
-
 
     if not symbols:
         raise ValueError, "homogeneous_order: no symbols were given."
@@ -911,7 +1000,7 @@ def _homogeneous_order(eq, *symbols):
                 elif i not in symbols:
                     pass
                 else:
-                    dummyvar = _dummyiter().next()
+                    dummyvar = numbered_symbols(prefix='d', dummy=True).next()
                     eq = eq.subs(i, dummyvar)
                     symbols = list(symbols)
                     symbols.remove(i)
