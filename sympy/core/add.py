@@ -160,9 +160,7 @@ class Add(AssocOp):
                 # is independent of everything that they all are independent of.
                 # We arbitrarily combine them into the one given first
                 # (which is actually the last one in the list).
-                for j in i.args:
-                    constantsymbols.add(j)
-            constantsymbols = tuple(constantsymbols)
+                constantsymbols = constantsymbols.union(set(i.args))
             constant = constants[0].new(constants[0].name, *constantsymbols)
             # TODO: combine assumptions (using new assumptions system)
 
