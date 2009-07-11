@@ -10,3 +10,5 @@ from recurr import rsolve, rsolve_poly, rsolve_ratio, rsolve_hyper
 from polysys import solve_poly_system
 
 from pde import pde_separate, pde_separate_add, pde_separate_mul
+
+from constant import Constant

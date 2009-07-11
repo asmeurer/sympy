@@ -139,30 +139,32 @@ class Function(Basic):
             return Basic.__new__(cls, *args, **options)
         evaluated = cls.eval(*args)
         if evaluated is not None: return evaluated
+
+        if any(getattr(t, 'is_Constant', None) for t in args):
+            # We know that there are Constants in the args, so now find them.
+            # We combine the constantsymbols of each, and if not other args
+            # contain those symbols, we returns a new Consant with those symbols.
+            # Otherwise, we do not simplify.
+            constantsymbols = set([])
+            othersymbols = set([])
+            first = None
+            for i in args:
+                if getattr(i, 'is_Constant', None):
+                    if first == None:
+                        first = i # the first Constant is what we absorb into
+                    constantsymbols = constantsymbols.union(set(i.args))
+                else:
+                    othersymbols = othersymbols.union(i.atoms(Symbol))
+            if constantsymbols.intersection(othersymbols):
+                pass
+            else:
+                return first.new(first.name, tuple(constantsymbols))
         # Just undefined functions have nargs == None
         if not cls.nargs and hasattr(cls, 'undefined_Function'):
             r = Basic.__new__(cls, *args, **options)
             r.nargs = len(args)
             return r
-        if any(t.is_Constant for t in args):
-            # We know that there are Constants in the args, so find them.
-            # We combine the constantsymbols of each, and if not other args
-            # contain those symbols, we returns a new Consant with those symbols.
-            # Otherwise, do not simplify.
-            constantsymbols = set([])
-            othersymbols = set([])
-            first = None
-            for i in args:
-                if i .is_Constant:
-                    if first == None:
-                        first = i # the first Constant is what we absorb into
-                    constantsymbols.union(set(i.args))
-                else:
-                    othersymbols.union(i.atoms(Symbol))
-            if constantsymbols.intersection(othersymbols):
-                pass
-            else:   
-                return first.new(first.name, tuple(constantsymbols))
+
         return Basic.__new__(cls, *args, **options)
 
     @property

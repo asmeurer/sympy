@@ -26,7 +26,7 @@ class Add(AssocOp):
         coeff = S.Zero  # standalone term
                         # e.g. 3 + ...
         order_factors = []
-        
+
         constants = []
 
         for o in seq:
@@ -43,7 +43,7 @@ class Add(AssocOp):
                 continue
 
             # C1
-            elif o.is_Constant:
+            elif getattr(o, 'is_Constant', None):
                 constants.append(o)
                 continue
 
@@ -174,7 +174,7 @@ class Add(AssocOp):
                     cons_seq.append(i)
             newseq = cons_seq
             coeff = S.Zero # Constants always absorb numbers
-        
+
         # order args canonically
         # Currently we sort things using hashes, as it is quite fast. A better
         # solution is not to sort things at all - but this needs some more

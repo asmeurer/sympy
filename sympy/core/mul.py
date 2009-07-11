@@ -42,7 +42,7 @@ class Mul(AssocOp):
                             # e.g.  (3, y)  for  ... * 3  * ...
 
         order_symbols = None
-        
+
         constants = []
 
 
@@ -82,7 +82,7 @@ class Mul(AssocOp):
 
                 continue
 
-            if o.is_Constant:
+            if getattr(o, 'is_Constant', None):
                 # Separate Constants to simplify them later
                 constants.append(o)
                 continue
@@ -315,7 +315,7 @@ class Mul(AssocOp):
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
             c_part = [Add(*[coeff*f for f in c_part[1].args])]
-        
+
         # Now that we have simplified everything else, try simplifying Constants
         if constants:
             # First, simplify constants with respect to themselves:
