@@ -47,7 +47,7 @@ class Constant(Symbol):
         if not any((t in other) for t in self.args):
             return self
         else:
-            return Pow(other, self)
+            return Pow(other, self, evaluate=False)
 
     def as_coefficient(self, expr):
         # Maybe this needs to be done differently?

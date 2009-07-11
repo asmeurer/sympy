@@ -73,6 +73,10 @@ class Pow(Basic):
         e = _sympify(e)
         if assumptions.get('evaluate') is False:
             return Basic.__new__(cls, b, e, **assumptions)
+        if hasattr(e, '__rpow__'):
+            # Any function that uses this and returns a Pow should do
+            # evaluate=False to avoid infinite recursion.
+            return e.__rpow__(b)
         if e is S.Zero:
             return S.One
         if e is S.One:
