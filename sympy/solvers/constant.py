@@ -12,7 +12,7 @@ class Constant(Symbol):
     """
     is_Constant = True
     is_commutative = True
-    
+
     def __new__(cls, name, *args, **assumptions):
         # args is a list of symbols the Constant is independent of
         args = tuple(set(args)) # eliminate duplicates and canonize order
@@ -20,18 +20,18 @@ class Constant(Symbol):
         obj = Basic.__new__(cls, *args)
         obj.name = name
         return obj
-    
+
     def __str__(self):
         return self.name
-    
+
     def _eval_power(self, other):
-        # First combine constants together.  
+        # First combine constants together.
         if getattr(other, 'is_Constant', None):
-            # the same as in __rpow__ below, but is needed for direct call to 
+            # the same as in __rpow__ below, but is needed for direct call to
             # Pow(C1, C2)
             constantsymbols = set(self.args).union(set(other.args))
             return self.new(self.name, *constantsymbols)
-        # Then combine constant with other terms. 
+        # Then combine constant with other terms.
         if not any((t in other) for t in self.args):
             return self
         else:
@@ -48,7 +48,7 @@ class Constant(Symbol):
             return self
         else:
             return Pow(other, self)
-    
+
     def as_coefficient(self, expr):
         # Maybe this needs to be done differently?
         return None
