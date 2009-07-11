@@ -78,6 +78,7 @@ def test_constant_power_as_exp():
     assert S(2)**C == C
     assert exp(C) == C
     assert exp(C+x) == exp(C+x)
+    assert Pow(2, C) == C
 
 def test_constant_function():
     assert C.as_coefficient(C) == None
