@@ -174,7 +174,7 @@ class Mul(AssocOp):
         # x      * x  will be left alone.  This is because checking every possible
         # combination can slow things down.
         new_c_powers = []
-        common_b = {} # b:e
+        common_b = {} # b:(t:c)
 
         # First gather exponents of common bases
         for b, e in c_powers:

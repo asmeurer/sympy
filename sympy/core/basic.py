@@ -698,10 +698,7 @@ class Basic(AssumeMeths):
 
     @_sympifyit('other', NotImplemented)
     def __pow__(self, other):
-        if isinstance(other, Basic) and hasattr(other, '__rpow__'):
-            return other.__rpow__(self)
-        else:
-            return Pow(self, other)
+        return Pow(self, other)
 
     @_sympifyit('other', NotImplemented)
     def __rpow__(self, other):

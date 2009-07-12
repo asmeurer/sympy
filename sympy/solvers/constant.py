@@ -17,7 +17,8 @@ class Constant(Symbol):
         # args is a list of symbols the Constant is independent of
         args = tuple(set(args)) # eliminate duplicates and canonize order
         args = map(sympify, args)
-        obj = Basic.__new__(cls, *args)
+        assumptions['commutative'] = True
+        obj = Basic.__new__(cls, *args, **assumptions)
         obj.name = name
         return obj
 
@@ -39,7 +40,7 @@ class Constant(Symbol):
 
 
     @_sympifyit('other', NotImplemented)
-    def __rpow__(self, other):
+    def _eval_rpower(self, other):
         # other**self
         if other.is_Constant:
             constantsymbols = set(self.args).union(set(other.args))
@@ -47,7 +48,7 @@ class Constant(Symbol):
         if not any((t in other) for t in self.args):
             return self
         else:
-            return Pow(other, self, evaluate=False)
+            return Pow(other, self, evaluate=False, commutative=True)
 
     def as_coefficient(self, expr):
         # Maybe this needs to be done differently?

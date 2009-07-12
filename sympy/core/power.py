@@ -72,15 +72,17 @@ class Pow(Basic):
         b = _sympify(b)
         e = _sympify(e)
         if assumptions.get('evaluate') is False:
-            return Basic.__new__(cls, b, e, **assumptions)
-        if hasattr(e, '__rpow__'):
-            # Any function that uses this and returns a Pow should do
-            # evaluate=False to avoid infinite recursion.
-            return e.__rpow__(b)
+            obj = Basic.__new__(cls, b, e, **assumptions)
+            obj.is_commutative = (b.is_commutative and e.is_commutative)
+            return obj
         if e is S.Zero:
             return S.One
         if e is S.One:
             return b
+        if hasattr(e, '_eval_rpower'):
+            # Any function that uses this and returns a Pow should do
+            # evaluate=False to avoid infinite recursion.
+            return e._eval_rpower(b)
         obj = b._eval_power(e)
         if obj is None:
             obj = Basic.__new__(cls, b, e, **assumptions)
