@@ -140,25 +140,28 @@ class Function(Basic):
         evaluated = cls.eval(*args)
         if evaluated is not None: return evaluated
 
+        # If this can be put somewhere better, that would be great.
         if any(getattr(t, 'is_Constant', None) for t in args):
             # We know that there are Constants in the args, so now find them.
-            # We combine the constantsymbols of each, and if not other args
-            # contain those symbols, we returns a new Consant with those symbols.
+            # We combine the constantsymbols of each, and if no other args
+            # contain those symbols, we returns a new Constant with those symbols.
             # Otherwise, we do not simplify.
             constantsymbols = set([])
             othersymbols = set([])
-            first = None
+            constants = []
             for i in args:
                 if getattr(i, 'is_Constant', None):
-                    if first == None:
-                        first = i # the first Constant is what we absorb into
+                    constants.append(i)
                     constantsymbols = constantsymbols.union(set(i.args))
                 else:
                     othersymbols = othersymbols.union(i.atoms(Symbol))
             if constantsymbols.intersection(othersymbols):
                 pass
             else:
-                return first.new(first.name, tuple(constantsymbols))
+                highestconstant = max(constants, key=lambda t: t.number)
+                constant = highestconstant.new(highestconstant.name, *constantsymbols)
+                constant.increment_number()
+                return constant
         # Just undefined functions have nargs == None
         if not cls.nargs and hasattr(cls, 'undefined_Function'):
             r = Basic.__new__(cls, *args, **options)

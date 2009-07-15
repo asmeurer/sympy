@@ -158,10 +158,13 @@ class Add(AssocOp):
                 # and C2 is independent of y, then C1*C2 will just be independent
                 # of both.  So we can combine all constants into one, which
                 # is independent of everything that they all are independent of.
-                # We arbitrarily combine them into the one given first
-                # (which is actually the last one in the list).
+                # We combine them into the one with the highest number, so the
+                # increment logic below works correctly.  If there is a tie,
+                # max will choose the first one first
                 constantsymbols = constantsymbols.union(set(i.args))
-            constant = constants[0].new(constants[0].name, *constantsymbols)
+            highestconstant = max(constants, key=lambda t: t.number)
+            constant = highestconstant.new(highestconstant.name, *constantsymbols)
+            constant.increment_number()
             # TODO: combine assumptions (using new assumptions system)
 
             # Next, we "absorb" anything that doesn't have any of the symbols
