@@ -1276,6 +1276,49 @@ def simplify(expr):
             expr = -n/(-d)
     return expr
 
+def constantsimp(expr, **constantsymbols):
+    """
+    Simplifies an expression with arbitrary constants in it.
+
+    This is done by "absorbing" the arbitrary constants in to other arbitrary
+    constants, numbers, and symbols for which they are not independent of.
+
+    The symbols are entered as Constant_Symbol=[independent symbols] arguments.
+
+    Be warned that because terms are "absorbed" into arbitrary constants,
+    the arbitrary constants in expr are not necessarily equal to the ones of
+    the same name in the returned result.
+
+    If two or more arbitrary constants are added, multiplied, or raised to the
+    power of each other, they are first absorbed together into a single
+    arbitrary constant that is assumed to be independent of all combined
+    symbols from each.  Then the new constant is combined into other terms
+    if necessary.  The name of the combined constant is the same name as the
+    constant that has the lowest sorted order name, i.e., it is whatever is
+    returned by the min() function.  If the constants are named in a common
+    numbered way, then it will choose the one with the lowest number.
+
+    Absorption is done naively.  constantsimp() does not attempt to expand
+    or simplify the expression first to obtain better absorption.
+
+    Example:
+    >>> from sympy import *
+    >>> a, C1, C2, x, y = symbols('a C1 C2 x y')
+    >>> constantsimp(2*C1*x, C1=[x])
+    C1*x
+    >>> constantsimp(C1 + 2 + x + y, C1=[x])
+    C1 + x
+    >>> constantsimp(C1*C2 + 2 + x + y, C1=[x], C2=[y])
+    C1 + x + y
+    >>> constantsimp(C1**a + x + y, C1=[x, y])
+    C1 + x + y
+    """
+    # The function works recursively.  The idea is that, for Mul, Add, and Pow,
+    # if the class has a constant in it, then we can simplify it, which we do
+    # by recursing down and simplifying up.  Otherwise, we can skip that part
+    # of the expression.
+
+
 def nsimplify(expr, constants=[], tolerance=None, full=False):
     """
     Numerical simplification -- tries to find a simple formula
