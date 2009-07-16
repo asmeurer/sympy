@@ -1155,7 +1155,7 @@ def simplify(expr):
        Simplification is not a well defined term and the exact strategies
        this function tries can change in the future versions of SymPy. If
        your algorithm relies on "simplification" (whatever it is), try to
-       determine what you need exactly  -  is it powsimp()? radsimp()?
+       determine what you need exactly  -  is it powsimp()?, radsimp()?,
        together()?, logcombine()?, or something else? And use this particular
        function directly, because those are well defined and thus your algorithm
        will be robust.
@@ -1169,7 +1169,7 @@ def simplify(expr):
             expr = -n/(-d)
     return expr
 
-def constantsimp(expr, **constantsymbols):
+def constantsimp(expr, renumber=False, **constantsymbols):
     """
     Simplifies an expression with arbitrary constants in it.
 
@@ -1189,10 +1189,14 @@ def constantsimp(expr, **constantsymbols):
     if necessary.  The name of the combined constant is the same name as the
     constant that has the lowest sorted order name, i.e., it is whatever is
     returned by the min() function.  If the constants are named in a common
-    numbered way, then it will choose the one with the lowest number.
+    numbered way, this will choose the one with the lowest number.
 
     Absorption is done naively.  constantsimp() does not attempt to expand
     or simplify the expression first to obtain better absorption.
+    
+    If renumber=True, then the Constants are renumberd after simplification
+    so that they are sequential, such as C1, C2, C3, and so on.  If a name
+    does not have a number, one will be appended to the end of it.  
 
     Example:
     >>> from sympy import *
@@ -1206,10 +1210,25 @@ def constantsimp(expr, **constantsymbols):
     >>> constantsimp(C1**a + x + y, C1=[x, y])
     C1 + x + y
     """
-    # The function works recursively.  The idea is that, for Mul, Add, and Pow,
-    # if the class has a constant in it, then we can simplify it, which we do
-    # by recursing down and simplifying up.  Otherwise, we can skip that part
-    # of the expression.
+    # The function works recursively.  The idea is that, for Mul, Add, Pow, and
+    # Function, if the class has a constant in it, then we can simplify it, 
+    # which we do by recursing down and simplifying up.  Otherwise, we can skip
+    # that part of the expression.
+    if type(expr) not in (Mul, Add, Pow, Function):
+        return expr # We don't know how to handle other classes
+    elif not any(t in expr for t in constantsymbols.keys()):
+        return expr
+    else:
+        cdict = {}
+        for i in constantsymbols.keys():
+            count = expr.args.count(i)
+            if count:
+                cdict[i] = count
+        if len(cdict) > 1 and not expr.is_Function:
+            # We need to combine constants first
+            newconst = min(cdict.keys())
+            
+            
 
 
 def nsimplify(expr, constants=[], tolerance=None, full=False):
