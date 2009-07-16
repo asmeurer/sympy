@@ -1,0 +1,385 @@
+Query module
+============
+
+.. module:: sympy.queries
+
+Queries are used to ask information about expression. Main method in this
+module is function query:
+
+.. automethod:: sympy.queries.query
+
+Assumptions
+===========
+
+query has a keyword argument assumptions. It's value should be a boolean
+expression involving assumptions about objects in expr. Valid values include:
+
+    * Assume(x, integer=True)
+    * Assume(x, integer=False)
+    * Assume(x, integer=True) & Assume(x, positive=True)
+    * etc.
+
+See documentation for the logic module for a complete list of valid boolean
+expressions.
+
+
+Supported queries
+=================
+
+bounded
+-------
+
+Test that a function is bounded with respect to it's variables. For example,
+sin(x) is a bounded functions, but exp(x) is not.
+
+Examples::
+
+    >>> from sympy import *
+    >>> x = Symbol('x')
+    >>> query(exp(x), bounded=True)
+    False
+    >>> query(exp(x), bounded=True , assumptions=Assume(x, bounded=True))
+    True
+    >>> query(sin(x), bounded=True)
+    True
+
+
+commutative
+-----------
+
+Test that objects are commutative. By default, symbols in SymPy are considered commutative
+except otherwise stated
+
+Examples::
+
+    >>> from sympy import *
+    >>> x, y = symbols('x y')
+    >>> query(x, commutative=True)
+    True
+    >>> query(x, commutative=True, assumptions=Assume(x, commutative=False))
+    False
+    >>> query(x*y, commutative=True, assumptions=Assume(x, commutative=False))
+    False
+
+
+comparable
+----------
+
+Test that objects are comparable in the sense that you can put an order relation
+between them. For example, real numbers are comparable, but complex numbers are
+not.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(1, comparable=True)
+    True
+    >>> query(1+I, comparable=True)
+    False
+    >>> x = Symbol('x')
+    >>> query(x, comparable=True, assumptions=Assume(x, real=True))
+    True
+
+
+complex
+-------
+
+Test that expression belongs to the field of complex numbers.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(2, complex=True)
+    True
+    >>> query(I, complex=True)
+    True
+    >>> x, y = symbols('x y')
+    >>> query(x+I*y, complex=True, assumptions=Assume(x, real=True) & Assume(y, real=True))
+    True
+
+
+even
+----
+
+Test that expression represents an even number, that is, an number that
+can be written in the form 2*n, n integer.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(2, even=True)
+    True
+    >>> n = Symbol('n')
+    >>> query(2*n, even=True, assumptions=Assume(n, integer=True))
+    True
+
+
+extended_real
+-------------
+
+Test that an expression belongs to the field of extended real numbers, that is, real
+numbers union {Infinity, -Infinity}
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(oo, extended_real=True)
+    True
+    >>> query(2, extended_real=True)
+    True
+    >>> query(x, extended_real=True, assumptions=Assume(x, real=True))
+    True
+
+
+imaginary
+---------
+
+Test that an expression belongs to the field of imaginary numbers, that is,
+ it can be written as x*I, where x is real and I is the imaginary unit.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(2*I, imaginary=True)
+    True
+    >>> x = Symbol('x')
+    >>> query(x*I, imaginary=True, assumptions=Assume(x, real=True))
+    True
+
+
+infinitesimal
+-------------
+
+Test that an expression is equivalent to an infinitesimal number.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(1/oo, infinitesimal=True)
+    True
+    >>> x, y = symbols('x y')
+    >>> query(2*x, infinitesimal=True, assumptions=Assume(x, infinitesimal=True))
+    True
+    >>> query(x*y, infinitesimal=True, assumptions=Assume(x, infinitesimal=True) & Assume(y, bounded=True))
+    True
+
+
+integer
+-------
+
+Test that an expression belongs to the field of integer numbers
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(2, integer=True)
+    True
+    >>> query(sqrt(2), integer=True)
+    False
+    >>> x = Symbol('x')
+    >>> query(x/2, integer=True, assumptions=Assume(x, even=True))
+    True
+
+
+irrational
+----------
+
+Test that an expression represents an irrational number.
+
+Examples::
+
+     >>> from sympy import *
+     >>> query(pi, irrational=True)
+     True
+     >>> query(sqrt(2), irrational=True)
+     True
+     >>> query(x*sqrt(2), irrational=True, assumptions=Assume(x, rational=True))
+     True
+
+
+rational
+--------
+
+Test that an expression represents a rational number.
+
+Examples::
+
+     >>> from sympy import *
+     >>> query(Rational(3, 4), rational=True)
+     True
+     >>> x, y = symbols('x y')
+     >>> query(x/2, rational=True, assumptions=Assume(x, integer=True))
+     True
+     >>> query(x/y, rational=True, assumptions=Assume(x, integer=True) & Assume(y, integer=True))
+     True
+
+
+negative
+--------
+
+Test that an expression is less (strict) than zero.
+
+Examples::
+
+     >>> from sympy import *
+     >>> query(0.3, negative=True)
+     False
+     >>> x = Symbol('x')
+     >>> query(-x, negative=True, assumptions=Assume(x, positive=True))
+     True
+
+
+positive
+--------
+
+Test that a given expression is greater (strict) than zero.
+
+Examples::
+
+     >>> from sympy import *
+     >>> query(0.3, positive=True)
+     True
+     >>> x = Symbol('x')
+     >>> query(-x, positive=True, assumptions=Assume(x, negative=True))
+     True
+
+
+prime
+-----
+
+Test that an expression represents a prime number.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(13, prime=True)
+    True
+
+For efficiently test numberic values, use sympy.ntheory.isprime instead.
+
+
+real
+----
+
+Test that an expression belongs to the field of real numbers.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(sqrt(2), real=True)
+    True
+    >>> x, y = symbols('x y')
+    >>> query(x*y, real=True, assumptions=Assume(x, real=True) & Assume(y, real=True))
+    True
+
+
+odd
+---
+
+Test that an expression represents an odd number.
+
+Examples::
+
+    >>> from sympy import *
+    >>> query(3, odd=True)
+    True
+    >>> n = Symbol('n')
+    >>> query(2*n + 1, odd=True, assumptions=Assume(n, integer=True))
+    True
+
+
+zero
+----
+
+Test that an expression is zero. This is mostly used for assumptions.
+
+Examples::
+
+     >>> from sympy import *
+     >>> x = Symbol('x')
+     >>> query(x, negative=True, assumptions=Assume(x, real=True) & Assume(x, positive=False) & Assume(x, zero=False))
+     True
+
+Note: To solve equations, use solve() instead
+
+
+Design
+======
+
+Each time query is called, the appropriate Handler for the current key is called. This is
+always a subclass of sympy.queries.QueryHandler. It's classmethods have the name's of the classes
+it supports. For example, a (simplified) QueryHandler for the query 'positive' would
+look like this::
+
+    class QueryPositiveHandler(CommonHandler):
+
+        def Mul(self):
+            # return True if all argument's in self.expr.args are positive
+            ...
+
+        def Add(self):
+            for arg in self.expr.args:
+                if not query(arg, positive=True, self.assumptions):
+                    break
+            else:
+                # if all argument's are positive
+                return True
+        ...
+
+The .Mul() method is called when self.expr is an instance of Mul, the Add method
+would be called when self.expr is an instance of Add and so on.
+
+
+Extensibility
+=============
+
+You can define new queries or support new types by subclassing sympy.queries.QueryHandler
+ and registering that handler for a particular key by calling register_handler:
+
+.. automethod:: sympy.queries.register_handler
+
+You can undo this operation by calling remove_handler.
+
+.. automethod:: sympy.queries.remove_handler
+
+You can support new types [1]_ by adding a handler to an existing key. In the
+following example, we will create a new type MyType and extend the key 'prime'
+to accept this type (and return True)
+
+.. parsed-literal::
+
+    >>> from sympy.core import Basic
+    >>> class MyType(Basic):
+    ...     pass
+    >>> class MyQueryHandler(QueryHandler):
+    ...     @staticmethod
+    ...     def MyType(expr, assumptions):
+    ...         return True
+    >>> a = MyType()
+    >>> register_handler('prime', MyQueryHandler)
+    >>> query(a, prime=True)
+    True
+
+
+Performance improvements
+========================
+
+On queries that involve symbolic coefficients, logical inference is used. Work on
+improving satisfiable function (sympy.logic.inference.satisfiable) should result
+in notable speed improvements.
+
+Logic inference used in one query could be used to speed up further queries, and
+current system does not take advantage of this. For example, a truth maintenance
+system (http://en.wikipedia.org/wiki/Truth_maintenance_system) could be implemented.
+
+Misc
+====
+
+You can find more examples in the in the form of test under directory sympy/query/tests/
+
+This module was first implemented by Fabian Pedregosa with financial support from
+Google's Summer of Code program on July 2009
+
+.. [1] New type must inherit from Basic, otherwise an exception will be raised.
+   This is a bug and should be solved.
+
