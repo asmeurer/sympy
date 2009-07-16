@@ -1190,6 +1190,9 @@ class Infinity(Rational):
             return True
         return False
 
+    def __mod__(self, other):
+        return S.NaN
+
 
 class NegativeInfinity(Rational):
     __metaclass__ = SingletonMeta
