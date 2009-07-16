@@ -1211,6 +1211,8 @@ def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
     # Function, if the class has a constant in it, then we can simplify it, 
     # which we do by recursing down and simplifying up.  Otherwise, we can skip
     # that part of the expression.
+    constantsymbols = [Symbol(symbolname%d % t) for t in range(startnumber,
+    endnumber + 1)]
     if type(expr) not in (Mul, Add, Pow, Function):
         return expr # We don't know how to handle other classes
     elif not any(t in expr for t in constantsymbols.keys()):
@@ -1224,9 +1226,8 @@ def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
         if len(cdict) > 1 and not expr.is_Function or expr.is_Function and\
         all(t in constantsymbols.keys() for t in expr.args):
             # We need to combine constants first
-            newconst = Symbol(
-
-
+#            newconst = Symbol(
+            pass
 
 
 def nsimplify(expr, constants=[], tolerance=None, full=False):
