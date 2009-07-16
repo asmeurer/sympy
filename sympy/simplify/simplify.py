@@ -1276,46 +1276,43 @@ def simplify(expr):
             expr = -n/(-d)
     return expr
 
-def constantsimp(expr, renumber=False, **constantsymbols):
+def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
+    symbolname='C'):
     """
     Simplifies an expression with arbitrary constants in it.
 
     This is done by "absorbing" the arbitrary constants in to other arbitrary
     constants, numbers, and symbols for which they are not independent of.
 
-    The symbols are entered as Constant_Symbol=[independent symbols] arguments.
+    The symbols must all have the same name with numbers after it, for example,
+    C1, C2, C3.  The symbolname here would be 'C', the startnumber would be 1,
+    and the end number would be 3.  If the arbitrary constants are independent
+    of the variable x, then the independentsymbol would be x.
 
-    Be warned that because terms are "absorbed" into arbitrary constants,
-    the arbitrary constants in expr are not necessarily equal to the ones of
-    the same name in the returned result.
+    Because terms are "absorbed" into arbitrary constants and because constants
+    are renumbered after simplifing, the arbitrary constants in expr are not
+    necessarily equal to the ones of the same name in the returned result.
 
     If two or more arbitrary constants are added, multiplied, or raised to the
     power of each other, they are first absorbed together into a single
-    arbitrary constant that is assumed to be independent of all combined
-    symbols from each.  Then the new constant is combined into other terms
-    if necessary.  The name of the combined constant is the same name as the
-    constant that has the lowest sorted order name, i.e., it is whatever is
-    returned by the min() function.  If the constants are named in a common
-    numbered way, this will choose the one with the lowest number.
+    arbitrary constant.  Then the new constant is combined into other terms
+    if necessary.
 
     Absorption is done naively.  constantsimp() does not attempt to expand
     or simplify the expression first to obtain better absorption.
 
-    If renumber=True, then the Constants are renumberd after simplification
-    so that they are sequential, such as C1, C2, C3, and so on.  If a name
-    does not have a number, one will be appended to the end of it.
+    Constants are renumberd after simplification so that they are sequential,
+    such as C1, C2, C3, and so on.
 
     Example:
     >>> from sympy import *
-    >>> a, C1, C2, x, y = symbols('a C1 C2 x y')
-    >>> constantsimp(2*C1*x, C1=[x])
+    >>> C1, C2, C3, x, y = symbols('C1 C2 C3 x y')
+    >>> constantsimp(2*C1*x, endnumber=1, independentsymbol=x)
     C1*x
-    >>> constantsimp(C1 + 2 + x + y, C1=[x])
+    >>> constantsimp(C1 + 2 + x + y, endnumber=1, independentsymbol=x)
     C1 + x
-    >>> constantsimp(C1*C2 + 2 + x + y, C1=[x], C2=[y])
-    C1 + x + y
-    >>> constantsimp(C1**a + x + y, C1=[x, y])
-    C1 + x + y
+    >>> constantsimp(C1*C2 + 2 + x + y + C3*x, endnumber=3, independentsymbol=x)
+    C1 + C2*x + x
     """
     # The function works recursively.  The idea is that, for Mul, Add, Pow, and
     # Function, if the class has a constant in it, then we can simplify it,
@@ -1331,9 +1328,10 @@ def constantsimp(expr, renumber=False, **constantsymbols):
             count = expr.args.count(i)
             if count:
                 cdict[i] = count
-        if len(cdict) > 1 and not expr.is_Function:
+        if len(cdict) > 1 and not expr.is_Function or expr.is_Function and\
+        all(t in constantsymbols.keys() for t in expr.args):
             # We need to combine constants first
-            newconst = min(cdict.keys())
+            newconst = Symbol(
 
 
 
