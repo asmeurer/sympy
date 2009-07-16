@@ -21,11 +21,6 @@ def test_exp():
     assert exp(3*pi*I/2) == -I
     assert exp(2*pi*I) == 1
 
-    assert exp(pi*I*2*k) == 1
-    assert exp(pi*I*2*(k+Rational(1,2))) == -1
-    assert exp(pi*I*2*(k+Rational(1,4))) == I
-    assert exp(pi*I*2*(k+Rational(3,4))) == -I
-
     assert exp(log(x)) == x
     assert exp(2*log(x)) == x**2
     assert exp(pi*log(x)) == x**pi

@@ -227,13 +227,6 @@ class Add(AssocOp):
     _eval_is_integer = lambda self: self._eval_template_is_attr('is_integer')
     _eval_is_comparable = lambda self: self._eval_template_is_attr('is_comparable')
 
-    def _eval_is_odd(self):
-        l = [f for f in self.args if not (f.is_even==True)]
-        if not l:
-            return False
-        if l[0].is_odd:
-            return Add(*l[1:]).is_even
-
     def _eval_is_irrational(self):
         for t in self.args:
             a = t.is_irrational

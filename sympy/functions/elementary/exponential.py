@@ -45,16 +45,15 @@ class exp(Function):
         elif arg.is_Mul:
             coeff = arg.as_coefficient(S.Pi*S.ImaginaryUnit)
 
-            if coeff is not None:
-                if (2*coeff).is_integer:
-                    if coeff.is_even:
-                        return S.One
-                    elif coeff.is_odd:
-                        return S.NegativeOne
-                    elif (coeff + S.Half).is_even:
-                        return -S.ImaginaryUnit
-                    elif (coeff + S.Half).is_odd:
-                        return S.ImaginaryUnit
+            if coeff and coeff.is_number:
+                if coeff % 2 == 0:
+                    return S.One
+                elif coeff % 2 == 1:
+                    return S.NegativeOne
+                elif (coeff + S.Half) % 2 == 0:
+                    return -S.ImaginaryUnit
+                elif (coeff + S.Half) % 2 == 1:
+                    return S.ImaginaryUnit
             I = S.ImaginaryUnit
             oo = S.Infinity
             a = Wild("a", exclude=[I, oo])

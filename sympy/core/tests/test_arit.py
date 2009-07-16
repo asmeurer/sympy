@@ -315,69 +315,24 @@ def test_Mul_is_even_odd():
     n = Symbol('n', odd=True)
     m = Symbol('m', even=True)
 
-    assert (2*x).is_even == True
-    assert (2*x).is_odd == False
-
-    assert (3*x).is_even == None
-    assert (3*x).is_odd == None
-
     assert (k/3).is_integer == False
     assert (k/3).is_even    == False
-    assert (k/3).is_odd     == False
 
     assert (2*n).is_even == True
-    assert (2*n).is_odd == False
 
     assert (2*m).is_even == True
-    assert (2*m).is_odd == False
 
     assert (-n).is_even == False
-    assert (-n).is_odd == True
 
     assert (k*n).is_even == False
-    assert (k*n).is_odd == True
 
     assert (k*m).is_even == True
-    assert (k*m).is_odd == False
 
     assert (k*n*m).is_even == True
     assert (k*n*m).is_odd == False
 
     assert (k*m*x).is_even == True
     assert (k*m*x).is_odd == False
-
-def test_Add_is_even_odd():
-    x = Symbol('x', integer=True)
-
-    k = Symbol('k', odd=True)
-    n = Symbol('n', even=True)
-
-    assert (2+k).is_even == False
-    assert (2+k).is_odd == True
-
-    assert (7-k).is_even == True
-    assert (7-k).is_odd == False
-
-    assert (11-n).is_even == False
-    assert (11-n).is_odd == True
-
-    assert (-8+n).is_even == True
-    assert (-8+n).is_odd == False
-
-    assert (n+k).is_even == False
-    assert (n+k).is_odd == True
-
-    assert (n-k).is_even == False
-    assert (n-k).is_odd == True
-
-    assert (n+2*k).is_even == True
-    assert (n+2*k).is_odd == False
-
-    assert (k+n+x).is_odd == None
-    assert (k+n-x).is_even == None
-
-    assert (2*k+n*x).is_odd == None
-    assert (2*k+n*x).is_even == None
 
 def test_Mul_is_negative_positive():
     x = Symbol('x', real=True)
@@ -590,37 +545,6 @@ def test_Mul_is_nonpositive_nonnegative():
 
     assert (x*k).is_nonnegative == None
     assert (u*v*n*x*k).is_nonnegative == None
-
-def test_Add_is_even_odd():
-    x = Symbol('x', integer=True)
-
-    k = Symbol('k', odd=True)
-    n = Symbol('n', odd=True)
-    m = Symbol('m', even=True)
-
-    assert (k+7).is_even == True
-    assert (k+7).is_odd == False
-
-    assert (-k+7).is_even == True
-    assert (-k+7).is_odd == False
-
-    assert (k-12).is_even == False
-    assert (k-12).is_odd == True
-
-    assert (-k-12).is_even == False
-    assert (-k-12).is_odd == True
-
-    assert (k+n).is_even == True
-    assert (k+n).is_odd == False
-
-    assert (k+m).is_even == False
-    assert (k+m).is_odd == True
-
-    assert (k+n+m).is_even == True
-    assert (k+n+m).is_odd == False
-
-    assert (k+n+x+m).is_even == None
-    assert (k+n+x+m).is_odd == None
 
 def test_Add_is_negative_positive():
     x = Symbol('x', real=True)
