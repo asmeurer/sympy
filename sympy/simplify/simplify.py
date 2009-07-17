@@ -1215,19 +1215,23 @@ def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
     endnumber + 1)]
     if type(expr) not in (Mul, Add, Pow, Function):
         return expr # We don't know how to handle other classes
-    elif not any(t in expr for t in constantsymbols.keys()):
+    elif not any(t in expr for t in constantsymbols):
         return expr
     else:
         cdict = {}
-        for i in constantsymbols.keys():
+        for i in constantsymbols:
             count = expr.args.count(i)
             if count:
                 cdict[i] = count
         if len(cdict) > 1 and not expr.is_Function or expr.is_Function and\
         all(t in constantsymbols.keys() for t in expr.args):
             # We need to combine constants first
-#            newconst = Symbol(
-            pass
+
+            # We are going to renumber later, so this doesn't matter
+            newconst = cdict.keys()[0] 
+            
+
+
 
 
 def nsimplify(expr, constants=[], tolerance=None, full=False):
