@@ -1,7 +1,8 @@
 from sympy import SYMPY_DEBUG
 
 from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
-        Derivative, Wild, Symbol, sympify, expand, expand_mul, expand_func
+        Derivative, Wild, Symbol, sympify, expand, expand_mul, expand_func, \
+        Function
 
 from sympy.core.numbers import igcd
 
@@ -1169,7 +1170,7 @@ def simplify(expr):
             expr = -n/(-d)
     return expr
 
-def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
+def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     symbolname='C'):
     """
     Simplifies an expression with arbitrary constants in it.
@@ -1189,47 +1190,77 @@ def _constantsimp(expr, endnumber, independentsymbol, startnumber=1,
     If two or more arbitrary constants are added, multiplied, or raised to the
     power of each other, they are first absorbed together into a single
     arbitrary constant.  Then the new constant is combined into other terms
-    if necessary. 
+    if necessary.
 
     Absorption is done naively.  constantsimp() does not attempt to expand
     or simplify the expression first to obtain better absorption.
-    
-    Constants are renumberd after simplification so that they are sequential, 
-    such as C1, C2, C3, and so on.  
+
+    Constants are renumberd after simplification so that they are sequential,
+    such as C1, C2, C3, and so on.
 
     Example:
     >>> from sympy import *
     >>> C1, C2, C3, x, y = symbols('C1 C2 C3 x y')
-    >>> constantsimp(2*C1*x, endnumber=1, independentsymbol=x)
+    >>> constantsimp(2*C1*x, x, 3)
     C1*x
-    >>> constantsimp(C1 + 2 + x + y, endnumber=1, independentsymbol=x)
+    >>> constantsimp(C1 + 2 + x + y, x, 3)
     C1 + x
-    >>> constantsimp(C1*C2 + 2 + x + y + C3*x, endnumber=3, independentsymbol=x)
+    >>> constantsimp(C1*C2 + 2 + x + y + C3*x, x, 3)
     C1 + C2*x + x
     """
-    # The function works recursively.  The idea is that, for Mul, Add, Pow, and
-    # Function, if the class has a constant in it, then we can simplify it, 
-    # which we do by recursing down and simplifying up.  Otherwise, we can skip
-    # that part of the expression.
-    constantsymbols = [Symbol(symbolname%d % t) for t in range(startnumber,
-    endnumber + 1)]
-    if type(expr) not in (Mul, Add, Pow, Function):
-        return expr # We don't know how to handle other classes
-    elif not any(t in expr for t in constantsymbols):
-        return expr
-    else:
-        cdict = {}
-        for i in constantsymbols:
-            count = expr.args.count(i)
-            if count:
-                cdict[i] = count
-        if len(cdict) > 1 and not expr.is_Function or expr.is_Function and\
-        all(t in constantsymbols.keys() for t in expr.args):
-            # We need to combine constants first
+    # We need to have an internal recursive function so that newstartnumber
+    # maintains its values throughout recursive calls
 
-            # We are going to renumber later, so this doesn't matter
-            newconst = cdict.keys()[0] 
-            
+    newstartnumber = 1 # I want this variable to be global to the function below
+
+    def _constantsimp(expr, independentsymbol, endnumber, startnumber=1,
+    symbolname='C'):
+
+        # The function works recursively.  The idea is that, for Mul, Add, Pow, and
+        # Function, if the class has a constant in it, then we can simplify it,
+        # which we do by recursing down and simplifying up.  Otherwise, we can skip
+        # that part of the expression.
+        constantsymbols = [Symbol(symbolname+"%d" % t) for t in range(startnumber,
+        endnumber + 1)]
+        x = independentsymbol
+
+        if type(expr) not in (Mul, Add, Pow, Function):
+            # We don't know how to handle other classes
+            # This also serves as the base case for the recursion
+            return expr
+        elif not any(t in expr for t in constantsymbols):
+            return expr
+        else:
+            newargs = []
+            hasconst = False
+            for i in expr.args:
+                if i not in constantsymbols:
+                    newargs.append(i)
+                else:
+                    hasconst = True
+
+            # Renumbering happens here
+            if hasconst:
+                newconst = Symbol(symbolname + str(newstartnumber))
+                newstartnumber += 1
+
+            for i in range(len(newargs)):
+                newargs[i] = _constantsimp(newargs[i], x, endnumber, startnumber,
+                symbolname)
+            for i in newargs:
+                if not i.has(x):
+                    newargs.remove(i)
+            if hasconst:
+                newargs = [newconst] + newargs
+            if expr.is_Pow and len(newargs) == 1:
+                newargs.append(S.One)
+            return expr.new(*newargs)
+
+    return _constantsimp(expr, independentsymbol, endnumber, startnumber,
+    symbolname)
+
+
+
 
 
 
