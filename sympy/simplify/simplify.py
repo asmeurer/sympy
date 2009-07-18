@@ -1211,10 +1211,12 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     # We need to have an internal recursive function so that newstartnumber
     # maintains its values throughout recursive calls
 
+    global newstartnumber
     newstartnumber = 1 # I want this variable to be global to the function below
 
     def _constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     symbolname='C'):
+        global newstartnumber
 
         # The function works recursively.  The idea is that, for Mul, Add, Pow, and
         # Function, if the class has a constant in it, then we can simplify it,
