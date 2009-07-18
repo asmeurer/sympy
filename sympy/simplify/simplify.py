@@ -1318,20 +1318,23 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     # We need to have an internal recursive function so that newstartnumber
     # maintains its values throughout recursive calls
 
-    newstartnumber = 1 # I want this variable to be global to the function below
+    global newstartnumber
+    newstartnumber = 1
 
     def _constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     symbolname='C'):
-
-        # The function works recursively.  The idea is that, for Mul, Add, Pow, and
-        # Function, if the class has a constant in it, then we can simplify it,
-        # which we do by recursing down and simplifying up.  Otherwise, we can skip
-        # that part of the expression.
+        """
+        The function works recursively.  The idea is that, for Mul, Add, Pow, and
+        Function, if the class has a constant in it, then we can simplify it,
+        which we do by recursing down and simplifying up.  Otherwise, we can skip
+        that part of the expression.
+        """
         constantsymbols = [Symbol(symbolname+"%d" % t) for t in range(startnumber,
         endnumber + 1)]
         x = independentsymbol
+        global newstartnumber
 
-        if type(expr) not in (Mul, Add, Pow, Function):
+        if type(expr) not in (Mul, Add, Pow) and not expr.is_Function:
             # We don't know how to handle other classes
             # This also serves as the base case for the recursion
             return expr
@@ -1355,13 +1358,19 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 newargs[i] = _constantsimp(newargs[i], x, endnumber, startnumber,
                 symbolname)
             for i in newargs:
-                if not i.has(x):
+                if not i.has(x) and not i in constantsymbols:
                     newargs.remove(i)
             if hasconst:
                 newargs = [newconst] + newargs
+                print newargs
             if expr.is_Pow and len(newargs) == 1:
                 newargs.append(S.One)
-            return expr.new(*newargs)
+            print expr, newargs, hasconst
+            if expr.is_Function and (len(newargs) == 0 or hasconst and \
+                                     len(newargs) == 1):
+                return newconst
+            else:
+                return expr.new(*newargs)
 
     return _constantsimp(expr, independentsymbol, endnumber, startnumber,
     symbolname)
