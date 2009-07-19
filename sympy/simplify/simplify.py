@@ -1343,11 +1343,14 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
         else:
             newargs = []
             hasconst = False
+            isPowExp = False
             for i in expr.args:
                 if i not in constantsymbols:
                     newargs.append(i)
                 else:
                     hasconst = True
+                    if expr.is_Pow and i == expr.exp:
+                        isPowExp = True
 
             # Renumbering happens here
             if hasconst:
@@ -1357,15 +1360,18 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
             for i in range(len(newargs)):
                 newargs[i] = _constantsimp(newargs[i], x, endnumber, startnumber,
                 symbolname)
+            newnewargs = []
             for i in newargs:
-                if not i.has(x) and not i in constantsymbols:
-                    newargs.remove(i)
+                if i.has(x) or i in constantsymbols:
+                    newnewargs.append(i)
+                newargs = newnewargs
             if hasconst:
-                newargs = [newconst] + newargs
-                print newargs
+                if isPowExp:
+                    newargs = newargs + [newconst] # Order matters in this case
+                else:
+                    newargs = [newconst] + newargs
             if expr.is_Pow and len(newargs) == 1:
                 newargs.append(S.One)
-            print expr, newargs, hasconst
             if expr.is_Function and (len(newargs) == 0 or hasconst and \
                                      len(newargs) == 1):
                 return newconst
