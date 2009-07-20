@@ -188,7 +188,7 @@ def together(expr, deep=False):
        functions, interior unless 'deep' flag is set.
 
        By definition, 'together' is a complement to 'apart', so
-       apart(together(expr)) should left expression unhanged.
+       apart(together(expr)) should return expr unchanged.
 
        >>> from sympy import *
        >>> x, y, z = symbols('x', 'y', 'z')
@@ -1152,28 +1152,29 @@ def combsimp(expr):
 def simplify(expr):
     """Naively simplifies the given expression.
 
-       Simplification is not a well defined term and the exact strategies
-       this function tries can change in the future versions of SymPy. If
-       your algorithm relies on "simplification" (whatever it is), try to
-       determine what you need exactly  -  is it powsimp()? radsimp()?
-       together()?, logcombine()?, or something else? And use this particular
-       function directly, because those are well defined and thus your algorithm
-       will be robust.
+       Simplification is not a well defined term and the exact strategies this
+       function tries can change in the future versions of SymPy. To make your
+       own routines as robust as possible, try to determine exactly what type
+       of simplification you need and then call those particular functions
+       directly, e.g. powsimp(), radsimp(), together() or combinations of the
+       same.
 
     """
     expr = Poly.cancel(powsimp(expr))
     expr = powsimp(together(expr.expand()), combine='exp', deep=True)
+
     if expr.could_extract_minus_sign():
         n, d = expr.as_numer_denom()
-        if d != 0:
+        if d not in [0, 1]:
             expr = -n/(-d)
+
     return expr
 
 def nsimplify(expr, constants=[], tolerance=None, full=False):
     """
     Numerical simplification -- tries to find a simple formula
-    that numerically matches the given expression. The input should
-    be possible to evalf to a precision of at least 30 digits.
+    that numerically matches the given expression. It is assumed
+    that the input can be evaluated with evalf to at least 30 digits.
 
     Optionally, a list of (rationally independent) constants to
     include in the formula may be given.

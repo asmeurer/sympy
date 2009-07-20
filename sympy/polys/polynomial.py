@@ -28,7 +28,7 @@ class CoefficientError(PolynomialError):
 class UnivariatePolyError(PolynomialError):
 
     def __init__(self, poly):
-        self.message = "%s is an univariate polynomial" % poly
+        self.message = "%s is a univariate polynomial" % poly
 
     def __str__(self):
         return self.message
@@ -64,7 +64,7 @@ class Poly(Basic):
        solve the given problem in the most efficient way.
 
        The most common way to initialize a polynomial instance is to
-       provide a valid expression together witch a set of ordered
+       provide a valid expression together with a set of ordered
        symbols and, additionally, monomial ordering:
 
             Poly(expression, x_1, x_2, ..., x_n, order='grlex')
@@ -237,7 +237,7 @@ class Poly(Basic):
 
        [11] Substitution and evaluation:
 
-          [11.1] [U-] __call__    --> evaluates poly a the given point
+          [11.1] [U-] __call__    --> evaluates poly at the given point
           [11.2] [U-] evaluate    --> evaluates poly for specific vars
           [11.3] [--] _eval_subs  --> efficiently substitute variables
 

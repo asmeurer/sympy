@@ -2006,20 +2006,20 @@ class Basic(AssumeMeths):
         else:
             if self.is_Add:
                 # We choose the one with less arguments with minus signs
-                arg_signs = [arg.could_extract_minus_sign() for arg in self.args]
-                positive_args = arg_signs.count(False)
-                negative_args = arg_signs.count(True)
+                all_args = len(self.args)
+                negative_args = len([False for arg in self.args if arg.could_extract_minus_sign()])
+                positive_args = all_args - negative_args
                 if positive_args > negative_args:
                     return False
                 elif positive_args < negative_args:
                     return True
             elif self.is_Mul:
                 num, den = self.as_numer_denom()
-                if den != 0:
+                if den not in [0, 1]:
                     return num.could_extract_minus_sign()
 
-            # As a last resort, we choose the one with greater hash
-            return hash(self) < hash(negative_self)
+        # As a last resort, we choose the one with greater hash
+        return hash(self) < hash(negative_self)
 
     ###################################################################################
     ##################### DERIVATIVE, INTEGRAL, FUNCTIONAL METHODS ####################

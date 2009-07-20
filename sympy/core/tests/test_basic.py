@@ -361,6 +361,12 @@ def test_noncommutative_expand_issue658():
     assert (A*(A+B)*B).expand() == A**2*B + A*B**2
     assert (A*(A+B+C)*B).expand() == A**2*B + A*B**2 + A*C*B
 
+def test_as_numer_denom():
+    assert oo.as_numer_denom() == (1, 0)
+    assert (1/x).as_numer_denom() == (1, x)
+    assert x.as_numer_denom() == (x, 1)
+    assert (x/y).as_numer_denom() == (x, y)
+
 def test_as_independent():
     assert (2*x*sin(x)+y+x).as_independent(x) == (y, x + 2*x*sin(x))
     assert (2*x*sin(x)+y+x).as_independent(y) == (x + 2*x*sin(x), y)

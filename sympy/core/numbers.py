@@ -650,7 +650,7 @@ class Rational(Number):
         if other.is_comparable and not isinstance(other, Rational): other = other.evalf()
         if isinstance(other, Number):
             if isinstance(other, Real):
-                return bool(not mlib.feq(self._as_mpf_val(other._prec), other._mpf_))
+                return bool(not mlib.mpf_eq(self._as_mpf_val(other._prec), other._mpf_))
             return bool(self.p!=other.p or self.q!=other.q)
 
         return True     # Rational != non-Number
