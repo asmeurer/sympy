@@ -2,7 +2,7 @@ from sympy import SYMPY_DEBUG
 
 from sympy.core import Basic, S, C, Add, Mul, Pow, Rational, Integer, \
         Derivative, Wild, Symbol, sympify, expand, expand_mul, expand_func, \
-        Function
+        Function, Equality
 
 from sympy.core.numbers import igcd
 from sympy.core.relational import Equality
@@ -1334,6 +1334,12 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
         x = independentsymbol
         global newstartnumber
 
+        print expr
+        if isinstance(expr, Equality):
+            return Equality(_constantsimp(expr.lhs, x, endnumber, startnumber,
+                symbolname), _constantsimp(expr.rhs, x, endnumber, startnumber,
+                symbolname))
+
         if type(expr) not in (Mul, Add, Pow) and not expr.is_Function:
             # We don't know how to handle other classes
             # This also serves as the base case for the recursion
@@ -1344,6 +1350,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
             newargs = []
             hasconst = False
             isPowExp = False
+            reeval = False
             for i in expr.args:
                 if i not in constantsymbols:
                     newargs.append(i)
@@ -1358,8 +1365,13 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 newstartnumber += 1
 
             for i in range(len(newargs)):
-                newargs[i] = _constantsimp(newargs[i], x, endnumber, startnumber,
-                symbolname)
+                for i in expr.args:
+                    isimp = _constantsimp(i, x, endnumber,
+                    startnumber, symbolname)
+                    print 'isimp', isimp
+                    if not isimp.has(x):
+                        reeval = True
+                    newargs.append(isimp)
             newnewargs = []
             if hasconst:
                 for i in newargs:
@@ -1375,9 +1387,19 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 if (len(newargs) == 0 or hasconst and len(newargs) == 1):
                     return newconst
                 else:
-                    return expr
+                    newfuncargs = [constantsimp(t, x, endnumber, startnumber,
+                    symbolname) for t in expr.args]
+                    return expr.new(*newfuncargs)
             else:
-                return expr.new(*newargs)
+                print 'newargs', newargs
+                print 'expr', expr
+                print 'reeval', reeval
+                if reeval and any((i not in constantsymbols for i in newargs)):
+                    print 'return reeval'
+                    return _constantsimp(expr.new(*newargs), x, endnumber,
+                    startnumber, symbolname)
+                else:
+                    return expr.new(*newargs)
 
     return _constantsimp(expr, independentsymbol, endnumber, startnumber,
     symbolname)
