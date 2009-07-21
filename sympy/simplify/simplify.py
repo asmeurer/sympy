@@ -1334,7 +1334,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
         x = independentsymbol
         global newstartnumber
 
-        print expr
+        print 'expr', expr
         if isinstance(expr, Equality):
             return Equality(_constantsimp(expr.lhs, x, endnumber, startnumber,
                 symbolname), _constantsimp(expr.rhs, x, endnumber, startnumber,
@@ -1369,7 +1369,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                     isimp = _constantsimp(i, x, endnumber,
                     startnumber, symbolname)
                     print 'isimp', isimp
-                    if not isimp.has(x):
+                    if not isimp.has(x) and not isimp in constantsymbols:
                         reeval = True
                     newargs.append(isimp)
             newnewargs = []
@@ -1387,19 +1387,20 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 if (len(newargs) == 0 or hasconst and len(newargs) == 1):
                     return newconst
                 else:
-                    newfuncargs = [constantsimp(t, x, endnumber, startnumber,
+                    newfuncargs = [_constantsimp(t, x, endnumber, startnumber,
                     symbolname) for t in expr.args]
                     return expr.new(*newfuncargs)
             else:
-                print 'newargs', newargs
-                print 'expr', expr
+                print 'newargs', newargs, 'expr', expr
                 print 'reeval', reeval
-                if reeval and any((i not in constantsymbols for i in newargs)):
-                    print 'return reeval'
-                    return _constantsimp(expr.new(*newargs), x, endnumber,
+                newexpr = expr.new(*newargs)
+                if reeval and any((i not in constantsymbols for i in newargs)) and newexpr not in constantsymbols:
+                    print 'return reeval', newexpr
+                    return _constantsimp(newexpr, x, endnumber,
                     startnumber, symbolname)
                 else:
-                    return expr.new(*newargs)
+                    print 'return normal', newexpr
+                    return newexpr
 
     return _constantsimp(expr, independentsymbol, endnumber, startnumber,
     symbolname)
