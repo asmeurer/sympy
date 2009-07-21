@@ -1341,6 +1341,10 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
         elif not any(t in expr for t in constantsymbols):
             return expr
         else:
+            if expr.is_Function and (len(newargs) == 0 or hasconst and \
+                                     len(newargs) == 1):
+                return newconst
+
             newargs = []
             hasconst = False
             isPowExp = False
@@ -1361,20 +1365,16 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 newargs[i] = _constantsimp(newargs[i], x, endnumber, startnumber,
                 symbolname)
             newnewargs = []
-            for i in newargs:
-                if i.has(x) or i in constantsymbols:
-                    newnewargs.append(i)
-                newargs = newnewargs
             if hasconst:
+                for i in newargs:
+                    if i.has(x):
+                        newnewargs.append(i)
                 if isPowExp:
-                    newargs = newargs + [newconst] # Order matters in this case
+                    newargs = newnewargs + [newconst] # Order matters in this case
                 else:
-                    newargs = [newconst] + newargs
+                    newargs = [newconst] + newnewargs
             if expr.is_Pow and len(newargs) == 1:
                 newargs.append(S.One)
-            if expr.is_Function and (len(newargs) == 0 or hasconst and \
-                                     len(newargs) == 1):
-                return newconst
             else:
                 return expr.new(*newargs)
 

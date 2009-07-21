@@ -34,8 +34,8 @@ def test_constant_mul():
     assert constantsimp(y*(x*C1), x, 1) == x*C1
     assert constantsimp((x*C1)*y, x, 1) == x*C1
     assert constantsimp(C1*x*y*x*y*2, x, 1) == C1*x**2
-    assert constantsimp(C1*x*y*z, x, 1) == C2*x*y
-    assert constantsimp(C1*x*y**2*sin(z), x, 1) == C2*x*y**2
+    assert constantsimp(C1*x*y*z, x, 1) == C1*x
+    assert constantsimp(C1*x*y**2*sin(z), x, 1) == C1*x
     assert constantsimp(C1*C1, x, 1) == C1
     assert constantsimp(C1*C2, x, 2) == C1
     assert constantsimp(C2*C2, x, 2) == C1
@@ -68,7 +68,6 @@ def test_constant_power_as_base():
     assert constantsimp(C1**(x*y), x, 1) == C1**(x*y)
 
 def test_constant_power_as_exp():
-    print constantsimp(x**C1, x, 1)
     assert constantsimp(x**C1, x, 1) == x**C1
     assert constantsimp(y**C1, x, 1) == C1
     assert constantsimp(x**y**C1, x, 1) == x**C1
@@ -85,13 +84,15 @@ def test_constant_power_as_exp():
 
 def test_constant_function():
     assert constantsimp(sin(C1), x, 1) == C1
-    assert constantsimp(f(C1, x, 1)) == C1
-    assert constantsimp(f(C1, C1, x, 1)) in (C2, C1)
-    assert constantsimp(f(C1, C1, x, 1)) in (C2, C1)
-    assert constantsimp(f(C1, C1, y, x, 1)) in (C2, C1)
-    assert constantsimp(f(C1, x, x, 1)) == f(C1, x)
-    assert constantsimp(f(C1, C1, x, x, 1)) == f(C1, C1, x)
-    assert constantsimp(f(C1, y, x, 1)) == C1
-    assert constantsimp(f(y, C1, x, 1)) == C1
+    assert constantsimp(f(C1), x, 1) == C1
+    assert constantsimp(f(C1, C1), x, 1) == C1
+    assert constantsimp(f(C1, C2), x, 2) == C1
+    assert constantsimp(f(C2, C1), x, 2) == C1
+    assert constantsimp(f(C2, C2), x, 2) == C1
+    assert constantsimp(f(C1, x), x, 1) == f(C1, x)
+    assert constantsimp(f(C1, C1, x), x, 1) == f(C1, C1, x)
+    assert constantsimp(f(C1, y), x, 1) == C1
+    assert constantsimp(f(y, C1), x, 1) == C1
+    assert constantsimp(f(C1, y, C2), x, 2) == C1
 
 
