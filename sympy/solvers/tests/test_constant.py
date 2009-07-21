@@ -95,4 +95,9 @@ def test_constant_function():
     assert constantsimp(f(y, C1), x, 1) == C1
     assert constantsimp(f(C1, y, C2), x, 2) == C1
 
+def test_ode_solutions():
+    # only a few examples here, the rest will be tested in the actual dsolve tests
+    assert constantsimp(C1*exp(2*x)+exp(x)*(C2+C3), x, 3) == C1*exp(x)+C2*exp(2*x)
+
+
 
