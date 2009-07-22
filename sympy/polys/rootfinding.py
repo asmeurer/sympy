@@ -75,8 +75,8 @@ def roots_cubic(f):
 def roots_quartic(f):
     """Returns a list of roots of a quartic polynomial.
 
-    There are many references for  solving quartic expressions available [1-4].
-    The author has found that many of  them require one to select  from among 2
+    There are many references for solving quartic expressions available [1-6].
+    The author has found that many of them require one to select from among 2
     or more possible sets of solutions. The following routine is believed to be
     valid for all quartics, including those with complex coefficients, and does
     not require a root selection.
@@ -94,6 +94,8 @@ def roots_quartic(f):
       [3] http://planetmath.org/encyclopedia/GaloisTheoreticDerivationOfTheQuarticFormula.html
       [4] Maxima 0.7.3a solution to z**4+e*z**2+f*z+g=0 where
           x=z-a/4 and x^4+a^x^3+b^x^2+c*x+d=0
+      [5] http://staff.bath.ac.uk/masjhd/JHD-CA.pdf
+      [6] http://www.albmath.org/files/Math_5713.pdf
 
     """
 
@@ -221,18 +223,8 @@ def roots(f, *symbols, **flags):
 
     """
     if not isinstance(f, Poly):
-        if type(f) in [list, tuple]:
-            if symbols:
-                raise SymbolsError("Redundant symbols were given")
-            else:
-                coeff = f
-                x=Symbol('x')
-                xx=x**(len(coeff)-1)
-                f = S.Zero
-                for c in coeff:
-                    f += c*xx
-                    xx /= x
-                symbols = [x]
+        if isinstance(f, tuple):
+            f = list(f)
         f = Poly(f, *symbols)
     elif symbols:
         raise SymbolsError("Redundant symbols were given")
@@ -292,12 +284,16 @@ def roots(f, *symbols, **flags):
         n = f.degree
 
         if n == 1:
+            #print "O(1)"
             result += roots_linear(f)
         elif n == 2:
+            #print "O(2)"
             result += roots_quadratic(f)
         elif n == 3 and flags.get('cubics', True):
+            #print "O(3)"
             result += roots_cubic(f)
         elif n == 4 and flags.get('quartics', True):
+            #print "O(4)"
             result += roots_quartic(f)
 
         return result

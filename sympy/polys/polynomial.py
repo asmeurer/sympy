@@ -84,22 +84,47 @@ class Poly(Basic):
            [3] grevlex   -> reversed grlex order
            [4] 1-el      -> first elimination order
 
-       Polynomial can be also constructed explicitly by specifying
-       a collection of coefficients and monomials. This can be done
-       in at least three different ways:
+       Polynomial can be also constructed explicitly by passing
+       a collection of coefficients and monomials in as an expression.
+       The semantics for interpreting the collection depend on the
+       type of the collection according to the following semantics:
 
-           [1] [(c_1, M_1), (c_2, M_2), ..., (c_1, M_1)]
+           [1] expression is a LIST
+               a) [(c_1, M_1), (c_2, M_2), ..., (c_n, M_n)]
+               b) [(c_1, m_1), (c_2, m_2), ..., (c_n, m_n)]
+               c) [ c_1, c_2, ..., c_n ]
 
-           [2] (c_1, c2, ..., c_n), (M_1, M_2, ..., M_n)
+                >>> a, x, y = var('a x y')
+                >>> # a) M is a tuple (m_1, m_2, ..., m_3)
+                >>> Poly([(4, (2,2)), (3, (1,2))], x, y)
+                Poly(4*x**2*y**2 + 3*x*y**2, x, y)
+                >>> # b) m_i are integers
+                >>> Poly([(1, 2), (a, 0)], x)
+                Poly(x**2 + a, x)
+                >>> # c)
+                >>> Poly([1, 0, a])
+                Poly(x**2 + a, x)
 
-           [3] { M_1 : c_1, M_2 : c_2, ..., M_n : c_n }
+           [2] expression is a TUPLE:
+               ((c_1, c2, ..., c_n), (M_1, M_2, ..., M_n))
+
+                >>> Poly( ((S(1), S(2)), ((3,), (4,))), x)
+                Poly(x**3 + 2*x**4, x)
+
+           [3] expression is a DICTIONARY
+               { M_1 : c_1, M_2 : c_2, ..., M_n : c_n }
+
+                >>> Poly( {(1, 2): S(3), (4, 5): S(6)} ,x ,y)
+                Poly(6*x**4*y**5 + 3*x*y**2, x, y)
 
        Although all three representation look similar, they are
        designed for different tasks and have specific properties:
 
            [1] All coefficients and monomials  are validated before
                polynomial instance is created. Monomials are sorted
-               with respect to the given order.
+               with respect to the given order. In the case that
+               coefficients alone are given, no symbol should be
+               specified; the symbol 'x' will be supplied.
 
            [2] No validity checking, no sorting, just a raw copy.
 
@@ -108,7 +133,11 @@ class Poly(Basic):
 
        For interactive usage choose [1] as it's safe and relatively
        fast. Use [2] or [3] internally for time critical algorithms,
-       when you know that coefficients and monomials will be valid.
+       when you know that coefficients and monomials will be valid
+       sympy expressions. If the coefficients are integers instead
+       of sympy integers (e.g. 1 instead of S(1)) the polynomial will
+       be created but you will run into problems if you try to print
+       the polynomial.
 
        Implemented methods:
 
@@ -296,6 +325,9 @@ class Poly(Basic):
                     poly = poly.as_dict()
                 else:
                     return poly
+            elif isinstance(poly, list):
+                return Poly([(c, i) for i, c in enumerate(reversed(poly))],
+                            Symbol('x'))
             else:
                 raise SymbolsError("No symbols were given")
 
