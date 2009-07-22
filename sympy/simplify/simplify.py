@@ -1390,7 +1390,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     >>> constantsimp(C1 + 2 + x + y, x, 3)
     C1 + x
     >>> constantsimp(C1*C2 + 2 + x + y + C3*x, x, 3)
-    C1 + C2*x + x
+    C1 + x + C2*x
     """
     # We need to have an internal recursive function so that newstartnumber
     # maintains its values throughout recursive calls

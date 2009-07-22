@@ -1,5 +1,5 @@
 from sympy import sin, exp, Function, Symbol, S, Pow, Eq, I, sinh, cosh, acos,\
-cos, log, Rational, sqrt
+cos, log, Rational, sqrt, Integral
 from sympy.simplify.simplify import constantsimp
 from sympy.utilities.pytest import XFAIL
 
@@ -122,4 +122,17 @@ def test_ode_solutions():
     assert constantsimp(Eq(log(x*2**Rational(1,2)*(1/x)**Rational(1,2)*f(x)\
     **Rational(1,2)/C1) + x**2/(2*f(x)**2), 0), x, 1) == \
     Eq(log(C1*x*(1/x)**Rational(1,2)*f(x)**Rational(1,2)) + x**2/(2*f(x)**2), 0)
+    assert constantsimp(Eq(-exp(-f(x)/x)*sin(f(x)/x)/2 + log(x/C1) - \
+    cos(f(x)/x)*exp(-f(x)/x)/2, 0), x, 1) == Eq(-exp(-f(x)/x)*sin(f(x)/x)/2 + \
+    log(C1*x) - cos(f(x)/x)*exp(-f(x)/x)/2, 0)
+    u2 = Symbol('u2')
+    _a = Symbol('_a')
+    assert constantsimp(Eq(-Integral(-1/((1 - u2**2)**Rational(1,2)*u2), \
+    (u2, _a, x/f(x))) + log(f(x)/C1), 0), x, 1) == Eq(-Integral(-1/(u2*(1 - \
+    u2**2)**Rational(1,2)), (u2, _a, x/f(x))) + log(C1*f(x)), 0)
+    assert map(lambda i: constantsimp(i, x, 1), [Eq(f(x), (-C1*x + x**2)**\
+    Rational(1,2)), Eq(f(x), -(-C1*x + x**2)**Rational(1,2))]) == [Eq(f(x), \
+    (C1*x + x**2)**Rational(1,2)), Eq(f(x), -(C1*x + x**2)**Rational(1,2))]
+
+
 
