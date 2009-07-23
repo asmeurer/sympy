@@ -56,16 +56,16 @@ class MultivariatePolyError(PolynomialError):
 class Poly(Basic):
     """Represents polynomials with symbolic coefficients.
 
-       Polynomials are internally represented as two lists containing
-       coefficients and monomials (tuples of exponents) respectively.
-       Stored are only terms with non-zero coefficients, so generally
-       all polynomials are considered sparse. However algorithms will
-       detect dense polynomials and use the appropriate method to
-       solve the given problem in the most efficient way.
+       Polynomials are internally represented as two lists
+       containing coefficients and monomials (tuples of exponents),
+       respectively. Stored are only terms with non-zero
+       coefficients, so generally all polynomials are considered
+       sparse. However, algorithms will detect dense polynomials and
+       use the appropriate method to solve them in the most efficient way.
 
-       The most common way to initialize a polynomial instance is to
-       provide a valid expression together with a set of ordered
-       symbols and, additionally, monomial ordering:
+       The most common way to initialize a polynomial
+       instance is to provide a valid expression together with a
+       set of ordered symbols and, additionally, monomial ordering:
 
             Poly(expression, x_1, x_2, ..., x_n, order='grlex')
 
@@ -74,18 +74,18 @@ class Poly(Basic):
        you can use Basic.as_poly to avoid exception handling.
 
        By default ordering of monomials can be omitted. In this case
-       graded lexicographic order will be used. Anyway remember that
+       graded lexicographic order will be used. Anyway, remember that
        'order' is a keyword argument.
 
-       Currently there are supported four standard orderings:
+       Currently, four standard orderings are supported:
 
            [1] lex       -> lexicographic order
            [2] grlex     -> graded lex order
            [3] grevlex   -> reversed grlex order
            [4] 1-el      -> first elimination order
 
-       Polynomial can be also constructed explicitly by passing
-       a collection of coefficients and monomials in as an expression.
+       Polynomials can also be constructed explicitly by passing a
+       collection of coefficients and monomials in as an expression.
        The semantics for interpreting the collection depend on the
        type of the collection according to the following semantics:
 
@@ -117,27 +117,30 @@ class Poly(Basic):
                 >>> Poly( {(1, 2): S(3), (4, 5): S(6)} ,x ,y)
                 Poly(6*x**4*y**5 + 3*x*y**2, x, y)
 
-       Although all three representation look similar, they are
-       designed for different tasks and have specific properties:
+       These initialization methods are not just conveniences for creating
+       polynomials. They are designed for different tasks and the resulting
+       polynomials have specific properties:
 
            [1] All coefficients and monomials  are validated before
                polynomial instance is created. Monomials are sorted
-               with respect to the given order. In the case that
+               with respect to the given order. (In the case that
                coefficients alone are given, no symbol should be
-               specified; the symbol 'x' will be supplied.
+               specified; the symbol 'x' will be supplied.)
 
            [2] No validity checking, no sorting, just a raw copy.
 
-           [3] Also no validity checking however monomials are
-               sorted with respect to the given order.
+           [3] No validity checking, but monomials are sorted with
+               respect to the given order.
 
        For interactive usage choose [1] as it's safe and relatively
-       fast. Use [2] or [3] internally for time critical algorithms,
-       when you know that coefficients and monomials will be valid
-       sympy expressions. If the coefficients are integers instead
-       of sympy integers (e.g. 1 instead of S(1)) the polynomial will
-       be created but you will run into problems if you try to print
-       the polynomial.
+       fast.
+
+       Use [2] or [3] internally for time critical algorithms, when you know
+       that coefficients and monomials will be valid sympy expressions. If the
+       coefficients are integers instead of sympy integers (e.g. 1 instead of
+       S(1)) the polynomial will be created but you will run into problems if
+       you try to print the polynomial. If the monomials are not given as tuples
+       of integers you will have problems.
 
        Implemented methods:
 
@@ -447,6 +450,7 @@ class Poly(Basic):
 
                 coeffs = [ terms[monom] for monom in monoms ]
 
+        assert isinstance(coeffs[0],Basic) and isinstance(monoms[0][0],int)
         args = (tuple(coeffs), tuple(monoms),
                 symbols, order, stamp, None)
 
@@ -1075,6 +1079,7 @@ class Poly(Basic):
                     terms[monom] = coeff
 
         return self.__class__(terms, *self.symbols, **self.flags)
+
 
     def __pow__(self, other):
         """Polynomial exponentiation using binary method.

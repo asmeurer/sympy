@@ -118,12 +118,11 @@ def solve(f, *symbols, **flags):
        more problem specific functions.
 
        By default all solutions are simplified to make the output more
-       readable. If this is not the expected behavior,  eg. because of
-       speed issues, set simplified=False in function arguments.
+       readable. If this is not the expected behavior (e.g., because of
+       speed issues) set simplified=False in function arguments.
 
-       To solve equations and systems of equations of other kind, eg.
-       recurrence relations of differential equations use rsolve() or
-       dsolve() functions respectively.
+       To solve equations and systems of equations like recurrence relations
+       or differential equations, use rsolve() or dsolve(), respectively.
 
        >>> from sympy import *
        >>> x,y = symbols('xy')
@@ -139,8 +138,10 @@ def solve(f, *symbols, **flags):
        {x: -3, y: 1}
 
     """
+    symbols = symbols or list(f.atoms(Symbol))
+
     if not symbols:
-        raise ValueError('no symbols were given')
+         raise ValueError('no symbols were given')
 
     if len(symbols) == 1:
         if isinstance(symbols[0], (list, tuple, set)):

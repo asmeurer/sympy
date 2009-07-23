@@ -59,6 +59,17 @@ def test_guess_transcendental():
 
     assert guess_solve_strategy(a*x**b-y, x) == GS_TRANSCENDENTAL
 
+def test_solve_args():
+    x, y = symbols('xy')
+    #implicit symbol to solve for
+    assert set(int(tmp) for tmp in solve(x**2-4)) == set([2,-2])
+    #no symbol to solve for
+    assert raises(ValueError, "solve(S(4))")
+    #too many symbols to solve for
+    assert raises(NotImplementedError, "solve(x+y)")
+    #symbol is not a symbol or function
+    raises(TypeError, "solve(x**2-pi, pi)")
+
 def test_solve_polynomial1():
     x, y = symbols('xy')
 
@@ -90,9 +101,6 @@ def test_solve_polynomial1():
     assert solve( x**3 - 15*x - 4, x) == [-2 + 3**Rational(1,2),
                                            4,
                                            -2 - 3**Rational(1,2) ]
-
-    raises(TypeError, "solve(x**2-pi, pi)")
-    raises(ValueError, "solve(x**2-pi)")
 
 def test_solve_polynomial2():
     x = Symbol('x')

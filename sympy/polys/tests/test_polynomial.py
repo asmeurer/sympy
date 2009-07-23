@@ -46,6 +46,7 @@ def test_poly_basics():
 
     p = Poly(x**2 + x + 1, x)
 
+    assert Poly([1,1,1]) == p
     assert Poly(p, y) == \
         Poly(((1 + x + x**2,), ((0,),)), y, order='grlex')
 
