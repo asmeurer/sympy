@@ -23,7 +23,7 @@ from sympy.core.relational import Equality
 from sympy.core.function import Derivative, diff, Function
 from sympy.core.numbers import ilcm
 
-from sympy.functions import sqrt, log, exp, LambertW, sin, cos
+from sympy.functions import sqrt, log, exp, LambertW, sin, cos, re, im
 from sympy.simplify import simplify, collect, logcombine, separatevars
 from sympy.matrices import Matrix, zeros
 from sympy.polys import roots
@@ -595,7 +595,7 @@ def dsolve(eq, funcs):
         order = deriv_degree(eq, f(x))
 
         if order > 1:
-            return constantsimp(solve_ODE_higher_order(eq, f(x), order), x, order)
+            return constantsimp(solve_ODE_higher_order(eq, f(x), order), x, 2*order)
         if  order > 2:
            raise NotImplementedError("dsolve: Cannot solve " + str(eq))
         elif order == 2:
@@ -916,7 +916,8 @@ def solve_ODE_first_order(eq, f):
             u1 = Symbol('u1', dummy=True) # u1 == y/x
             u2 = Symbol('u2', dummy=True) # u2 == x/y
             _a = Symbol('_a', dummy=True)
-            #print ((-r[b]/(r[a]+u1*r[b])).subs({x:1, y:u1}), (-r[a]/(r[b]+u2*r[a])).subs({x:u2, y:1}))
+            #print ((-r[b]/(r[a]+u1*r[b])).subs({x:1, y:u1}),
+            #print (-r[a]/(r[b]+u2*r[a])).subs({x:u2, y:1}))
             int1 = integrate((-r[b]/(r[a]+u1*r[b])).subs({x:1, y:u1}), u1)
             int2 = integrate((-r[a]/(r[b]+u2*r[a])).subs({x:u2, y:1}), u2)
             # Substitute back in for u1 and u2.
@@ -1008,8 +1009,7 @@ def solve_ODE_higher_order(eq, f, order):
     j = 0
     s = S(0)
     wilds = []
-    constants = [numbered_symbols(prefix='C', function=Symbol) for i in\
-                 range(1, order + 1)]
+    constants = numbered_symbols(prefix='C', function=Symbol, start=1)
     for i in numbered_symbols(prefix='a', function=Wild, exclude=[f(x)]):
         if j == order+1:
             break
@@ -1032,13 +1032,14 @@ def solve_ODE_higher_order(eq, f, order):
                     chareq += r[i]*m**S(i.name[1:])
             charroots = roots(chareq, m)
             sol = S(0)
-            c = 0
+            print charroots
             for root, multiplicity in charroots.items():
                 for i in range(multiplicity):
-                    sol += x**i*exp(root[0]*x)*(constants[c]*sin(abs(root[1])*x) \
-                    + constants[c + 1]*cos(root[1]*x))
-                    c += 2
+                    sol += x**i*exp(re(root)*x)*(constants.next()*sin(abs(im(root))*x) \
+                    + constants.next()*cos(im(root)*x))
+                    print sol
             return sol
+
 
 
 def solve_ODE_second_order(eq, f):
