@@ -746,19 +746,25 @@ class Basic(AssumeMeths):
 
     def atoms(self, *types):
         """Returns the atoms that form the current object.
-           An atom is the smallest piece in which we can divide an
-           expression.
 
+           Atoms are the smallest piece into which we can divide
+           expressions. By default, atoms of type Symbol, Number
+           and NumberSymbol are returned.
 
-           Examples:
+           Examples::
 
            >>> from sympy import *
            >>> x,y = symbols('xy')
-
            >>> sorted((x+y**2 + 2*x*y).atoms())
            [2, x, y]
 
-           You can also filter the results by a given type(s) of object:
+           The following types can be used to filter the results so that
+           a set which is the union of all types given is returned:
+
+           Symbol, Add, Mul, Power, Function, Derivative, Order
+           Number, Integer, Rational, Real, NumberSymbol[1]
+
+           Examples::
 
            >>> sorted((x+y+2+y**2*sin(x)).atoms(Symbol))
            [x, y]
@@ -769,10 +775,19 @@ class Basic(AssumeMeths):
            >>> sorted((x+y+2+y**2*sin(x)).atoms(Symbol, Number))
            [2, x, y]
 
-           Or by a type of on object in an impliciy way:
+           The type of the object can be specified implicitly, by supplying
+           an object having the type of interest, e.g., providing symbol x
+           as an argument is the same as using the type Symbol:
 
            >>> sorted((x+y+2+y**2*sin(x)).atoms(x))
            [x, y]
+
+           [1] Currently, the type NumberSymbol is not supported as a type and
+           the imaginary symbol, I, is recognized only as an atom without a
+           numeric type. To get a list of number symbols, filter atoms as:
+
+           >>> [n for n in (E+I*pi).atoms() if n.is_NumberSymbol or n==I]
+           set([E, pi, I])
 
         """
 
