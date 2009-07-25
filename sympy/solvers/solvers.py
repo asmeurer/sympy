@@ -138,7 +138,7 @@ def solve(f, *symbols, **flags):
        {x: -3, y: 1}
 
     """
-    symbols = symbols or list(f.atoms(Symbol))
+    symbols = symbols or list(sympify(f).atoms(Symbol))
 
     if not symbols:
          raise ValueError('no symbols were given')
