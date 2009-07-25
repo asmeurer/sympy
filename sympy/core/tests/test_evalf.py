@@ -87,8 +87,8 @@ def test_evalf_complex_cancellation():
     # XXX: the number of returned mantissa digits in the real part could
     # change with the implementation. What matters is that the returned digits are
     # correct.
-    assert NS((A+B*I)*(C+D*I),6) in ('6.45e-6 + 0.892529*I', '6.4e-6 + 0.892529*I')
-    assert NS((A+B*I)*(C+D*I),10) == '6.447100e-6 + 0.8925286452*I'
+    assert NS((A+B*I)*(C+D*I),6) == '6.44862e-6 + 0.892529*I'
+    assert NS((A+B*I)*(C+D*I),10) == '6.447099821e-6 + 0.8925286452*I'
     assert NS((A+B*I)*(C+D*I) - F*I, 5) in ('6.4471e-6 - .0e-15*I', '6.4471e-6 + .0e-15*I')
 
 def test_evalf_logs():

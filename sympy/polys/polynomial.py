@@ -450,7 +450,7 @@ class Poly(Basic):
 
                 coeffs = [ terms[monom] for monom in monoms ]
 
-        assert isinstance(coeffs[0],Basic) and isinstance(monoms[0][0],int)
+        assert isinstance(monoms[0][0],int) #and isinstance(coeffs[0],Basic) #you can get by with the 2nd if you don't print
         args = (tuple(coeffs), tuple(monoms),
                 symbols, order, stamp, None)
 
