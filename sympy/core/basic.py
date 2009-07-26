@@ -761,8 +761,9 @@ class Basic(AssumeMeths):
            The following types can be used to filter the results so that
            a set which is the union of all types given is returned:
 
-           Symbol, Add, Mul, Power, Function, Derivative, Order
-           Number, Integer, Rational, Real, NumberSymbol[1]
+           Symbol, Add, Mul, Power, Function,
+           Derivative, Order, Inequality, StrictInequality
+           Number, Integer, Rational, Real, NumberSymbol
 
            Examples::
 
@@ -781,13 +782,6 @@ class Basic(AssumeMeths):
 
            >>> sorted((x+y+2+y**2*sin(x)).atoms(x))
            [x, y]
-
-           [1] Currently, the type NumberSymbol is not supported as a type and
-           the imaginary symbol, I, is recognized only as an atom without a
-           numeric type. To get a list of number symbols, filter atoms as:
-
-           >>> [n for n in (E+I*pi).atoms() if n.is_NumberSymbol or n==I]
-           set([E, pi, I])
 
         """
 
@@ -2463,3 +2457,4 @@ from add import Add
 from relational import Inequality, StrictInequality
 from function import FunctionClass, Derivative
 from numbers import Rational, Integer
+

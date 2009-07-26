@@ -1532,6 +1532,8 @@ class ImaginaryUnit(Atom):
 
     __slots__ = []
 
+    is_NumberSymbol = True
+
     @staticmethod
     def __abs__():
         return S.One
