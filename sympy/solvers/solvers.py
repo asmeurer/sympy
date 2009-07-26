@@ -1,5 +1,4 @@
-﻿
-""" This module contain solvers for all kinds of equations:
+﻿""" This module contain solvers for all kinds of equations:
 
     - algebraic, use solve()
 
@@ -22,11 +21,12 @@ from sympy.core.symbol import Symbol, Wild
 from sympy.core.relational import Equality
 from sympy.core.function import Derivative, diff, Function
 from sympy.core.numbers import ilcm
+from sympy.core.multidimensional import vectorize
 
 from sympy.functions import sqrt, log, exp, LambertW, sin, cos, re, im
 from sympy.simplify import simplify, collect, logcombine, separatevars
 from sympy.matrices import Matrix, zeros
-from sympy.polys import roots
+from sympy.polys import roots, RootsOf, discriminant
 
 from sympy.utilities import any, all, numbered_symbols
 from sympy.utilities.lambdify import lambdify
@@ -601,7 +601,7 @@ def dsolve(eq, funcs):
         elif order == 2:
             return solve_ODE_second_order(eq, f(x))
         elif order == 1:
-            return constantsimp(solve_ODE_first_order(eq, f(x)), x, 1)
+           return constantsimp(solve_ODE_first_order(eq, f(x)), x, 1)
         else:
             raise NotImplementedError("Not a differential equation.")
 
@@ -643,6 +643,7 @@ def classify_ode(expr, func):
     # This will have to wait for nth order homogeneous because I will need to
     # clean up solve_ODE_second_order and solve_ODE_1 first.
 
+@vectorize(0)
 def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     symbolname='C'):
     """
@@ -877,7 +878,6 @@ def solve_ODE_first_order(eq, f):
         m2 = separatevars(r[b], dict=True, symbols=(x, y))
 
         if m1 and m2:
-            print 'separable'
             return Equality(integrate(m2['coeff']*m2[y]/m1[y], y).subs(y, f(x)),\
             integrate(-m1['coeff']*m1[x]/m2[x], x)+C1)
         # Exact Differential Equation: P(x,y)+Q(x,y)*y'=0 where dP/dy == dQ/dx
@@ -1019,7 +1019,7 @@ def solve_ODE_higher_order(eq, f, order):
     s += b
 
     r = eq.match(s)
-    if r:
+    if r and r[b] == 0:
         # The ODE is homogeneous
         if all([not r[i].has(x) for i in wilds]):
             # First, set up characteristic equation.
@@ -1030,15 +1030,74 @@ def solve_ODE_higher_order(eq, f, order):
                     pass
                 else:
                     chareq += r[i]*m**S(i.name[1:])
-            charroots = roots(chareq, m)
+            chareqroots = RootsOf(chareq, m)
+            charroots_exact = list(chareqroots.exact_roots())
+            charroots_formal = list(chareqroots.formal_roots())
+            if charroots_formal and discriminant(chareq, m) == 0:
+                # If Poly cannot find the roots explicitly, we can only return
+                # an expression in terms of RootOf's if we know the roots
+                # are not repeated.  We use the fact that a polynomial has
+                # repeated roots iff its discriminant == 0.
+
+                # TODO: cancel out roots from charroots_exact, then check
+                # the discriminant of chareq.
+                raise NotImplementedError("Cannot find all of the roots of " + \
+                "characteristic equation " + str(chareq) + ", which has " + \
+                "repeated roots.")
+            # Create a dict root: multiplicity or charroots
+            charroots = {}
+            for i in charroots_exact + charroots_formal:
+                if i in charroots:
+                    charroots[i] += 1
+                else:
+                    charroots[i] = 1
             sol = S(0)
-            print charroots
+            # We need keep track of terms so we can run collect() at the end.
+            # This is necessary for constantsimp to work properly.
+            collectterms = {'exp': [], 'trig': []}
             for root, multiplicity in charroots.items():
                 for i in range(multiplicity):
-                    sol += x**i*exp(re(root)*x)*(constants.next()*sin(abs(im(root))*x) \
-                    + constants.next()*cos(im(root)*x))
-                    print sol
-            return sol
+                    reroot = re(root)
+                    imroot = im(root)
+                    sol += x**i*exp(reroot*x)*(constants.next()*sin(abs(imroot)*x) \
+                    + constants.next()*cos(imroot*x))
+                    if reroot:
+                        collectterms['exp'].append((i, reroot))
+                    if imroot:
+                        collectterms['trig'].append(imroot)
+            for i, reroot in collectterms['exp']:
+                sol = collect(sol, x**i*exp(reroot*x))
+            for imroot in collectterms['trig']:
+                sol = collect(sol, sin(abs(imroot)*x))
+                sol = collect(sol, cos(imroot*x))
+            return Equality(f(x), sol)
+
+    # special equations, that we know how to solve
+    # TODO: refactor into substitution u = f' (divide out exp(-f(x))
+    a = Wild('a')
+    t = x*exp(f(x))
+    tt = a*t.diff(x, x)/t
+    r = eq.match(tt.expand())
+    if r:
+        return Equality(f(x),log(constants.next()+constants.next()/x))
+
+    t = x*exp(-f(x))
+    tt = a*t.diff(x, x)/t
+    r = eq.match(tt.expand())
+    if r:
+        #check, that we've rewritten the equation correctly:
+        #assert ( r[a]*t.diff(x,2)/t ) == eq.subs(f, t)
+        return Equality(f(x),-log(constants.next()+constants.next()/x))
+
+    neq = eq*exp(f(x))/exp(-f(x))
+    r = neq.match(tt.expand())
+    if r:
+        #check, that we've rewritten the equation correctly:
+        #assert ( t.diff(x,2)*r[a]/t ).expand() == eq
+        return Equality(f(x),log(constants.next()+constants.next()/x))
+
+
+    raise NotImplementedError("solve_ODE_higher_order: Cannot solve " + str(eq)) # Yet!
 
 
 
@@ -1076,36 +1135,7 @@ def solve_ODE_second_order(eq, f):
 
     #other cases of the second order odes will be implemented here
 
-    #special equations, that we know how to solve
-    a = Wild('a')
-    t = x*exp(f(x))
-    tt = a*t.diff(x, x)/t
-    r = eq.match(tt.expand())
-    if r:
-        return Equality(f(x),-solve_ODE_1(f(x), x))
 
-    t = x*exp(-f(x))
-    tt = a*t.diff(x, x)/t
-    r = eq.match(tt.expand())
-    if r:
-        #check, that we've rewritten the equation correctly:
-        #assert ( r[a]*t.diff(x,2)/t ) == eq.subs(f, t)
-        return Equality(f(x),solve_ODE_1(f(x), x))
-
-    neq = eq*exp(f(x))/exp(-f(x))
-    r = neq.match(tt.expand())
-    if r:
-        #check, that we've rewritten the equation correctly:
-        #assert ( t.diff(x,2)*r[a]/t ).expand() == eq
-        return Equality(f(x),solve_ODE_1(f(x), x))
-
-    raise NotImplementedError("solve_ODE_second_order: cannot solve " + str(eq))
-
-def solve_ODE_1(f, x):
-    """ (x*exp(-f(x)))'' = 0 """
-    C1 = Symbol('C1')
-    C2 = Symbol('C2')
-    return -log(C1+C2/x)
 
 def homogeneous_order(eq, *symbols):
     """
