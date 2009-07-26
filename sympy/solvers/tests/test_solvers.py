@@ -184,8 +184,6 @@ def test_ODE_1():
 
     e = e*exp(-l(r))/exp(l(r))
     sol = dsolve(e, [l(r)])
-    print sol
-    print (e.subs(l(r), sol.rhs)).expand()
     assert (e.subs(l(r), sol.rhs)).expand() == 0
 
 def test_deriv_degree():

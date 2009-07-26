@@ -1094,7 +1094,7 @@ def solve_ODE_higher_order(eq, f, order):
     if r:
         #check, that we've rewritten the equation correctly:
         #assert ( t.diff(x,2)*r[a]/t ).expand() == eq
-        return Equality(f(x),log(constants.next()+constants.next()/x))
+        return Equality(f(x),-log(constants.next()+constants.next()/x))
 
 
     raise NotImplementedError("solve_ODE_higher_order: Cannot solve " + str(eq)) # Yet!
