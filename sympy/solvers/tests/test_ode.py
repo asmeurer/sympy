@@ -194,8 +194,8 @@ def test_ode_exact():
     skip("takes too much time")
     eq = x*sqrt(x**2 + f(x)**2) - (x**2*f(x)/(f(x) - sqrt(x**2 + f(x)**2)))*f(x).diff(x)
     sol = dsolve(eq, f(x))
-    assert sol == Eq(log(x),C1 - 9*sqrt(1 + f(x)**2/x**2)*asinh(f(x)/x)/(-27*f(x)/x + 27*sqrt(1 + f(x)**2/x**2)) - 9*sqrt(1 + \
-    f(x)**2/x**2)*log(1 - sqrt(1 + f(x)**2/x**2)*\
+    assert sol == Eq(log(x),C1 - 9*sqrt(1 + f(x)**2/x**2)*asinh(f(x)/x)/(-27*f(x)/x + \
+    27*sqrt(1 + f(x)**2/x**2)) - 9*sqrt(1 + f(x)**2/x**2)*log(1 - sqrt(1 + f(x)**2/x**2)*\
     f(x)/x + 2*f(x)**2/x**2)/(-27*f(x)/x + 27*sqrt(1 + f(x)**2/x**2)) \
     + 9*asinh(f(x)/x)*f(x)/(x*(-27*f(x)/x + 27*sqrt(1 + f(x)**2/x**2))) \
     + 9*f(x)*log(1 - sqrt(1 + f(x)**2/x**2)*f(x)/x + 2*f(x)**2/x**2)/\
@@ -320,6 +320,7 @@ def test_homogeneous_order_ode4_explicit():
 def test_homogeneous_norder():
     # From Exercise 20, in Ordinary Differential Equations, Tenenbaum and Pollard
     a = Symbol('a', positive=True)
+    k = Symbol('k', real=True)
     eq1 = f(x).diff(x, 2) + 2*f(x).diff(x)
     eq2 = f(x).diff(x, 2) - 3*f(x).diff(x) + 2*f(x)
     eq3 = f(x).diff(x, 2) - f(x)
@@ -328,8 +329,30 @@ def test_homogeneous_norder():
     eq6 = Eq(f(x).diff(x, 2) + 2*f(x).diff(x) - f(x), 0)
     eq7 = diff(f(x), x, 3) + diff(f(x), x, 2) - 10*diff(f(x), x) - 6*f(x)
     eq8 = f(x).diff(x, 4) - f(x).diff(x, 3) - 4*f(x).diff(x, 2) + 4*f(x).diff(x)
-    eq9 = f(x).diff(x, 4) + 4*f(x).diff(x, 3) + f(x).diff(x, 2) - 4*f(x).diff(x) - 2*f(x)
+    eq9 = f(x).diff(x, 4) + 4*f(x).diff(x, 3) + f(x).diff(x, 2) - \
+        4*f(x).diff(x) - 2*f(x)
     eq10 = f(x).diff(x, 4) - a**2*f(x)
+    eq11 = f(x).diff(x, 2) - 2*k*f(x).diff(x) - 2*f(x)
+    eq12 = f(x).diff(x, 2) + 4*k*f(x).diff(x) - 12*k**2*f(x)
+    eq13 = f(x).diff(x, 4)
+    eq14 = f(x).diff(x, 2) + 4*f(x).diff(x) + 4*f(x)
+    eq15 = 3*f(x).diff(x, 3) + 5*f(x).diff(x, 2) + f(x).diff(x) - f(x)
+    eq16 = f(x).diff(x, 3) - 6*f(x).diff(x, 2) +12*f(x).diff(x) - 8*f(x)
+    eq17 = f(x).diff(x, 2) - 2*a*f(x).diff(x) + a**2*f(x)
+    eq18 = f(x).diff(x, 4) + 3*f(x).diff(x, 3)
+    eq19 = f(x).diff(x, 4) - 2*f(x).diff(x, 2)
+    eq20 = f(x).diff(x, 4) + 2*f(x).diff(x, 3) - 11*f(x).diff(x, 2) - \
+        12*f(x).diff(x) + 36*f(x)
+    eq21 = 36*f(x).diff(x, 4) - 37*f(x).diff(x, 2) + 4*f(x).diff(x) + 5*f(x)
+    eq22 = f(x).diff(x, 4) - 8*f(x).diff(x, 2) + 16*f(x)
+    eq23 = f(x).diff(x, 2) - 2*f(x).diff(x) + 5*f(x)
+    eq24 = f(x).diff(x, 2) - f(x).diff(x) + f(x)
+    eq25 = f(x).diff(x, 4) + 5*f(x).diff(x, 2) + 6*f(x)
+    eq26 = f(x).diff(x, 2) - 4*f(x).diff(x) + 20*f(x)
+    eq27 = f(x).diff(x, 4) + 4*f(x).diff(x, 2) + 4*f(x)
+    eq28 = f(x).diff(x, 3) + 8*f(x)
+    eq29 = f(x).diff(x, 4) + 4*f(x).diff(x, 2)
+    eq30 = f(x).diff(x, 5) + 2*f(x).diff(x, 3) + f(x).diff(x)
     sol1 = Eq(f(x), C1 + C2*exp(-2*x))
     sol2 = Eq(f(x), C2*exp(x) + C1*exp(2*x))
     sol3 = Eq(f(x), C1*exp(x) + C2*exp(-x))
@@ -338,8 +361,32 @@ def test_homogeneous_norder():
     sol6 = Eq(f(x), C1*exp(-x*(1 + sqrt(2))) + C2*exp(-x*(1 - sqrt(2))))
     sol7 = Eq(f(x), C2*exp(3*x) + C1*exp(-x*(2 + sqrt(2))) + C3*exp(-x*(2 - sqrt(2))))
     sol8 = Eq(f(x), C1 + C3*exp(x) + C4*exp(-2*x) + C2*exp(2*x))
-    sol9 = Eq(f(x), C3*exp(x) + C4*exp(-x) + C1*exp(-x*(2 + sqrt(2))) + C2*exp(-x*(2 - sqrt(2))))
-    sol10 = Eq(f(x), C3*sin(x*sqrt(a)) + C4*cos(x*sqrt(a)) + C2*exp(x*sqrt(a)) + C1*exp(-x*sqrt(a)))
+    sol9 = Eq(f(x), C3*exp(x) + C4*exp(-x) + C1*exp(-x*(2 + sqrt(2))) + C2*exp(-x*(2 - \
+        sqrt(2))))
+    sol10 = Eq(f(x), C3*sin(x*sqrt(a)) + C4*cos(x*sqrt(a)) + C2*exp(x*sqrt(a)) + \
+        C1*exp(-x*sqrt(a)))
+    sol11 = Eq(f(x), C2*exp(x*(k - sqrt(8 + 4*k**2)/2)) + C1*exp(x*(k + sqrt(8 + \
+        4*k**2)/2)))
+    sol12 = Eq(f(x), C2*exp(x*(-4*abs(k) - 2*k)) + C1*exp(x*(-2*k + 4*abs(k))))
+    sol13 = Eq(f(x), C1 + C4*x + C3*x**2 + C2*x**3)
+    sol14 = Eq(f(x), (C1 + C2*x)*exp(-2*x))
+    sol15 = Eq(f(x), (C2 + C3*x)*exp(-x) + C1*exp(x/3))
+    sol16 = Eq(f(x), (C1 + C3*x + C2*x**2)*exp(2*x))
+    sol17 = Eq(f(x), (C1 + C2*x)*exp(a*x))
+    sol18 = Eq(f(x), C1 + C4*x + C3*x**2 + C2*exp(-3*x))
+    sol19 = Eq(f(x), C1 + C3*x + C2*exp(x*sqrt(2)) + C4*exp(-x*sqrt(2)))
+    sol20 = Eq(f(x), (C3 + C4*x)*exp(-3*x) + (C1 + C2*x)*exp(2*x))
+    sol21 = Eq(f(x), C3*exp(x/2) + C1*exp(-x) + C2*exp(-x/3) + C4*exp(5*x/6))
+    sol22 = Eq(f(x), (C1 + C2*x)*exp(-2*x) + (C3 + C4*x)*exp(2*x))
+    sol23 = Eq(f(x), (C1*sin(2*x) + C2*cos(2*x))*exp(x))
+    sol24 = Eq(f(x), (C1*sin(x*sqrt(3)/2) + C2*cos(x*sqrt(3)/2))*exp(x/2))
+    sol25 = Eq(f(x), C1*sin(x*sqrt(3)) + C2*cos(x*sqrt(2)) + C3*sin(x*sqrt(2)) + \
+    C4*cos(x*sqrt(3)))
+    sol26 = Eq(f(x), (C1*cos(4*x) + C2*sin(4*x))*exp(2*x))
+    sol27 = Eq(f(x), (C1 + C2*x)*cos(x*sqrt(2)) + (C3 + C4*x)*sin(x*sqrt(2)))
+    sol28 = Eq(f(x), (C1*sin(x*sqrt(3)) + C2*cos(x*sqrt(3)))*exp(x) + C3*exp(-2*x))
+    sol29 = Eq(f(x), C1 + C2*x + C3*sin(2*x) + C4*cos(2*x))
+    sol30 = Eq(f(x), C1 + (C2 + C3*x)*sin(x) + (C4 + C5*x)*cos(x))
     assert dsolve(eq1, f(x)) == sol1
     assert dsolve(eq2, f(x)) == sol2
     assert dsolve(eq3, f(x)) == sol3
@@ -350,8 +397,26 @@ def test_homogeneous_norder():
     assert dsolve(eq8, f(x)) == sol8
     assert dsolve(eq9, f(x)) == sol9
     assert dsolve(eq10, f(x)) == sol10
-#    assert dsolve(eq11, f(x)) == sol11
-#    assert dsolve(eq12, f(x)) == sol12
+    assert dsolve(eq11, f(x)) == sol11
+    assert dsolve(eq12, f(x)) == sol12
+    assert dsolve(eq13, f(x)) == sol13
+    assert dsolve(eq14, f(x)) == sol14
+    assert dsolve(eq15, f(x)) == sol15
+    assert dsolve(eq16, f(x)) == sol16
+    assert dsolve(eq17, f(x)) == sol17
+    assert dsolve(eq18, f(x)) == sol18
+    assert dsolve(eq19, f(x)) == sol19
+    assert dsolve(eq20, f(x)) == sol20
+    assert dsolve(eq21, f(x)) == sol21
+    assert dsolve(eq22, f(x)) == sol22
+    assert dsolve(eq23, f(x)) == sol23
+    assert dsolve(eq24, f(x)) == sol24
+    assert dsolve(eq25, f(x)) == sol25
+    assert dsolve(eq26, f(x)) == sol26
+    assert dsolve(eq27, f(x)) == sol27
+    assert dsolve(eq28, f(x)) == sol28
+    assert dsolve(eq29, f(x)) == sol29
+    assert dsolve(eq30, f(x)) == sol30
     assert checksol(eq1, f(x), sol1)
     assert checksol(eq2, f(x), sol2)
     assert checksol(eq3, f(x), sol3)
@@ -362,6 +427,25 @@ def test_homogeneous_norder():
     assert checksol(eq8, f(x), sol8)
     assert checksol(eq9, f(x), sol9)
     assert checksol(eq10, f(x), sol10)
-#    assert checksol(eq11, f(x), sol11)
-#    assert checksol(eq12, f(x), sol12)
+    assert checksol(eq11, f(x), sol11)
+    assert checksol(eq12, f(x), sol12)
+    assert checksol(eq13, f(x), sol13)
+    assert checksol(eq14, f(x), sol14)
+    assert checksol(eq15, f(x), sol15)
+    assert checksol(eq16, f(x), sol16)
+    assert checksol(eq17, f(x), sol17)
+    assert checksol(eq18, f(x), sol18)
+    assert checksol(eq19, f(x), sol19)
+    assert checksol(eq20, f(x), sol20)
+    assert checksol(eq21, f(x), sol21)
+    assert checksol(eq22, f(x), sol22)
+    assert checksol(eq23, f(x), sol23)
+    assert checksol(eq24, f(x), sol24)
+    assert checksol(eq25, f(x), sol25)
+    assert checksol(eq26, f(x), sol26)
+    assert checksol(eq27, f(x), sol27)
+    assert checksol(eq28, f(x), sol28)
+    assert checksol(eq29, f(x), sol29)
+    assert checksol(eq30, f(x), sol30)
+
 

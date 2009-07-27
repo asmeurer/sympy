@@ -19,7 +19,7 @@ from sympy.core.add import Add
 from sympy.core.power import Pow
 from sympy.core.symbol import Symbol, Wild
 from sympy.core.relational import Equality
-from sympy.core.function import Derivative, diff, Function
+from sympy.core.function import Derivative, diff, Function, expand_mul
 from sympy.core.numbers import ilcm
 from sympy.core.multidimensional import vectorize
 
@@ -1054,22 +1054,21 @@ def solve_ODE_higher_order(eq, f, order):
             sol = S(0)
             # We need keep track of terms so we can run collect() at the end.
             # This is necessary for constantsimp to work properly.
-            collectterms = {'exp': [], 'trig': []}
+            collectterms = []
             for root, multiplicity in charroots.items():
                 for i in range(multiplicity):
                     reroot = re(root)
                     imroot = im(root)
                     sol += x**i*exp(reroot*x)*(constants.next()*sin(abs(imroot)*x) \
                     + constants.next()*cos(imroot*x))
-                    if reroot:
-                        collectterms['exp'].append((i, reroot))
-                    if imroot:
-                        collectterms['trig'].append(imroot)
-            for i, reroot in collectterms['exp']:
+                    collectterms = [(i, reroot, imroot)] + collectterms
+            sol = expand_mul(sol, deep=False)
+
+            for i, reroot, imroot in collectterms:
+                sol = collect(sol, x**i*exp(reroot*x)*sin(abs(imroot)*x))
+                sol = collect(sol, x**i*exp(reroot*x)*cos(imroot*x))
+            for i, reroot, imroot in collectterms:
                 sol = collect(sol, x**i*exp(reroot*x))
-            for imroot in collectterms['trig']:
-                sol = collect(sol, sin(abs(imroot)*x))
-                sol = collect(sol, cos(imroot*x))
             return Equality(f(x), sol)
 
     # special equations, that we know how to solve
