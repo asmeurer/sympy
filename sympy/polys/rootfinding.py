@@ -76,17 +76,18 @@ def roots_quartic(f):
     """Returns a list of roots of a quartic polynomial.
 
     There are many references for solving quartic expressions available [1-6].
-    The author has found that many of them require one to select from among 2
-    or more possible sets of solutions. The following routine is believed to be
-    valid for all quartics, including those with complex coefficients, and does
-    not require a root selection.
+    This reviewer has found that many of them require one to select from among
+    2 or more possible sets of solutions and that some solutions work when one
+    is searching for real roots but don't work when searching for complex roots
+    (though this is not always stated clearly). The following routine has been
+    tested and found to be correct for 0, 2 or 4 complex roots.
 
     Example::
     >>> from sympy import *
     >>> x = var('x')
-    >>> r = rootfinding.roots_quartic(Poly(x**4 +4*x**3 + 2*x**2 - 2*x + 6, x))
+    >>> r = rootfinding.roots_quartic(Poly(x**4 -6*x**3 +17*x**2 -26*x +20, x))
     >>> [tmp.evalf(n=2) for tmp in r] # 4 complex roots
-    [-2.5 + 7.5e-2*I, -2.5 - 7.5e-2*I, 5.3e-1 + 8.1e-1*I, 5.3e-1 - 8.1e-1*I]
+    [1.0 + 1.7*I, 1.0 - 1.7*I, 2.0 + I, 2.0 - 1.0*I] #1+-I*sqrt(3), 2+-I
 
     References:
       [1] http://mathforum.org/dr.math/faq/faq.cubic.equations.html
@@ -105,10 +106,10 @@ def roots_quartic(f):
     if d is S.Zero:
         return [S.Zero] + roots((1, a, b, c), multiple = True)
     else:
-        asq = a ** 2
-        e = b - 3 * asq / 8
-        f = c + a * (asq / 8 - b / 2)
-        g = d - a * (a * (3 * asq / 256 - b / 16) + c / 4)
+        a2 = a ** 2
+        e = b - 3 * a2 / 8
+        f = c + a * (a2 / 8 - b / 2)
+        g = d - a * (a * (3 * a2 / 256 - b / 16) + c / 4)
         aon4 = a / 4
 
         if f is S.Zero:
@@ -119,13 +120,13 @@ def roots_quartic(f):
             y = [S.Zero] + roots((1, 0, e, f), multiple = True)
             return [tmp - aon4 for tmp in y]
         else:
-            esq, fsq, gsq = [tmp ** 2 for tmp in [e, f, g]]
+            e2, f2 = e**2, f**2
             a0 = (3 ** (-S(3) / 2) *\
-                  (16 * g * (8 * g * (-2 * g + esq) - e * (9 * fsq + e * esq)) +\
-                   fsq * (27 * fsq + 4 * e * esq)) ** S.Half) / 2
-            a1 = (a0 + (2 * e * (-36 * g + esq) + 27 * fsq) / 54) ** (S(1) / 3)
+                  (16 * g * (8 * g * (-2 * g + e2) - e * (9 * f2 + e * e2)) +\
+                   f2 * (27 * f2 + 4 * e * e2)) ** S.Half) / 2
+            a1 = (a0 + (2 * e * (-36 * g + e2) + 27 * f2) / 54) ** (S(1) / 3)
             a2 = e * 6 * a1
-            a3 = 9 * a1 * a1 + 12 * g + esq
+            a3 = 9 * a1 * a1 + 12 * g + e2
             a4 = ((a3 - a2) / a1) ** S.Half
             a5 = (a3 + 2 * a2)
             a6 = a1 * f * 54
