@@ -63,10 +63,12 @@ def test_solve_args():
     x, y = symbols('xy')
     #implicit symbol to solve for
     assert set(int(tmp) for tmp in solve(x**2-4)) == set([2,-2])
+    assert solve([x+y-3,x-y-5]) == {x: 4, y: -1}
     #no symbol to solve for
-    assert raises(ValueError, "solve(S(4))")
-    #too many symbols to solve for
-    assert raises(NotImplementedError, "solve(x+y)")
+    assert solve(42) == []
+    assert solve([1,2]) == None
+    #multiple symbols
+    assert solve(x+y-3,[x,y]) == {x: [3 - y], y: [3 - x]}
     #symbol is not a symbol or function
     raises(TypeError, "solve(x**2-pi, pi)")
 
