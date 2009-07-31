@@ -1,4 +1,4 @@
-"""The module helps converting sympy expressions into shroter forms of them.
+"""The module helps converting sympy expressions into shorter forms of them.
 
 for example:
 the expression E**(pi*I) will be converted into -1
@@ -11,4 +11,4 @@ from rewrite import cancel, trim, apart
 
 from sqrtdenest import sqrtdenest
 
-from cse_main import cse
+from cse_main import cse, cse_full, polify
