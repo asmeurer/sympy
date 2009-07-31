@@ -174,7 +174,7 @@ def cse_full(eq):
     r,e=cse(eq+eq*du)
     return r, e[0].coeff(du)
 
-def polify(eq):
+def polify(eq, debug=0):
     """Return list of replacements and polynomial-like eq.args
 
     Since factoring cannot (at present) cannot be done with polys, this
@@ -203,7 +203,7 @@ def polify(eq):
 
     """
 
-    sfarm = numbered_symbols()
+    sfarm = numbered_symbols() #symbol generator
     def snew(f):
         """
         Find the next numeric symbol from sfarm that can be used in the
@@ -218,8 +218,9 @@ def polify(eq):
 
     def valence(eq):
         """
-        Return the top-level arguments of an expression, e.g.,
-        
+        Return the top-level arguments of an expression up to the
+        powers (other than X**-1) and functions.
+
         """
 
         got=[]
@@ -235,19 +236,48 @@ def polify(eq):
                     todo.append(tmp)
         return set(got)
 
+
     def gremlins(eq):
-        return (filter(lambda x: not (x.is_Number or x.is_Symbol or
-                                         x.is_Pow and x.base.is_Symbol and x.exp.is_Integer),
-                          valence(eq)))
+        """
+        Return those items that will cause problems to factor():
+        arguments that aren't numbers or symbols, and arguments
+        that are powers with non-integer exponents.
+
+        """
+
+        baduns = set([])
+        for x in valence(eq):
+            if x.is_Number or x.is_Symbol:
+                continue
+            if x.is_Pow:
+                if x.base.is_Symbol and x.exp.is_Integer:
+                    continue
+                if x.exp.is_Integer:
+                    x=x.base
+            baduns.add(x)
+        return baduns
 
     eq=sympify(eq)
     reps=[]
     p=Symbol('p',dummy=True,positive=True)
 
+    #clear number symbols and irrationals
+    baduns = set(n for n in gremlins(eq) if \
+                 n.is_NumberSymbol or \
+                 n==S.ImaginaryUnit or \
+                 n.is_Pow and n.base.is_Number and n.exp.is_Number and not n.exp.is_Integer) #3**(1/sqrt(2)), 3**sqrt(2)
+    if debug: print 'number-like things',baduns
+    for bad in baduns:
+        tmp=snew(eq)
+        eq=eq.subs(bad,tmp)
+        reps.append((tmp,bad))
+
     #powers with symbol arguments (including exp())
+    eq=eq.expand()
     terms = [tmp for tmp in gremlins(eq) if
-             tmp.func==C.exp and tmp.atoms(Symbol) or
+             tmp.func==exp and tmp.atoms(Symbol) or
              tmp.is_Pow and (tmp.exp.atoms(Symbol) or gremlins(tmp.exp))]
+    if debug: print 'power terms',terms
     rterms=[[S.One,
              tmp.base if tmp.is_Pow else S.Exp1,
              tmp.exp if tmp.is_Pow else tmp.args[0]]
@@ -255,63 +285,46 @@ def polify(eq):
     bdict = {}
     for term in terms:
         if term.is_Function:
-            assert term.func is C.exp
+            assert term.func is exp
             b=S.Exp1
             e=term.args[0]
             be=[(b,e)]
-        elif term.base.is_Mul:
-            e=term.exp
-            be=[(tmp,e) for tmp in term.base.args]
         else:
             be=[term.args]
         for b,e in be:
             if b not in bdict:
                 bdict[b]=set([])
-            e=e.expand()
-            if e.is_Add or e.is_Mul:
-                e=e.args
-            else:
-                e=[e]
-            for ei in e:
-                syms=list(polify(ei)[1].atoms(Symbol))
-                if syms:
-                    bdict[b].add(ei)
-    for b,vargs in bdict.items():
-        for vii in vargs:
-            for vi in vii.args if vii.is_Mul else [vii]:
-                if vi.is_Number:
-                    continue
-                tmp=snew(eq)
-                reps.append((tmp,b**vi))
-                for i,t in enumerate(terms):
-                    if b == rterms[i][1]:
-                        if not vi in rterms[i][2]:continue
-                        rterms[i][0]*=tmp
-                        rterms[i][2]/=vi
+            bdict[b].add(e)
+    for b,eargs in bdict.items():
+        for vi in eargs:
+            if vi.is_Number:
+                continue
+            tmp=snew(eq)
+            reps.append((tmp,b**vi))
+            #eq=eq.subs(b**vi) this fails on (a**b*a**(c*x/a)).subs(a**(c*x),y)
+            for i,(repl,ba,ex) in enumerate(rterms):
+                if b == ba:
+                    if not vi in ex:continue
+                    rterms[i][0]*=tmp
+                    rterms[i][2]/=vi
     for i,t in enumerate(terms):
         repl,ba,ex=rterms[i]
-        eq=eq.subs(terms[i],p**ex).subs(p,repl)
+        eq=eq.subs(t,p**ex).subs(p,repl)
 
-    #clear all other functions and number symbols
-    baduns = set(n for n in gremlins(eq) if n.is_NumberSymbol or \
-                 n==S.ImaginaryUnit).union(eq.atoms(Function))
+    #clear all other functions
+    baduns = set(n for n in gremlins(eq) if n.is_Function)
+    if debug: print 'bad functions',baduns
     for bad in baduns:
         tmp=snew(eq)
         eq=eq.subs(bad,tmp)
         reps.append((tmp,bad))
 
     #clear rational exponents on terms
-    rpows = [tmp for tmp in gremlins(eq) if tmp.is_Pow and tmp.exp.q!=1]
+    rpows = [tmp for tmp in gremlins(eq) if tmp.is_Pow and tmp.exp.as_numer_denom()[1]!=1]
+    if debug: print 'rational powers',rpows
     bases=set(tmp.base for tmp in rpows)
-    try:
-        assert all(b.is_Symbol or b.is_Integer for b in bases)
-    except:
-        print rpows
-        print bases
-        print 'the bases above from the powers above them should have been symbols'
-        assert None
     for b in bases:
-        expos=list(tmp.exp.q for tmp in rpows if tmp.base is b)
+        expos=list(tmp.exp.as_numer_denom()[1] for tmp in rpows if tmp.base is b)
         q=reduce(ilcm,expos)
         if q==1:continue
         sym=snew(eq)
@@ -319,5 +332,12 @@ def polify(eq):
         eq=eq.subs(b,p**q).subs(p,sym) #p is being used to get powers to combine (x**1/2)**2 -> x
 
     n,d = eq.as_numer_denom()
-    eq=factor(n)/factor(d)
+    try:
+        eq=factor(n)/factor(d)
+    except:
+        print 'there was something that did not get replaced in following num and den'
+        print 'num:',n
+        print 'den:',d
+        assert None
+
     return list(reversed(reps)),eq
