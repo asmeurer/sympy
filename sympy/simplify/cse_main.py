@@ -275,7 +275,7 @@ def polify(eq, debug=0):
     #powers with symbol arguments (including exp())
     eq=eq.expand()
     terms = [tmp for tmp in gremlins(eq) if
-             tmp.func==exp and tmp.atoms(Symbol) or
+             tmp.func==C.exp and tmp.atoms(Symbol) or
              tmp.is_Pow and (tmp.exp.atoms(Symbol) or gremlins(tmp.exp))]
     if debug: print 'power terms',terms
     rterms=[[S.One,
@@ -285,7 +285,7 @@ def polify(eq, debug=0):
     bdict = {}
     for term in terms:
         if term.is_Function:
-            assert term.func is exp
+            assert term.func is C.exp
             b=S.Exp1
             e=term.args[0]
             be=[(b,e)]
