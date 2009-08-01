@@ -299,7 +299,7 @@ class Bisection:
 
     def __init__(self, f, x0, **kwargs):
         if len(x0) != 2:
-            raise ValueError('expected interval of 2 points, got %i' * len(x0))
+            raise ValueError('expected interval of 2 points, got %i' % len(x0))
         self.f = f
         self.a = x0[0]
         self.b = x0[1]
