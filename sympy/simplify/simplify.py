@@ -1165,7 +1165,7 @@ def simplify(expr):
 
     if expr.could_extract_minus_sign():
         n, d = expr.as_numer_denom()
-        if d not in [0, 1]:
+        if d != 0:
             expr = -n/(-d)
 
     return expr
