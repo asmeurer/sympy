@@ -141,6 +141,7 @@ def test_evalf_bugs():
     assert NS((1+I)**2*I,6) == '-2.00000 + 2.32831e-10*I'
     d={n: (-1)**Rational(6,7), y: (-1)**Rational(4,7), x: (-1)**Rational(2,7)}
     assert NS((x*(1+y*(1 + n))).subs(d).evalf(),6) == '0.346011 + 0.433884*I'
+    assert NS(((-I-sqrt(2)*I)**2).evalf()) == '-5.82842712474619'
 
 def test_evalf_integer_parts():
     a = floor(log(8)/log(2) - exp(-1000), evaluate=False)

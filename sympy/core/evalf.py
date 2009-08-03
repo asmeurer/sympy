@@ -413,7 +413,7 @@ def evalf_pow(v, prec, options):
             return mpf_pow_int(re, p, target_prec), None, target_prec, None
         # (x*I)**n = I**n * x**n
         if im and not re:
-            z = fpowi(im, p, target_prec)
+            z = mpf_pow_int(im, p, target_prec)
             case = p % 4
             if case == 0: return z, None, target_prec, None
             if case == 1: return None, z, None, target_prec
