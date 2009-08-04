@@ -38,6 +38,10 @@ class Integral(Basic):
                     if len(V) == 3:
                         if isinstance(V[0], Symbol):
                             nlim = map(sympify, V[1:])
+                            if V[1] is None:
+                                nlim[0] = None
+                            if V[2] is None:
+                                nlim[1] = None
                             limits.append( (V[0], tuple(nlim) ))
                             continue
                     elif len(V) == 1 or (len(V) == 2 and V[1] is None):
