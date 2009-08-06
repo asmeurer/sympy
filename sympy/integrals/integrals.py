@@ -352,8 +352,15 @@ class Integral(Basic):
             if sym == old:
                 return self
             if limits is not None:
-                a, b, = limits
-                arg1.append((sym, a.subs(old, new), b.subs(old, new)))
+                if limits[0] is None:
+                    b = limits[1]
+                    arg1.append((sym, None, b.subs(old, new)))
+                elif limits[1] is None:
+                    a = limits[0]
+                    arg1.append((sym, a.subs(old, new), None))
+                else:
+                    a, b, = limits
+                    arg1.append((sym, a.subs(old, new), b.subs(old, new)))
             else:
                 arg1.append((sym, limits))
         return Integral(arg0, *arg1)
