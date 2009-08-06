@@ -135,7 +135,7 @@ class Integral(Basic):
         function = self.function
 
         for x,ab in self.limits:
-            antideriv = self._eval_integral(function, x)
+            antideriv = self._eval_integral(function.doit(), x)
 
             if antideriv is None:
                 return self
