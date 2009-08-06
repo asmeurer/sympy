@@ -164,7 +164,7 @@ class StrictInequality(Relational):
         if self.lhs.is_comparable and self.rhs.is_comparable:
             if self.lhs.is_Number and self.rhs.is_Number:
                 return self.lhs < self.rhs
-            return self.lhs.evalf()<self.rhs.evalf()
+            return bool(self.lhs.evalf()<self.rhs.evalf())
         return self.lhs.compare(self.rhs)==-1
 
 class Inequality(Relational):
@@ -177,5 +177,5 @@ class Inequality(Relational):
         if self.lhs.is_comparable and self.rhs.is_comparable:
             if self.lhs.is_Number and self.rhs.is_Number:
                 return self.lhs <= self.rhs
-            return self.lhs.evalf()<=self.rhs.evalf()
+            return bool(self.lhs.evalf()<=self.rhs.evalf())
         return self.lhs.compare(self.rhs)<=0

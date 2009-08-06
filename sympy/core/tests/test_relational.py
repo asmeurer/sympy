@@ -1,4 +1,4 @@
-from sympy import symbols, oo
+from sympy import symbols, oo, sqrt, I, sympify
 from sympy.core.relational import Relational, Equality, StrictInequality, \
     Rel, Eq, Lt, Le, Gt, Ge, Ne
 
@@ -77,3 +77,44 @@ def test_rel_Infinity():
     assert (-oo <= oo) is True
     assert (-oo <= -oo) is True
     assert (-oo <= 1) is True
+
+def test_issue1467():
+    t = sympify('3')      # is_Number
+    s = sqrt(I)           # is_comparable
+    p = sympify('1 + x')  # neither
+    assert bool(t < t) is False
+    assert bool(t < s) is True
+    assert bool(t < p) is True
+    assert bool(s < t) is False
+    assert bool(s < s) is False
+    assert bool(s < p) is True
+    assert bool(p < t) is False
+    assert bool(p < s) is False
+    assert bool(p < p) is False
+    assert bool(t <= t) is True
+    assert bool(t <= s) is True
+    assert bool(t <= p) is True
+    assert bool(s <= t) is False
+    assert bool(s <= s) is True
+    assert bool(s <= p) is True
+    assert bool(p <= t) is False
+    assert bool(p <= s) is False
+    assert bool(p <= p) is True
+    assert bool(t > t) is False
+    assert bool(t > s) is False
+    assert bool(t > p) is False
+    assert bool(s > t) is True
+    assert bool(s > s) is False
+    assert bool(s > p) is False
+    assert bool(p > t) is True
+    assert bool(p > s) is True
+    assert bool(p > p) is False
+    assert bool(t >= t) is True
+    assert bool(t >= s) is False
+    assert bool(t >= p) is False
+    assert bool(s >= t) is True
+    assert bool(s >= s) is True
+    assert bool(s >= p) is False
+    assert bool(p >= t) is True
+    assert bool(p >= s) is True
+    assert bool(p >= p) is True
