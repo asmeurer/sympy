@@ -311,13 +311,13 @@ class Mul(AssocOp):
 
 
     def _eval_power(b, e):
-        if e.is_Number:
+        if e.is_Number or e.is_NumberSymbol:
             if b.is_commutative:
                 if e.is_Integer:
                     # (a*b)**2 -> a**2 * b**2
                     return Mul(*[s**e for s in b.args])
 
-                if e.is_rational:
+                else:
                     coeff, rest = b.as_coeff_terms()
                     if coeff == -1:
                         return None
@@ -326,11 +326,6 @@ class Mul(AssocOp):
                     else:
                         return coeff**e * Mul(*[s**e for s in rest])
 
-
-                coeff, rest = b.as_coeff_terms()
-                if coeff is not S.One:
-                    # (2*a)**3 -> 2**3 * a**3
-                    return coeff**e * Mul(*[s**e for s in rest])
             elif e.is_Integer:
                 coeff, rest = b.as_coeff_terms()
                 l = [s**e for s in rest]
