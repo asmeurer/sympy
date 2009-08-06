@@ -1,6 +1,7 @@
 from sympy import Basic, S, Symbol, Real, Integer, Rational,  \
     sin, cos, exp, log, oo, sqrt, symbols, Integral, sympify, \
-    WildFunction, Poly, Function, Derivative, Number, pi, var
+    WildFunction, Poly, Function, Derivative, Number, pi, var, \
+    NumberSymbol
 
 from sympy.utilities.pytest import XFAIL, raises
 
@@ -204,6 +205,10 @@ def test_atoms():
    assert sorted(list(Poly(x + y, x, y, z).atoms())) == sorted([S.One, x, y])
    assert sorted(list(Poly(x + y*t, x, y, z).atoms())) == \
            sorted([S.One, t, x, y])
+   I=S.ImaginaryUnit
+   assert list((I*pi).atoms(NumberSymbol)) == [pi]
+   assert sorted((I*pi).atoms(NumberSymbol, I)) == \
+          sorted((I*pi).atoms(I,NumberSymbol)) == [pi, I]
 
 def test_is_polynomial():
     z = Symbol('z')
@@ -599,7 +604,7 @@ def test_extractions():
     assert (-(x+x*y)/y).could_extract_minus_sign() ==  True
     assert ((x+x*y)/(-y)).could_extract_minus_sign() == True
     assert ((x+x*y)/y).could_extract_minus_sign() == False
-    assert (x*(-x-x**3).could_extract_minus_sign() == True
+    assert (x*(-x-x**3)).could_extract_minus_sign() == True
 
 def test_coeff():
     assert (3+2*x+4*x**2).coeff(1) == None
