@@ -203,7 +203,9 @@ def solve(f, *symbols, **flags):
 
         if strategy == GS_POLY:
             poly = f.as_poly( symbol )
-            assert poly is not None
+            if poly is None:
+                raise NotImplementedError("Cannot solve equation " + str(f) + " for "
+                    + str(symbol))
             result = roots(poly, cubics=True, quartics=True).keys()
 
         elif strategy == GS_RATIONAL:
