@@ -745,7 +745,7 @@ class Basic(AssumeMeths):
         return StrPrinter.doprint(self)
 
     def atoms(self, *types):
-        """Returns the atoms that form the current object. 
+        """Returns the atoms that form the current object.
 
            By defaults, only objects that are truly atomic and can't
            be divided into smaller pieces are returned: symbols, numbers,
@@ -757,7 +757,7 @@ class Basic(AssumeMeths):
            >>> from sympy import *
            >>> x,y = symbols('xy')
            >>> sorted((1+x+2*sin(y+I*pi)).atoms())
-           [1, 2, pi, I, x, y]
+           [1, 2, pi, I, x, y]
 
 
            If one or more types are given, the results will be contain only those
@@ -784,11 +784,11 @@ class Basic(AssumeMeths):
            an object having the type of interest:
 
            >>> sorted((1+x+2*sin(y+I*pi)).atoms(x)) # x is a Symbol
-           [x, y]
+           [x, y]
 
 
            Be careful to check your assumptions when using the implicit option
-           since S(1).is_Integer = True but type(S(1)) is One, a special type 
+           since S(1).is_Integer = True but type(S(1)) is One, a special type
            of sympy atom, while type(S(2)) is type Integer and will find all
            integers in an expression:
 
@@ -799,7 +799,7 @@ class Basic(AssumeMeths):
            [1, 2]
 
            Finally, arguments to atoms() can select more than atomic atoms: any
-           sympy type (loaded in core/__init__.py) can be listed as an argument 
+           sympy type (loaded in core/__init__.py) can be listed as an argument
            and those types of "atoms" as found in scanning the arguments of the
            expression nonrecursively:
 
