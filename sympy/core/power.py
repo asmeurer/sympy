@@ -256,11 +256,23 @@ class Pow(Basic):
         else:
             e = self.exp
         if b.is_Mul:
-            if deep:
-                return Mul(*(Pow(t.expand(deep=deep, **hints), e)\
-                for t in b.args))
+            if e.is_integer:
+                if deep:
+                    return Mul(*(Pow(t.expand(deep=deep, **hints), e)\
+                    for t in b.args))
+                else:
+                    return Mul(*(Pow(t, e) for t in b.args))
             else:
-                return Mul(*(Pow(t, e) for t in b.args))
+                pos = []
+                neg = []
+                for bi in b.args:
+                    if deep:
+                        bi = bi.expand(deep=deep, **hints)
+                    if bi.is_positive:
+                        pos.append(bi)
+                    else:
+                        neg.append(bi)
+                return Mul(*(Mul(*(Pow(p,e) for p in pos)),Pow(Mul(*neg),e)))
         else:
             return b**e
 
