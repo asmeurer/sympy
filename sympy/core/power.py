@@ -512,7 +512,7 @@ class Pow(Basic):
         n,d = base.as_numer_denom()
         negate = False
         if exp.is_integer != True:
-            if d.is_negative == True:
+            if base.is_negative == True and d.is_negative == True:
                 # Roots need to take care that negative denominators behave
                 # differently than the rest of the complex plane.
                 negate = True
