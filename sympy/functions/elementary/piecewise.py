@@ -124,11 +124,11 @@ class Piecewise(Function):
         return None
 
     def doit(self, **hints):
-        return Piecewise(*[(e.doit(), c.doit()) for e, c in self.args])
+        return Piecewise(*((e.doit(), c.doit()) for e, c in self.args))
 
     def _eval_integral(self,x):
         from sympy.integrals import integrate
-        return  Piecewise(*[(integrate(e, x), c) for e, c in self.args])
+        return  Piecewise(*((integrate(e, x), c) for e, c in self.args))
 
     def _eval_interval(self, sym, a, b):
         """Evaluates the function along the sym in a given interval ab"""
@@ -198,7 +198,7 @@ class Piecewise(Function):
         return mul * ret_fun
 
     def _eval_derivative(self, s):
-        return Piecewise(*[(diff(e, s), c) for e, c in self.args])
+        return Piecewise(*((diff(e, s), c) for e, c in self.args))
 
     def _eval_subs(self, old, new):
         if self == old:

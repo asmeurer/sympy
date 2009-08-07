@@ -212,4 +212,4 @@ def monomial_as_basic(monom, *syms):
        x**3*y**2*z
 
     """
-    return Mul(*[ b**e for b, e in zip(syms, monom) ])
+    return Mul(*( b**e for b, e in zip(syms, monom) ))

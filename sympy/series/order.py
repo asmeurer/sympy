@@ -129,13 +129,13 @@ class Order(Basic):
             else:
                 if expr.is_Add:
                     lst = expr.extract_leading_order(*symbols)
-                    expr = C.Add(*[f.expr for (e,f) in lst])
+                    expr = C.Add(*(f.expr for (e,f) in lst))
                 else:
                     expr = expr.as_leading_term(*symbols)
                     coeff, terms = expr.as_coeff_terms()
                     if coeff is S.Zero:
                         return coeff
-                    expr = C.Mul(*[t for t in terms if t.has(*symbols)])
+                    expr = C.Mul(*(t for t in terms if t.has(*symbols)))
 
         elif expr is not S.Zero:
             expr = S.One

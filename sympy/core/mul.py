@@ -305,7 +305,7 @@ class Mul(AssocOp):
         if len(c_part)==2 and c_part[0].is_Number and c_part[1].is_Add:
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
-            c_part = [Add(*[coeff*f for f in c_part[1].args])]
+            c_part = [Add(*(coeff*f for f in c_part[1].args))]
 
         return c_part, nc_part, order_symbols
 
@@ -315,7 +315,7 @@ class Mul(AssocOp):
             if b.is_commutative:
                 if e.is_Integer:
                     # (a*b)**2 -> a**2 * b**2
-                    return Mul(*[s**e for s in b.args])
+                    return Mul(*(s**e for s in b.args))
 
                 else:
                     coeff, rest = b.as_coeff_terms()
@@ -324,7 +324,7 @@ class Mul(AssocOp):
                     elif coeff < 0:
                         return (-coeff)**e * Mul(*((S.NegativeOne,) +rest))**e
                     else:
-                        return coeff**e * Mul(*[s**e for s in rest])
+                        return coeff**e * Mul(*(s**e for s in rest))
 
             elif e.is_Integer:
                 coeff, rest = b.as_coeff_terms()
@@ -574,9 +574,9 @@ class Mul(AssocOp):
     @cacheit
     def count_ops(self, symbolic=True):
         if symbolic:
-            return Add(*[t.count_ops(symbolic) for t in self.args]) + \
+            return Add(*(t.count_ops(symbolic) for t in self.args)) + \
                 Symbol('MUL') * (len(self.args) - 1)
-        return Add(*[t.count_ops(symbolic) for t in self.args]) + \
+        return Add(*(t.count_ops(symbolic) for t in self.args)) + \
             (len(self.args) - 1)
 
     def _eval_is_polynomial(self, syms):
@@ -721,7 +721,7 @@ class Mul(AssocOp):
         if self == old:
             return new
         if isinstance(old, FunctionClass):
-            return self.__class__(*[s._eval_subs(old, new) for s in self.args ])
+            return self.__class__(*(s._eval_subs(old, new) for s in self.args ))
         coeff_self,terms_self = self.as_coeff_terms()
         coeff_old,terms_old = old.as_coeff_terms()
         if terms_self == terms_old: # (2*a).subs(3*a,y) -> 2/3*y
@@ -729,7 +729,7 @@ class Mul(AssocOp):
         l1, l2 = len(terms_self), len(terms_old)
         if l2 == 0:
             # if old is just a number, go through the self.args one by one
-            return Mul(*[x._eval_subs(old, new) for x in self.args])
+            return Mul(*(x._eval_subs(old, new) for x in self.args))
         elif l2 < l1:
             # old is some something more complex, like:
             # (a*b*c*d).subs(b*c,x) -> a*x*d
@@ -740,7 +740,7 @@ class Mul(AssocOp):
             if old_set < self_set:
                 ret_set = self_set - old_set
                 return Mul(new, coeff_self/coeff_old, *[s._eval_subs(old, new) for s in ret_set])
-        return self.__class__(*[s._eval_subs(old, new) for s in self.args])
+        return self.__class__(*(s._eval_subs(old, new) for s in self.args))
 
     def _eval_nseries(self, x, x0, n):
         from sympy import powsimp
@@ -749,10 +749,10 @@ class Mul(AssocOp):
 
 
     def _eval_as_leading_term(self, x):
-        return Mul(*[t.as_leading_term(x) for t in self.args])
+        return Mul(*(t.as_leading_term(x) for t in self.args))
 
     def _eval_conjugate(self):
-        return Mul(*[t.conjugate() for t in self.args])
+        return Mul(*(t.conjugate() for t in self.args))
 
     def _sage_(self):
         s = 1

@@ -274,7 +274,7 @@ class Function(Basic):
 
     def count_ops(self, symbolic=True):
         #      f()             args
-        return 1   + Add(*[t.count_ops(symbolic) for t in self.args])
+        return 1   + Add(*(t.count_ops(symbolic) for t in self.args))
 
     def _eval_nseries(self, x, x0, n):
         assert len(self.args) == 1
@@ -389,7 +389,7 @@ class Function(Basic):
 
     def _eval_expand_complex(self, deep=True, **hints):
         if deep:
-            func = self.func(*[ a.expand(deep, **hints) for a in self.args ])
+            func = self.func(*( a.expand(deep, **hints) for a in self.args ))
         else:
             func = self.func(*self.args)
         return C.re(func) + S.ImaginaryUnit * C.im(func)

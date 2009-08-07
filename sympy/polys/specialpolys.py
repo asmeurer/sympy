@@ -12,8 +12,8 @@ def fateman_poly_F_1(n):
 
     y_0, y_1 = Y[0], Y[1]
 
-    u = y_0    + Add(*[ y    for y in Y[1:] ])
-    v = y_0**2 + Add(*[ y**2 for y in Y[1:] ])
+    u = y_0    + Add(*( y    for y in Y[1:] ))
+    v = y_0**2 + Add(*( y**2 for y in Y[1:] ))
 
     F = ((u + 1)*(u + 2)).as_poly(*Y)
     G = ((v + 1)*(-3*y_1*y_0**2 + y_1**2 - 1)).as_poly(*Y)
@@ -53,7 +53,7 @@ def fateman_poly_F_2(n):
 
     y_0 = Y[0]
 
-    u = Add(*[ y for y in Y[1:] ])
+    u = Add(*( y for y in Y[1:] ))
 
     H = ((y_0 + u + 1)**2).as_poly(*Y)
 
@@ -86,7 +86,7 @@ def fateman_poly_F_3(n):
 
     y_0 = Y[0]
 
-    u = Add(*[ y**(n+1) for y in Y[1:] ])
+    u = Add(*( y**(n+1) for y in Y[1:] ))
 
     H = ((y_0**(n+1) + u + 1)**2).as_poly(*Y)
 

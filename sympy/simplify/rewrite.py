@@ -140,8 +140,8 @@ def trim(f, *symbols, **flags):
                     if not recursive:
                         result.add(g)
                     else:
-                        g = g.__class__(*[trim(h, *symbols,
-                            **flags) for h in g.args])
+                        g = g.__class__(*(trim(h, *symbols,
+                            **flags) for h in g.args))
 
                         if is_functional(g):
                             result.add(g)
@@ -185,7 +185,7 @@ def trim(f, *symbols, **flags):
                         if p.is_number:
                             return S.One, f
 
-                    return p, Add(*[quo(g, p, *symbols) for g in f.args])
+                    return p, Add(*(quo(g, p, *symbols) for g in f.args))
 
                 P, Q = H.as_numer_denom()
 

@@ -170,9 +170,9 @@ def separate(expr, deep=False):
         else:
             return C.Pow(separate(expr.base, deep), expo)
     elif expr.is_Add or expr.is_Mul:
-        return type(expr)(*[ separate(t, deep) for t in expr.args ])
+        return type(expr)(*( separate(t, deep) for t in expr.args ))
     elif expr.is_Function and deep:
-        return expr.func(*[ separate(t) for t in expr.args])
+        return expr.func(*( separate(t) for t in expr.args))
     else:
         return expr
 
@@ -330,9 +330,9 @@ def together(expr, deep=False):
 
             return Add(*numerator)/(product*Mul(*denominator))
         elif expr.is_Mul or expr.is_Pow:
-            return type(expr)(*[ _together(t) for t in expr.args ])
+            return type(expr)(*( _together(t) for t in expr.args ))
         elif expr.is_Function and deep:
-            return expr.func(*[ _together(t) for t in expr.args ])
+            return expr.func(*( _together(t) for t in expr.args ))
         else:
             return expr
 
@@ -670,7 +670,7 @@ def collect(expr, syms, evaluate=True, exact=False):
         collected[S.One] = disliked
 
     if evaluate:
-        return Add(*[ a*b for a, b in collected.iteritems() ])
+        return Add(*( a*b for a, b in collected.iteritems() ))
     else:
         return collected
 
@@ -698,7 +698,7 @@ def ratsimp(expr):
             res.append( ratsimp(x) )
         return Mul(*res)
     elif expr.is_Function:
-        return expr.func(*[ ratsimp(t) for t in expr.args ])
+        return expr.func(*( ratsimp(t) for t in expr.args ))
 
     #elif expr.is_Function:
     #    return type(expr)( ratsimp(expr[0]) )
@@ -979,11 +979,11 @@ def powsimp(expr, deep=False, combine='all'):
         elif expr.func == exp and not deep:
             return powsimp(y*expr, deep, combine)/y
         elif deep:
-            return expr.func(*[powsimp(t, deep, combine) for t in expr.args])
+            return expr.func(*(powsimp(t, deep, combine) for t in expr.args))
         else:
             return expr
     elif expr.is_Add:
-        return C.Add(*[powsimp(t, deep, combine) for t in expr.args])
+        return C.Add(*(powsimp(t, deep, combine) for t in expr.args))
 
     elif expr.is_Mul:
         if combine in ('exp', 'all'):

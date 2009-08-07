@@ -210,7 +210,7 @@ class polygamma(Function):
                 coeff, factors = z.as_coeff_factors()
 
                 if coeff.is_Integer:
-                    tail = Add(*[ z + i for i in xrange(0, int(coeff)) ])
+                    tail = Add(*( z + i for i in xrange(0, int(coeff)) ))
                     return polygamma(n, z-coeff) + (-1)**n*C.Factorial(n)*tail
             elif z.is_Mul:
                 coeff, terms = z.as_coeff_terms()

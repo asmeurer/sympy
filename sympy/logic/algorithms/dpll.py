@@ -75,7 +75,7 @@ def unit_propagate(clauses, symbol):
             continue
         for arg in c.args:
             if arg == ~symbol:
-                output.append(Or(*[x for x in c.args if x != ~symbol]))
+                output.append(Or(*(x for x in c.args if x != ~symbol)))
                 break
             if arg == symbol:
                 break

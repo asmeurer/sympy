@@ -144,9 +144,9 @@ def create_atsu_style(attributes):
     # attributes is a dict of ATSUAttributeTag => ctypes value
     tags, values = zip(*attributes.items())
     tags = (c_int * len(tags))(*tags)
-    sizes = (c_uint * len(values))(*[sizeof(v) for v in values])
-    values = (c_void_p * len(values))(*[cast(pointer(v), c_void_p) \
-                                        for v in values])
+    sizes = (c_uint * len(values))(*(sizeof(v) for v in values))
+    values = (c_void_p * len(values))(*(cast(pointer(v), c_void_p) \
+                                        for v in values))
 
     style = c_void_p()
     carbon.ATSUCreateStyle(byref(style))
@@ -158,9 +158,9 @@ def set_layout_attributes(layout, attributes):
         # attributes is a dict of ATSUAttributeTag => ctypes value
         tags, values = zip(*attributes.items())
         tags = (c_int * len(tags))(*tags)
-        sizes = (c_uint * len(values))(*[sizeof(v) for v in values])
-        values = (c_void_p * len(values))(*[cast(pointer(v), c_void_p) \
-                                            for v in values])
+        sizes = (c_uint * len(values))(*(sizeof(v) for v in values))
+        values = (c_void_p * len(values))(*(cast(pointer(v), c_void_p) \
+                                            for v in values))
 
         carbon.ATSUSetLayoutControls(layout, len(tags), tags, sizes, values)
 

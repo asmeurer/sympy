@@ -1158,7 +1158,7 @@ class Basic(AssumeMeths):
             args = self.args[:]
         else:
             args = (self.func,)+self[:]
-        return self.__class__(*[s.subs(old, new) for s in args])
+        return self.__class__(*(s.subs(old, new) for s in args))
 
     def __contains__(self, what):
         if self == what: return True
@@ -2113,7 +2113,7 @@ class Basic(AssumeMeths):
         return
 
     def _seq_eval_evalf(self, prec):
-        return self.__class__(*[s._evalf(prec) for s in self.args])
+        return self.__class__(*(s._evalf(prec) for s in self.args))
 
     def _to_mpmath(self, prec, allow_ints=True):
         # mpmath functions accept ints as input

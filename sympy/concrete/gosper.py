@@ -69,7 +69,7 @@ def normal(f, g, n=None):
             A = quo(A, d, n)
             B = quo(B, d.subs(n, n-i), n)
 
-            C *= Mul(*[ d.subs(n, n-j) for j in xrange(1, i+1) ])
+            C *= Mul(*( d.subs(n, n-j) for j in xrange(1, i+1) ))
 
         return (Z*A, B, C)
 

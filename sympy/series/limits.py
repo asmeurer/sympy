@@ -64,7 +64,7 @@ def limit(e, z, z0, dir="+"):
 
     if e.is_Add:
         if e.is_polynomial() and z0.is_finite:
-            return Add(*[limit(term, z, z0, dir) for term in e.args])
+            return Add(*(limit(term, z, z0, dir) for term in e.args))
         else:
             # this is a case like limit(x*y+x*z, z, 2) == x*y+2*x
             # but we need to make sure, that the general gruntz() algorithm is

@@ -288,14 +288,14 @@ def rsolve_poly(coeffs, f, n, **hints):
             P[i] = (P[i-1] * (n-a-i+1)/i).expand()
 
         for i in xrange(0, A):
-            Q[i] = Add(*[ (v*p).expand() for v, p in zip(V[:,i], P) ])
+            Q[i] = Add(*( (v*p).expand() for v, p in zip(V[:,i], P) ))
 
         if not homogeneous:
-            h = Add(*[ (g*p).expand() for g, p in zip(G, P) ])
+            h = Add(*( (g*p).expand() for g, p in zip(G, P) ))
 
         C = [ Symbol('C'+str(i)) for i in xrange(0, A) ]
 
-        g = lambda i: Add(*[ c*delta(q, i) for c, q in zip(C, Q) ])
+        g = lambda i: Add(*( c*delta(q, i) for c, q in zip(C, Q) ))
 
         if homogeneous:
             E = [ g(i) for i in xrange(N+1, U) ]
@@ -406,7 +406,7 @@ def rsolve_ratio(coeffs, f, n, **hints):
             A = quo(A, d, n)
             B = quo(B, d.subs(n, n-i), n)
 
-            C *= Mul(*[ d.subs(n, n-j) for j in xrange(0, i+1) ])
+            C *= Mul(*( d.subs(n, n-j) for j in xrange(0, i+1) ))
 
         denoms = [ C.subs(n, n+i) for i in range(0, r+1) ]
 
@@ -554,8 +554,8 @@ def rsolve_hyper(coeffs, f, n, **hints):
         D = A*B.subs(n, n+r-1)
 
         for i in xrange(0, r+1):
-            a = Mul(*[ A.subs(n, n+j) for j in xrange(0, i) ])
-            b = Mul(*[ B.subs(n, n+j) for j in xrange(i, r) ])
+            a = Mul(*( A.subs(n, n+j) for j in xrange(0, i) ))
+            b = Mul(*( B.subs(n, n+j) for j in xrange(i, r) ))
 
             poly = quo(coeffs[i]*a*b, D, n)
             polys.append(poly.as_poly(n))

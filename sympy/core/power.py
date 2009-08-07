@@ -392,7 +392,7 @@ class Pow(Basic):
                 return result
             else:
                 if n == 2:
-                    return Add(*[f*g for f in base.args for g in base.args])
+                    return Add(*(f*g for f in base.args for g in base.args))
                 else:
                     return Mul(base, Pow(base, n-1).expand()).expand()
         elif exp.is_Add and base.is_Number:
@@ -491,8 +491,8 @@ class Pow(Basic):
     @cacheit
     def count_ops(self, symbolic=True):
         if symbolic:
-            return Add(*[t.count_ops(symbolic) for t in self.args]) + Symbol('POW')
-        return Add(*[t.count_ops(symbolic) for t in self.args]) + 1
+            return Add(*(t.count_ops(symbolic) for t in self.args)) + Symbol('POW')
+        return Add(*(t.count_ops(symbolic) for t in self.args)) + 1
 
     def _eval_is_polynomial(self, syms):
         if self.exp.has(*syms):

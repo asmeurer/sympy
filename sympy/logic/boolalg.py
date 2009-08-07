@@ -79,7 +79,7 @@ class Not(BooleanFunction):
         if isinstance(arg, And):
             return Or( *[Not(a) for a in arg.args])
         if isinstance(arg, Or):
-            return And(*[Not(a) for a in arg.args])
+            return And(*(Not(a) for a in arg.args))
         if isinstance(arg, bool): return not arg
         if isinstance(arg, Not):
             return arg.args[0]
@@ -165,9 +165,9 @@ def distribute_and_over_or(expr):
                 conj = arg
                 break
         else: return type(expr)(*expr.args)
-        rest = Or(*[a for a in expr.args if a is not conj])
+        rest = Or(*(a for a in expr.args if a is not conj))
         return And(*map(distribute_and_over_or,
-                   [Or(c, rest) for c in conj.args]))
+                   (Or(c, rest) for c in conj.args)))
     elif isinstance(expr, And):
         return And(*map(distribute_and_over_or, expr.args))
     else:

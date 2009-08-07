@@ -218,7 +218,7 @@ def heurisch(f, x, **kwargs):
     numers = [ Poly.cancel(denom * g, *V) for g in diffs ]
 
     def derivation(h):
-        return Add(*[ d * h.diff(v) for d, v in zip(numers, V) ])
+        return Add(*( d * h.diff(v) for d, v in zip(numers, V) ))
 
     def deflation(p):
         for y in V:
@@ -276,7 +276,7 @@ def heurisch(f, x, **kwargs):
 
     polys = list(v_split) + [ u_split[0] ] + special.keys()
 
-    s = u_split[0] * Mul(*[ k for k, v in special.iteritems() if v ])
+    s = u_split[0] * Mul(*( k for k, v in special.iteritems() if v ))
     a, b, c = [ p.as_poly(*V).degree for p in [s, P, Q] ]
 
     poly_denom = s * v_split[0] * deflation(v_split[1])
@@ -304,8 +304,8 @@ def heurisch(f, x, **kwargs):
 
     poly_coeffs = _symbols('A', len(monoms))
 
-    poly_part = Add(*[ poly_coeffs[i]*monomial
-        for i, monomial in enumerate(monoms) ])
+    poly_part = Add(*( poly_coeffs[i]*monomial
+        for i, monomial in enumerate(monoms) ))
 
     reducibles = set()
 

@@ -241,7 +241,7 @@ def _compile(code, argcount=None, fname='f', fprototype=None):
         fprototype = ctypes.CFUNCTYPE(*fprototype)
     else:
         assert argcount, 'need argcount if no prototype is specified'
-        fprototype = ctypes.CFUNCTYPE(*[ctypes.c_double]*(argcount+1))
+        fprototype = ctypes.CFUNCTYPE(*(ctypes.c_double)*(argcount+1))
     # see libtcc.h for API documentation
     tccstate = libtcc.tcc_new()
     __run(libtcc.tcc_set_output_type(tccstate, 0)) # output to memory

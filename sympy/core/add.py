@@ -174,7 +174,7 @@ class Add(AssocOp):
         return S.Zero, self.args
 
     def _eval_derivative(self, s):
-        return Add(*[f.diff(s) for f in self.args])
+        return Add(*(f.diff(s) for f in self.args))
 
     def _eval_nseries(self, x, x0, n):
         terms = [t.nseries(x, x0, n) for t in self.args]
@@ -205,13 +205,13 @@ class Add(AssocOp):
             numers.append(n)
             denoms.append(d)
         r = xrange(len(numers))
-        return Add(*[Mul(*(denoms[:i]+[numers[i]]+denoms[i+1:])) for i in r]),Mul(*denoms)
+        return Add(*(Mul(*(denoms[:i]+[numers[i]]+denoms[i+1:])) for i in r)),Mul(*denoms)
 
     def count_ops(self, symbolic=True):
         if symbolic:
-            return Add(*[t.count_ops(symbolic) for t in self.args]) + \
+            return Add(*(t.count_ops(symbolic) for t in self.args)) + \
                 Symbol('ADD') * (len(self.args) - 1)
-        return Add(*[t.count_ops(symbolic) for t in self.args]) + \
+        return Add(*(t.count_ops(symbolic) for t in self.args)) + \
             (len(self.args) - 1)
 
     def _eval_is_polynomial(self, syms):
@@ -290,7 +290,7 @@ class Add(AssocOp):
     def _eval_subs(self, old, new):
         if self == old: return new
         if isinstance(old, FunctionClass):
-            return self.__class__(*[s._eval_subs(old, new) for s in self.args ])
+            return self.__class__(*(s._eval_subs(old, new) for s in self.args ))
         coeff_self, factors_self = self.as_coeff_factors()
         coeff_old, factors_old = old.as_coeff_factors()
         if factors_self == factors_old: # (2+a).subs(3+a,y) -> 2-3+y
@@ -302,7 +302,7 @@ class Add(AssocOp):
                 if old_set < self_set:
                     ret_set = self_set - old_set
                     return Add(new, coeff_self, -coeff_old, *[s._eval_subs(old, new) for s in ret_set])
-        return self.__class__(*[s._eval_subs(old, new) for s in self.args])
+        return self.__class__(*(s._eval_subs(old, new) for s in self.args))
 
     @cacheit
     def extract_leading_order(self, *symbols):
@@ -355,7 +355,7 @@ class Add(AssocOp):
             s = s.removeO()
         if s.is_Add:
             lst = s.extract_leading_order(x)
-            return Add(*[e for (e,f) in lst])
+            return Add(*(e for (e,f) in lst))
         return s.as_leading_term(x)
 
     def _eval_power(self, other):
@@ -377,7 +377,7 @@ class Add(AssocOp):
         return
 
     def _eval_conjugate(self):
-        return Add(*[t.conjugate() for t in self.args])
+        return Add(*(t.conjugate() for t in self.args))
 
     def _eval_expand_basic(self, deep=True, **hints):
         sargs, terms = self.args[:], []
@@ -470,7 +470,7 @@ class Add(AssocOp):
         return self.new(*terms)
 
     def __neg__(self):
-        return Add(*[-t for t in self.args])
+        return Add(*(-t for t in self.args))
 
     def _sage_(self):
         s = 0
