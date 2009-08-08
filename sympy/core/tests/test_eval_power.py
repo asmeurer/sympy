@@ -65,15 +65,46 @@ def test_issue1263():
     neg = Symbol('neg', negative=True)
     nonneg = Symbol('nonneg', negative=False)
     any = Symbol('any')
-    num, den = sqrt(1/neg).as_numer_denom()
-    assert num == -1
-    assert den == sqrt(neg)
     num, den = sqrt(1/nonneg).as_numer_denom()
     assert num == 1
     assert den == sqrt(nonneg)
     num, den = sqrt(1/any).as_numer_denom()
     assert num == sqrt(1/any)
     assert den == 1
+
+    def eqn(num, den, pow):
+        return (num/den)**pow
+    npos=1
+    nneg=-1
+    dpos=2-sqrt(3)
+    dneg=1-sqrt(3)
+    I = S.ImaginaryUnit
+    assert dpos > 0 and dneg < 0 and npos > 0 and nneg < 0
+    # pos or neg integer
+    eq=eqn(npos, dpos, 2);assert eq.is_Pow and eq.as_numer_denom() == (1, dpos**2)
+    eq=eqn(npos, dneg, 2);assert eq.is_Pow and eq.as_numer_denom() == (1, dneg**2)
+    eq=eqn(nneg, dpos, 2);assert eq.is_Pow and eq.as_numer_denom() == (1, dpos**2)
+    eq=eqn(nneg, dneg, 2);assert eq.is_Pow and eq.as_numer_denom() == (1, dneg**2)
+    eq=eqn(npos, dpos, -2);assert eq.is_Pow and eq.as_numer_denom() == (dpos**2, 1)
+    eq=eqn(npos, dneg, -2);assert eq.is_Pow and eq.as_numer_denom() == (dneg**2, 1)
+    eq=eqn(nneg, dpos, -2);assert eq.is_Pow and eq.as_numer_denom() == (dpos**2, 1)
+    eq=eqn(nneg, dneg, -2);assert eq.is_Pow and eq.as_numer_denom() == (dneg**2, 1)
+    eq=eqn(npos, dpos, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (npos**S.Half, dpos**S.Half)
+    eq=eqn(npos, dneg, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (-npos**S.Half, dneg**S.Half)
+    eq=eqn(nneg, dpos, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (I, dpos**S.Half)
+    eq=eqn(nneg, dneg, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (I, dneg**S.Half)
+    eq=eqn(npos, dpos, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dpos**S.Half, 1)
+    eq=eqn(npos, dneg, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (-dneg**S.Half, 1)
+    eq=eqn(nneg, dpos, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dpos**S.Half, I)
+    eq=eqn(nneg, dneg, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dneg**S.Half, I)
+    eq=eqn(npos, dpos, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(npos, dneg, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(nneg, dpos, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(nneg, dneg, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(npos, dpos, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(npos, dneg, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(nneg, dpos, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    eq=eqn(nneg, dneg, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
 
 def test_issue1496():
     x = Symbol('x')
