@@ -290,6 +290,9 @@ def solve(f, *symbols, **flags):
         else:
             raise NotImplementedError("No algorithms are implemented to solve equation %s" % f)
 
+        if symbol_swapped:
+            result = [ri.subs(swap_back_dict) for ri in result]
+
         if flags.get('simplified', True):
             return map(simplify, result)
         else:
