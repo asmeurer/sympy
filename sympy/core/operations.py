@@ -172,6 +172,7 @@ class AssocOp(Basic):
         if exact_part:
             newpattern = pattern.__class__(*wild_part)
             newexpr = pattern.__class__._combine_inverse(expr, pattern.__class__(*exact_part))
+            newexpr = newexpr.expand()
             return newpattern.matches(newexpr, repl_dict)
 
         # now to real work ;)
