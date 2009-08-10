@@ -154,6 +154,7 @@ class Mul(AssocOp):
                     else:
                         nc_part.append(o1)
                         nc_part.append(o)
+
         # We do want a combined exponent if it would not be an Add, such as
         #  y    2y     3y
         # x  * x   -> x
@@ -234,12 +235,26 @@ class Mul(AssocOp):
         # 2  * 3  -> 6
         inv_exp_dict = {}   # exp:Mul(num-bases)     x    x
                             # e.g.  x:6  for  ... * 2  * 3  * ...
+        nneg={}
         for b,e in num_exp:
+            if b.is_negative:
+                if e in nneg:
+                    nneg[e]+=1
+                else:
+                    nneg[e]=1
             if e in inv_exp_dict:
                 inv_exp_dict[e] *= b
             else:
                 inv_exp_dict[e] = b
 
+        for e in []:#nneg:
+            if not nneg[e]:continue
+            print 'mul'
+            en = -e*(nneg[e]-1)
+            if en not in inv_exp_dict:
+                inv_exp_dict[en] = S.NegativeOne
+            else:
+                inv_exp_dict[en] *= S.NegativeOne
         for e,b in inv_exp_dict.items():
             if e is S.Zero:
                 continue
@@ -316,15 +331,23 @@ class Mul(AssocOp):
                 if e.is_Integer:
                     # (a*b)**2 -> a**2 * b**2
                     return Mul(*(s**e for s in b.args))
-
                 else:
-                    coeff, rest = b.as_coeff_terms()
-                    if coeff == -1:
-                        return None
-                    elif coeff < 0:
-                        return (-coeff)**e * Mul(*((S.NegativeOne,) +rest))**e
-                    else:
-                        return coeff**e * Mul(*(s**e for s in rest))
+                    known=[]
+                    unk=[]
+                    for bi in b.args:
+                        if bi.is_positive:
+                            known.append(bi)
+                        else:
+                            if bi.is_Number or bi.is_NumberSymbol:
+                                #pull out a non-unity neg number
+                                if bi != S.NegativeOne:
+                                    known.append(-bi)
+                                unk.append(S.NegativeOne)
+                            else:
+                                unk.append(bi)
+                    if not known:
+                        return None #we didn't pull anything out
+                    return Mul(*(k**e for k in known)) * Mul(*unk)**e
 
             elif e.is_Integer:
                 coeff, rest = b.as_coeff_terms()
@@ -336,7 +359,6 @@ class Mul(AssocOp):
         c,t = b.as_coeff_terms()
         if e.is_even and c.is_Number and c < 0:
             return (-c * Mul(*t)) ** e
-
         #if e.atoms(Wild):
         #    return Mul(*[t**e for t in b])
 

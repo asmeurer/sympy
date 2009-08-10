@@ -1024,6 +1024,8 @@ def test_roots_cubic():
                                 ['0.0', '-1.32', '1.32']]
 
 def test_roots_quartic():
+    assert sorted(roots_quartic(Poly(x**4 + x**3, x))) == [-1, 0, 0, 0]
+    assert sorted(roots_quartic(Poly(x**4 - x**3, x))) == [0, 0, 0, 1]
     assert roots_quartic(Poly(x**4, x)) == [0]*4
     # x**4+a*x**3+b*x**2+c*x+d=0 reduces to y^4+e*y^2+f*y+g when
     # replacing x with y-a/4. Check different types of solutions:

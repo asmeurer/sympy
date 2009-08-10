@@ -960,7 +960,7 @@ class Integer(Rational):
         if xexact:
             # if it's a perfect root we've finished
             result = Integer(x ** abs(e.p))
-            if e < 0: result = 1/result
+            assert not e<0#if e < 0: result = 1/result
             if b < 0: result *= (-1)**e
             return result
         # The following is an algorithm where we collect perfect roots

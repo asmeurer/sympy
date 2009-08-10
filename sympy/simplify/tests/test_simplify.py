@@ -214,6 +214,8 @@ def test_separate():
     assert separate((exp((x*y)**z)*exp(y))**2) == exp(2*(x*y)**z)*exp(2*y)
     assert separate((exp((x*y)**z)*exp(y))**2, deep=True) == exp(2*x**z*y**z)*exp(2*y)
 
+    assert separate(sqrt(-(sqrt(-x)))) == I*sqrt(I*sqrt(x))
+
 @XFAIL
 def test_separate_X1():
     assert separate((exp(x)*exp(y))**z) == exp(x*z)*exp(y*z)

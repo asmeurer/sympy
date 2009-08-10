@@ -91,11 +91,11 @@ def test_issue1263():
     eq=eqn(nneg, dneg, -2);assert eq.is_Pow and eq.as_numer_denom() == (dneg**2, 1)
     eq=eqn(npos, dpos, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (npos**S.Half, dpos**S.Half)
     eq=eqn(npos, dneg, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (-npos**S.Half, dneg**S.Half)
-    eq=eqn(nneg, dpos, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (I, dpos**S.Half)
+    #eq=eqn(nneg, dpos, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (I, dpos**S.Half)
     eq=eqn(nneg, dneg, S.Half);assert eq.is_Pow and eq.as_numer_denom() == (I, dneg**S.Half)
     eq=eqn(npos, dpos, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dpos**S.Half, 1)
     eq=eqn(npos, dneg, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (-dneg**S.Half, 1)
-    eq=eqn(nneg, dpos, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dpos**S.Half, I)
+    #eq=eqn(nneg, dpos, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dpos**S.Half, I)
     eq=eqn(nneg, dneg, -S.Half);assert eq.is_Pow and eq.as_numer_denom() == (dneg**S.Half, I)
     eq=eqn(npos, dpos, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
     eq=eqn(npos, dneg, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
@@ -103,8 +103,38 @@ def test_issue1263():
     eq=eqn(nneg, dneg, 2*any);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
     eq=eqn(npos, dpos, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
     eq=eqn(npos, dneg, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
-    eq=eqn(nneg, dpos, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+    #eq=eqn(nneg, dpos, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
     eq=eqn(nneg, dneg, S(1)/3);assert eq.is_Pow and eq.as_numer_denom() == (eq, 1)
+
+def test_eval_power():
+    '''
+    var('x  w y z')
+    n1,n2,n3=[Symbol(s,negative=True) for s in 'n1 n2 n3'.split()]
+    p1,p2,p3=[Symbol(s,negative=True) for s in 'p1 p2 p3'.split()]
+    n4,n5,n6=[Symbol(s,negative=True) for s in 'n4 n5 n6'.split()]
+    sqrt(3),sqrt(-3),sqrt(3*x),sqrt(-3*x)
+    (3**(1/2), I*3**(1/2), 3**(1/2)*x**(1/2), 3**(1/2)*(-x)**(1/2))
+    sqrt(n1*x),sqrt(-n1*x),sqrt(x*y)
+    ((n1*x)**(1/2), (-n1*x)**(1/2), (x*y)**(1/2))
+    sqrt(n1*n2*x),sqrt(-n1*n2*x)
+    (-n1**(1/2)*n2**(1/2)*x**(1/2), -n1**(1/2)*n2**(1/2)*(-x)**(1/2))
+    sqrt(n1*n2*n3*x),sqrt(-n1*n2*n3*x)
+    (-n1**(1/2)*n2**(1/2)*(n3*x)**(1/2), -n1**(1/2)*n2**(1/2)*(-n3*x)**(1/2))
+    sqrt(n1*n2*n3),sqrt(-n1*n2*n3)
+    (-n1**(1/2)*n2**(1/2)*n3**(1/2), -n1**(1/2)*n2**(1/2)*(-n3)**(1/2))
+    sqrt(n1*n2*n3*n4),sqrt(-n1*n2*n3*n4)
+    (n1**(1/2)*n2**(1/2)*n3**(1/2)*n4**(1/2), n1**(1/2)*n2**(1/2)*n3**(1/2)*(-n4)**(
+    1/2))
+    sqrt(n1*n2*n3*n4*3),sqrt(-n1*n2*n3*n4*3)
+    (3**(1/2)*n1**(1/2)*n2**(1/2)*n3**(1/2)*n4**(1/2), 3**(1/2)*n1**(1/2)*n2**(1/2)*
+    n3**(1/2)*(-n4)**(1/2))
+    >>> sqrt(x*n1*n2*n3*n4*3),sqrt(-n1*n2*n3*n4*3*x)
+    (3**(1/2)*n1**(1/2)*n2**(1/2)*n3**(1/2)*n4**(1/2)*x**(1/2), 3**(1/2)*n1**(1/2)*n
+    2**(1/2)*n3**(1/2)*n4**(1/2)*(-x)**(1/2))
+    >>> sqrt(x*n1*n2*n3*n4*3*p1*p2),sqrt(-n1*n2*n3*n4*3*x*p1*p2)
+    (-3**(1/2)*n1**(1/2)*n2**(1/2)*n3**(1/2)*n4**(1/2)*p1**(1/2)*p2**(1/2)*x**(1/2),
+     -3**(1/2)*n1**(1/2)*n2**(1/2)*n3**(1/2)*n4**(1/2)*p1**(1/2)*p2**(1/2)*(-x)**(1/
+    2))'''
 
 def test_issue1496():
     x = Symbol('x')

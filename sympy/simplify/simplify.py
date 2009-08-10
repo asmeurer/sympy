@@ -160,8 +160,27 @@ def separate(expr, deep=False):
         terms, expo = [], separate(expr.exp, deep)
 
         if expr.base.is_Mul:
-            t = [ separate(C.Pow(t,expo), deep) for t in expr.base.args ]
-            return C.Mul(*t)
+            nneg = 0
+            unk = []
+            known = []
+            if hasattr(expo,'q') and expo.q != 1:
+                for t in expr.base.args:
+                    if t.is_negative is None:
+                        unk.append(t)
+                    else:
+                        known.append(t)
+                        if t.is_negative:
+                            if t != S.NegativeOne:
+                                nneg += 1
+            else:
+                known.extend(expr.base.args)
+            known = [ separate(C.Pow(t,expo), deep) for t in known ]
+            unk = [ separate(t, deep) for t in unk ]
+            rv =  C.Mul(*known) * C.Mul(*unk) ** expo
+            if nneg and not nneg % 2:
+                rv *= S.NegativeOne
+            return rv
+
         elif expr.base.func is C.exp:
             if deep == True:
                 return C.exp(separate(expr.base[0], deep)*expo)
@@ -964,7 +983,7 @@ def powsimp(expr, deep=False, combine='all'):
     if combine not in ['all', 'exp', 'base']:
             raise ValueError, "combine must be one of ('all', 'exp', 'base')."
     if combine in ('all', 'base'):
-        expr = separate(expr, deep)
+        expr = separate(expr, deep) #how many negatives just came out?
     y = Symbol('y', dummy=True)
     if expr.is_Pow:
             if deep:
@@ -1047,7 +1066,7 @@ def powsimp(expr, deep=False, combine='all'):
 
 
             # Combine bases whenever they have the same exponent which is
-            # not numeric
+            # not numeric {??where is the test for non-numeric exponent??}
             c_exp = {}
             for b, e in c_powers:
                 if e in c_exp:
@@ -1071,8 +1090,14 @@ def powsimp(expr, deep=False, combine='all'):
                 else:
                     simpe = e
                 if len(bases) > 1:
+                    nneg=0
                     for b in bases:
                         c_powers.remove([b,e])
+                        if b.is_negative:
+                            nneg+=1
+                    if nneg>1 and hasattr(simpe, 'q') and simpe.q != 1:
+                        #if S.NegativeOne not in c_powers:
+                        c_powers.append([S.NegativeOne,(nneg-1)*simpe])
                     new_base = Mul(*bases)
                     in_c_powers = False
                     for i in xrange(len(c_powers)):
