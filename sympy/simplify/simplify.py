@@ -717,8 +717,7 @@ def _separatevars(expr):
     # First try other expansion methods
     expr = expr.expand(mul=False, multinomial=False)
     try:
-        cseexpr = cse(expr)
-        expr = factor(cseexpr[1][0]).subs(cseexpr[0])
+        expr = factor(expr)
     except PolynomialError:
         pass
 

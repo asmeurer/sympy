@@ -337,8 +337,14 @@ def test_separatevars():
     assert separatevars(x*exp(x+y)+x*exp(x)) == x*(1 + exp(y))*exp(x)
     assert separatevars((x*(y+1))**z) == x**z*(1 + y)**z
     assert separatevars(1+x+y+x*y) == (x+1)*(y+1)
+
+@XFAIL
+def test_separatevars_advanced_factor():
+    # If factor() is ever improved to factor non-symbolic expressions, this
+    # should XPASS
     assert separatevars(1 + log(x)*log(y) + log(x) + log(y)) == (log(x) + 1)*(log(y) + 1)
-    assert separatevars(1 + x - log(z) - x*log(z) - exp(y)*log(z) - x*exp(y)*log(z) + x*exp(y) + exp(y)) == \
+    assert separatevars(1 + x - log(z) - x*log(z) - exp(y)*log(z) - \
+        x*exp(y)*log(z) + x*exp(y) + exp(y)) == \
         (1 + x)*(1 - log(z))*(1 + exp(y))
     x, y = symbols('xy', positive=True)
     assert separatevars(1 + log(x**log(y)) + log(x*y)) == (log(x) + 1)*(log(y) + 1)
