@@ -636,7 +636,8 @@ def tsolve(eq, sym):
             if f1.is_Function:
                 break
         else:
-            assert False, 'tsolve: at least one Function expected at this point'
+            raise NotImplementedError("Unable to solve the equation" + \
+                "(tsolve: at least one Function expected at this point")
 
         # perform the substitution
         lhs_ = lhs.subs(f1, t)
