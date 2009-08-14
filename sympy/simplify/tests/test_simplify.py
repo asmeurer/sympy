@@ -435,17 +435,32 @@ def test_logcombine_1():
     assert logcombine(log(x)*log(z)) == log(x)*log(z)
     assert logcombine(log(w)*log(x)) == log(w)*log(x)
     assert logcombine(cos(-2*log(z)+b*log(w))) == cos(log(w**b/z**2))
-    assert logcombine(log(log(x)-log(y))-log(z), assume_pos_real=True) == log(log((x/y)**(1/z)))
+    assert logcombine(log(log(x)-log(y))-log(z), assume_pos_real=True) == \
+        log(log((x/y)**(1/z)))
     assert logcombine((2+I)*log(x), assume_pos_real=True) == I*log(x)+log(x**2)
-    assert logcombine((x**2+log(x)-log(y))/(x*y), assume_pos_real=True) == log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
-    assert logcombine(log(x)*2*log(y)+log(z), assume_pos_real=True) == log(z*y**log(x**2))
-    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2,3)*y**Rational(3,2)), assume_pos_real=True) == log(x**(1/(pi*x**Rational(2,3)*y**Rational(3,2)))*y**(-1/(pi*x**Rational(2,3)*y**Rational(3,2)))) + (x**4 + y**4)**Rational(1,2)/(pi*x**Rational(2,3)*y**Rational(3,2)) + x**Rational(1,3)/(pi*y**Rational(1,2))
-    assert logcombine(Eq(log(x), -2*log(y)), assume_pos_real=True) == Eq(log(x*y**2), Integer(0))
-    assert logcombine(Eq(y, x*acos(-log(x/y))), assume_pos_real=True) == Eq(y, x*acos(log(y/x)))
-    assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), assume_pos_real=True) == acos(log(y/x))*gamma(log(y/x))
-    assert logcombine((2+3*I)*log(x), assume_pos_real=True) == log(x**2)+3*I*log(x)
+    assert logcombine((x**2+log(x)-log(y))/(x*y), assume_pos_real=True) == \
+        log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
+    assert logcombine(log(x)*2*log(y)+log(z), assume_pos_real=True) == \
+        log(z*y**log(x**2))
+    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2,3)*\
+        y**Rational(3,2)), assume_pos_real=True) == \
+        log(x**(1/(pi*x**Rational(2,3)*y**Rational(3,2)))*y**(-1/(pi*\
+        x**Rational(2,3)*y**Rational(3,2)))) + (x**4 + y**4)**Rational(1,2)/(pi*\
+        x**Rational(2,3)*y**Rational(3,2)) + x**Rational(1,3)/(pi*y**Rational(1,2))
+    assert logcombine(Eq(log(x), -2*log(y)), assume_pos_real=True) == \
+        Eq(log(x*y**2), Integer(0))
+    assert logcombine(Eq(y, x*acos(-log(x/y))), assume_pos_real=True) == \
+        Eq(y, x*acos(log(y/x)))
+    assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), assume_pos_real=True) == \
+        acos(log(y/x))*gamma(log(y/x))
+    assert logcombine((2+3*I)*log(x), assume_pos_real=True) == \
+        log(x**2)+3*I*log(x)
     assert logcombine(Eq(y, -log(x)), assume_pos_real=True) == Eq(y, log(1/x))
-    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x), assume_pos_real=True) == Integral((sin(x**2)+cos(x**3))/x,x)
+    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x), assume_pos_real=True) == \
+        Integral((sin(x**2)+cos(x**3))/x,x)
+    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x)+ (2+3*I)*log(x), \
+        assume_pos_real=True) == log(x**2)+3*I*log(x) + \
+        Integral((sin(x**2)+cos(x**3))/x,x)
 
 
 @XFAIL
@@ -453,12 +468,8 @@ def test_logcombine_2():
     # The same as one of the tests above, but with Rational(a,b) replaced with a/b.
     # This fails because of a bug in matches.  See issue 1274.
     x, y = symbols("xy")
-    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**(2/3)*y**(3/2)), assume_pos_real=True) == log(x**(1/(pi*x**(2/3)*y**(3/2)))*y**(-1/(pi*x**(2/3)*y**(3/2)))) + (x**4 + y**4)**(1/2)/(pi*x**(2/3)*y**(3/2)) + x**(1/3)/(pi*y**(1/2))
-
-@XFAIL
-def test_logcombine_3():
-    # This fails because of the work around issue 1445, logcombine will not
-    # expand expressions with Integrals, so the real part of a complex number
-    # is not pulled into the log in that case, even with assume_pos_real=True.
-    assert logcombine(Integral((sin(x**2)+cos(x**3))/x,x)+ (2+3*I)*log(x), assume_pos_real=True) == log(x**2)+3*I*log(x) + Integral((sin(x**2)+cos(x**3))/x,x)
+    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**(2/3)*y**(3/2)), \
+        assume_pos_real=True) == log(x**(1/(pi*x**(2/3)*y**(3/2)))*y**(-1/\
+        (pi*x**(2/3)*y**(3/2)))) + (x**4 + y**4)**(1/2)/(pi*x**(2/3)*y**(3/2)) + \
+        x**(1/3)/(pi*y**(1/2))
 
