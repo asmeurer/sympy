@@ -72,7 +72,7 @@ defeat the purpose of "all_Integral"), you will need to remove it
 manually in the dsolve() code.  See also the classify_ode() docstring
 for guidelines on writing a hint name.
 
-Determine *in general* how the solutions returned by your method compare
+Determine **in general** how the solutions returned by your method compare
 with other methods that can potentially solve the same ODEs.  Then, put
 your hints in the allhints tuple in the order that they should be
 called.  The ordering of this tuple determines which hints are default.
@@ -598,53 +598,57 @@ def classify_ode(eq, func, dict=False):
                 and matching_hints.has_key("1st_homogeneous_coeff_subs_indep_div_dep"):
                     matching_hints["1st_homogeneous_coeff_best"] = r
 
-    # nth order linear ODE
-    # a_n(x)y^(n) + ... + a_1(x)y' + a_0(x)y = F(x)
-    j = 0
-    s = S(0)
-    wilds = []
-    # Build a match expression for a nth order linear ode
-    for i in numbered_symbols(prefix='a', function=Wild, exclude=[f(x)]):
-        if j == order+1:
-            break
-        wilds.append(i)
-        s += i*f(x).diff(x,j)
-        j += 1
-    s += b
+    if order == 2:
+        # Liouville ODE f(x).diff(x, 2) + g(f(x))*(f(x).diff(x, 2))**2 + h(x)*f(x).diff(x)
+        # See Goldstein and Braun, "Advanced Methods for the Solution of
+        # Differential Equations", pg. 98
+        s = d*f(x).diff(x, 2) + e*f(x).diff(x)**2 + k*f(x).diff(x)
+        r = eq.match(s)
+        if r and r[d] != 0:
+            y = Symbol('y', dummy=True)
+            g = simplify(r[e]/r[d]).subs(f(x), y)
+            h = simplify(r[k]/r[d])
+            if h.has(f(x)) or g.has(x):
+                pass
+            else:
+                r = {'g':g, 'h':h, 'y':y}
+                matching_hints["Liouville"] = r
+                matching_hints["Liouville_Integral"] = r
 
-    r = eq.match(s)
 
-    if r and all([not r[i].has(x) for i in wilds]):
-        for i in wilds:
-            r[str(i)] = i
-            r['b'] = b
-        # Inhomogeneous case: F(x) is not identically 0
-        if r[b]:
-            undetcoeff = _undetermined_coefficients_match(r[b], x)
-            matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
-            matching_hints["nth_linear_constant_coeff_variation_of_parameters_Integral"] = r
-            if undetcoeff['test']:
-                r['trialset'] = undetcoeff['trialset']
-                matching_hints["nth_linear_constant_coeff_undetermined_coefficients"] = r
-        # Homogeneous case: F(x) is identically 0
-        else:
-            matching_hints["nth_linear_constant_coeff_homogeneous"] = r
+    if order > 0:
+        # nth order linear ODE
+        # a_n(x)y^(n) + ... + a_1(x)y' + a_0(x)y = F(x)
+        j = 0
+        s = S(0)
+        wilds = []
+        # Build a match expression for a nth order linear ode
+        for i in numbered_symbols(prefix='a', function=Wild, exclude=[f(x)]):
+            if j == order+1:
+                break
+            wilds.append(i)
+            s += i*f(x).diff(x,j)
+            j += 1
+        s += b
 
-    # Liouville ODE f(x).diff(x, 2) + g(f(x))*(f(x).diff(x, 2))**2 + h(x)*f(x).diff(x)
-    # See Goldstein and Braun, "Advanced Methods for the Solution of
-    # Differential Equations", pg. 98
-    s = d*f(x).diff(x, 2) + e*f(x).diff(x)**2 + k*f(x).diff(x)
-    r = eq.match(s)
-    if r and r[d] != 0:
-        y = Symbol('y', dummy=True)
-        g = simplify(r[e]/r[d]).subs(f(x), y)
-        h = simplify(r[k]/r[d])
-        if h.has(f(x)) or g.has(x):
-            pass
-        else:
-            r = {'g':g, 'h':h, 'y':y}
-            matching_hints["Liouville"] = r
-            matching_hints["Liouville_Integral"] = r
+        r = eq.match(s)
+
+        if r and all([not r[i].has(x) for i in wilds]):
+            for i in wilds:
+                r[str(i)] = i
+                r['b'] = b
+            # Inhomogeneous case: F(x) is not identically 0
+            if r[b]:
+                undetcoeff = _undetermined_coefficients_match(r[b], x)
+                matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
+                matching_hints["nth_linear_constant_coeff_variation_of_parameters_Integral"] = r
+                if undetcoeff['test']:
+                    r['trialset'] = undetcoeff['trialset']
+                    matching_hints["nth_linear_constant_coeff_undetermined_coefficients"] = r
+            # Homogeneous case: F(x) is identically 0
+            else:
+                matching_hints["nth_linear_constant_coeff_homogeneous"] = r
+
 
     # Order keys based on allhints.
     retlist = []

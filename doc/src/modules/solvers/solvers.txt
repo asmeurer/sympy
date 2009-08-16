@@ -27,7 +27,7 @@ is the symbol that we want to solve the equation for.
 Ordinary Differential equations (ODEs)
 --------------------------------------
 
-See :mod:`sympy.solvers.ode`.
+See :ref:`ode-docs`.
 
 Partial Differential Equations (PDEs)
 -------------------------------------
