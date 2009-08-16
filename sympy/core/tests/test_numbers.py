@@ -112,7 +112,6 @@ def test_Real():
     assert eq(a.evalf(), Real(16))
     assert (S(.3) == S(.5)) is False
 
-
 def test_Real_eval():
     a = Real(3.2)
     assert (a**2).is_Real

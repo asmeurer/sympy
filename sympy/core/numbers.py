@@ -923,7 +923,7 @@ class Integer(Rational):
 
     def _eval_power(b, e):
         """
-        Tries to do some simplifications on b ** e, where base is
+        Tries to do some simplifications on b ** e, where b is
         an instance of Integer
 
         Returns None if no further simplifications can be done
