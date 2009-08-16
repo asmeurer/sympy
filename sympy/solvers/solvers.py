@@ -237,7 +237,7 @@ def solve(f, *symbols, **flags):
                 t = Symbol('t', positive=True, dummy=True)
                 f_ = f.subs(symbol, t**m)
                 if guess_solve_strategy(f_, t) != GS_POLY:
-                    raise TypeError("Could not convert to a polynomial equation: %s" % f_)
+                    raise NotImplementedError("Could not convert to a polynomial equation: %s" % f_)
                 cv_sols = solve(f_, t)
                 for sol in cv_sols:
                     result.append(sol**m)
