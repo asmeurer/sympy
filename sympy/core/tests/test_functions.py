@@ -304,4 +304,3 @@ def test_function_non_commutative():
     assert sin(x).is_commutative == False
     assert exp(x).is_commutative == False
     assert log(x).is_commutative == False
-

@@ -360,6 +360,12 @@ def test_noncommutative_expand_issue658():
     assert (A*(A+B)*B).expand() == A**2*B + A*B**2
     assert (A*(A+B+C)*B).expand() == A**2*B + A*B**2 + A*C*B
 
+def test_as_numer_denom():
+    assert oo.as_numer_denom() == (1, 0)
+    assert (1/x).as_numer_denom() == (1, x)
+    assert x.as_numer_denom() == (x, 1)
+    assert (x/y).as_numer_denom() == (x, y)
+
 def test_as_independent():
     assert (2*x*sin(x)+y+x).as_independent(x) == (y, x + 2*x*sin(x))
     assert (2*x*sin(x)+y+x).as_independent(y) == (x + 2*x*sin(x), y)
@@ -598,6 +604,9 @@ def test_extractions():
     assert (-(x+x*y)/y).could_extract_minus_sign() ==  True
     assert ((x+x*y)/(-y)).could_extract_minus_sign() == True
     assert ((x+x*y)/y).could_extract_minus_sign() == False
+    assert (x*(-x-x**3)).could_extract_minus_sign() == True #used to give inf recurs
+    assert ((-x-y)/(x+y)).could_extract_minus_sign() == True #is_Mul odd case
+    assert ((-x-y)/(x-y)).could_extract_minus_sign() == False #is_Mul even case
 
 def test_coeff():
     assert (3+2*x+4*x**2).coeff(1) == None
