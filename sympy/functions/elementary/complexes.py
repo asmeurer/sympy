@@ -190,9 +190,20 @@ class sign(Function):
         if arg.is_positive: return S.One
         if arg.is_negative: return S.NegativeOne
         if arg.is_Mul:
-            coeff, terms = arg.as_coeff_terms()
-            if coeff is not S.One:
-                return cls(coeff) * cls(C.Mul(*terms))
+            neg = False
+            unknown = []
+            args = arg.args
+            nargs = len(args)
+            for tmp in args:
+                if tmp.is_positive:
+                    pass
+                elif tmp.is_negative:
+                    neg = not neg
+                else:
+                    unknown.append(tmp)
+            if neg or len(unknown) != nargs:
+                neg = S.NegativeOne if neg else S.One
+                return neg * cls(C.Mul(*unknown))
 
     is_bounded = True
 
@@ -200,7 +211,7 @@ class sign(Function):
         return self
 
     def _eval_is_zero(self):
-        return (self[0] is S.Zero)
+        return (self.args[0] is S.Zero)
 
 class abs(Function):
     """Return the absolute value of the argument. This is an extension of the built-in
