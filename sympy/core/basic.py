@@ -6,6 +6,7 @@ from decorators import _sympifyit
 from assumptions import AssumeMeths, make__get_assumption
 from cache import cacheit
 
+
 # used for canonical ordering of symbolic sequences
 # via __cmp__ method:
 # FIXME this is *so* irrelevant and outdated!
@@ -2046,6 +2047,7 @@ class Basic(AssumeMeths):
            True
 
         """
+        from sympy.utilities.iterables import make_list
         negative_self = -self
         self_has_minus = (self.extract_multiplicatively(-1) != None)
         negative_self_has_minus = ((negative_self).extract_multiplicatively(-1) != None)
@@ -2064,8 +2066,7 @@ class Basic(AssumeMeths):
             elif self.is_Mul:
                 # We choose the one with an odd number of minus signs
                 num, den = self.as_numer_denom()
-                args = (list(num.args) if num.is_Mul else [num]) + \
-                       (list(den.args) if den.is_Mul else [den])
+                args = (make_list(num, Mul)) + (make_list(den, Mul))
                 arg_signs = [arg.could_extract_minus_sign() for arg in args]
                 negative_args = filter(None, arg_signs)
                 return len(negative_args) % 2 == 1

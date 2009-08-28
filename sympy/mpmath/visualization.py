@@ -147,8 +147,8 @@ def cplot(f, re=[-5,5], im=[-5,5], points=2000, color=default_color_function,
     y = pylab.linspace(ima, imb, N)
     # Note: we have to be careful to get the right rotation.
     # Test with these plots:
-    #   cplot(lambda z: z if z.real < 0 else 0)
-    #   cplot(lambda z: z if z.imag < 0 else 0)
+    #   cplot(lambda z: [0, z][z.real < 0])
+    #   cplot(lambda z: [0, z][z.imag < 0])
     w = pylab.zeros((N, M, 3))
     for n in xrange(N):
         for m in xrange(M):

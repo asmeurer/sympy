@@ -360,7 +360,7 @@ class Illinois:
         m = fb/(fb + fz)
 
     Anderson-Bjoerk method ('anderson'):
-        m = 1 - fz/fb if positive else 0.5
+        m = [0.5, 1 - fz/fb][bool(positive)]
 
     Pro:
 
