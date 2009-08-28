@@ -1,7 +1,7 @@
 from sympy import Basic, S, Symbol, Real, Integer, Rational,  \
     sin, cos, exp, log, oo, sqrt, symbols, Integral, sympify, \
     WildFunction, Poly, Function, Derivative, Number, pi, var, \
-    NumberSymbol
+    NumberSymbol, zoo
 
 from sympy.utilities.pytest import XFAIL, raises
 

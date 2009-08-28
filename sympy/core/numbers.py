@@ -1,6 +1,6 @@
 from basic import Atom, SingletonMeta, S, Basic
 from decorators import _sympifyit
-from cache import Memoizer, MemoizerArg
+from cache import Memoizer, MemoizerArg, clear_cache
 import sympy.mpmath as mpmath
 import sympy.mpmath.libmpf as mlib
 import sympy.mpmath.libmpc as mlibc
@@ -19,7 +19,9 @@ def seterr(divide=False):
     divide == True .... raise an exception
     divide == False ... return nan
     """
-    _errdict["divide"] = divide
+    if _errdict["divide"] != divide:
+        clear_cache()
+        _errdict["divide"] = divide
 
 # (a,b) -> gcd(a,b)
 _gcdcache = {}
@@ -274,7 +276,13 @@ class Real(Number):
         if isinstance(num, (str, decimal.Decimal)):
             _mpf_ = mlib.from_str(str(num), prec, rnd)
         elif isinstance(num, tuple) and len(num) == 4:
-            _mpf_ = num
+            num = list(num)
+            num[3] = mpmath.libintmath.python_bitcount(num[1])
+            num[0] = num[0] % 2
+            return Real(float(S.NegativeOne**num[0] * num[1] * S(2)**num[3]))
+            # the following allows one to make a non-standard mpf tuple and 
+            # is probably not advisable.
+            #_mpf_ = tuple(num)
         else:
             _mpf_ = mpmath.mpf(num)._mpf_
         if not num:
