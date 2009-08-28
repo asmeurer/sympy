@@ -202,7 +202,10 @@ class sign(Function):
                 else:
                     unknown.append(tmp)
             if neg or len(unknown) != nargs:
-                neg = S.NegativeOne if neg else S.One
+                if neg:
+                    neg = S.NegativeOne
+                else:
+                    neg = S.One
                 return neg * cls(C.Mul(*unknown))
 
     is_bounded = True

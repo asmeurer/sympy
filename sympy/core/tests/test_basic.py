@@ -362,6 +362,9 @@ def test_noncommutative_expand_issue658():
 
 def test_as_numer_denom():
     assert oo.as_numer_denom() == (1, 0)
+    assert (-oo).as_numer_denom() == (-1, 0)
+    assert zoo.as_numer_denom() == (zoo, 1)
+    assert (-zoo).as_numer_denom() == (zoo, 1)
     assert (1/x).as_numer_denom() == (1, x)
     assert x.as_numer_denom() == (x, 1)
     assert (x/y).as_numer_denom() == (x, y)

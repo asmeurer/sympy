@@ -824,9 +824,9 @@ class Basic(AssumeMeths):
                     except TypeError:
                         #one or more types is in implicit form
                         for t in typ:
-                            try:
+                            if type(type(t)) is type:
                                 if isinstance(expr, t): return [expr]
-                            except:
+                            else:
                                 if isinstance(expr, type(t)): return [expr]
             result = []
             #search for a suitable iterator
