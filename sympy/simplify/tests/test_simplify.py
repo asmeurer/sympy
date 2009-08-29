@@ -54,6 +54,10 @@ def test_trigsimp1():
     assert trigsimp(cos(0.12345)**2 + sin(0.12345)**2) == 1
     e = 2*sin(x)**2 + 2*cos(x)**2
     assert trigsimp(log(e), deep=True) == log(2)
+    assert trigsimp(sin(x)*cot(x)) == cos(x)
+    assert trigsimp(cos(x)*tan(x)) == sin(x)
+    assert trigsimp(cos(x)/cot(x)) == sin(x)
+    assert trigsimp(sin(x)/tan(x)) == cos(x)
 
 def test_trigsimp2():
     x, y = symbols('x y')
