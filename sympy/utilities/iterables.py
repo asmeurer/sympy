@@ -1,4 +1,21 @@
 from sympy.core.symbol import Symbol, Wild
+
+def ifthen(condition, result1, result2):
+    """return result1 if condition else result2
+
+    This is a replacement for the conditional if statement that is part of
+    python 2.5+. If the condition must should not be called unless the
+    condition is met, then wrap the result in a lambda; it will be called
+    to return the result:
+
+    ifthen(x == 0, x, lambda: 1/x).
+    """
+
+    if condition: rv = result1
+    else: rv = result2
+    try: return rv()
+    except TypeError: return rv
+
 def all(iterable):
     """Return True if all elements are set to True. This
        function does not support predicates explicitely,
