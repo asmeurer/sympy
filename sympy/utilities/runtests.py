@@ -54,39 +54,48 @@ def convert_to_native_paths(lst):
     """
     return [os.path.join(*x.split("/")) for x in lst]
 
-def test(*paths, **kwargs):
+def test(*args, **kwargs):
     """
-    Runs the tests specified by paths, or all tests if paths=[].
+    Run all tests containing any of the given strings in their path.
 
-    Note: paths are specified relative to the sympy root directory in a unix
-    format (on all platforms including windows).
+    If sort=False, run them in random order (not default).
+
+    Warning: Tests in *very* deeply nested directories are not found.
 
     Examples:
 
-    Run all tests:
     >> import sympy
+
+    Run all tests:
     >> sympy.test()
 
     Run one file:
-    >> import sympy
     >> sympy.test("sympy/core/tests/test_basic.py")
 
     Run all tests in sympy/functions/ and some particular file:
-    >> import sympy
     >> sympy.test("sympy/core/tests/test_basic.py", "sympy/functions")
+
+    Run all tests in sympy/core and sympy/utilities:
+    >> sympy.test("core", "util")
     """
+    from glob import glob
     verbose = kwargs.get("verbose", False)
     tb = kwargs.get("tb", "short")
     kw = kwargs.get("kw", "")
     post_mortem = kwargs.get("pdb", False)
     colors = kwargs.get("colors", True)
+    sort = kwargs.get("sort", True)
     r = PyTestReporter(verbose, tb, colors)
     t = SymPyTests(r, kw, post_mortem)
-    if len(paths) > 0:
-        t.add_paths(paths)
-    else:
+    if len(args) == 0:
         t.add_paths(["sympy"])
-    return t.test()
+    else:
+        mypaths = []
+        for p in t.get_paths(dir='sympy'):
+            mypaths.extend(glob(p))
+        mypaths = set(mypaths)
+        t.add_paths([p for p in mypaths if any(a in p for a in args)])
+    return t.test(sort=sort)
 
 def doctest(*paths, **kwargs):
     """
@@ -129,23 +138,45 @@ def doctest(*paths, **kwargs):
     else:
         t.add_paths(["sympy"])
     dtest = t.test()
-    return dtest # skip testing docs under doc/. See issue 1521
+    if not dtest:
+        return False
 
-    if len(paths) == 0 and sys.version_info[:2] > (2,4):
+    if sys.version_info[:2] <= (2,4):
+        return True
+
+    if len(paths) == 0:
         # test documentation under doc/src/ only if we are running the full
         # test suite and this is python2.5 or newer:
         excluded = convert_to_native_paths(['doc/src/modules/plotting.txt'])
         doc_globs = convert_to_native_paths(['doc/src/*.txt',
                 'doc/src/modules/*.txt'])
         doc_files = sum([glob(x) for x in doc_globs], [])
-        setup_pprint()
         for ex in excluded:
             doc_files.remove(ex)
-        for doc_file in doc_files:
-            out = pdoctest.testfile(doc_file, module_relative=False)
-            print "Testing ", doc_file
-            print "Failed %s, tested %s" % out
-    return dtest
+    else:
+        doc_files = paths
+
+    setup_pprint()
+    doc_tests_succeeded = True
+    for doc_file in doc_files:
+        if not os.path.isfile(doc_file):
+            continue
+        old_displayhook = sys.displayhook
+        try:
+            out = pdoctest.testfile(doc_file, module_relative=False,
+                    optionflags=pdoctest.ELLIPSIS | \
+                    pdoctest.NORMALIZE_WHITESPACE)
+        finally:
+            # make sure we return to the original displayhook in case some
+            # doctest has changed that
+            sys.displayhook = old_displayhook
+        print "Testing ", doc_file
+        print "Failed %s, tested %s" % out
+        if out[0] != 0:
+            doc_tests_succeeded = False
+    if not doc_tests_succeeded:
+        print("DO *NOT* COMMIT!")
+    return doc_tests_succeeded
 
 class SymPyTests(object):
 
@@ -166,12 +197,19 @@ class SymPyTests(object):
             else:
                 self._tests.extend(self.get_tests(path2))
 
-    def test(self):
+    def test(self, sort=False):
         """
         Runs the tests.
 
+        If sort=False run tests in random order.
+
         Returns True if all tests pass, otherwise False.
         """
+        if sort:
+            self._tests.sort()
+        else:
+            from random import shuffle
+            shuffle(self._tests)
         self._reporter.start()
         for f in self._tests:
             try:
