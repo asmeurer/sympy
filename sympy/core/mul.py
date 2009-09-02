@@ -6,7 +6,7 @@ from numbers import Integer, Rational
 from symbol import Symbol
 
 # internal marker to indicate:
-#   "there are still non-commutative objects -- don't forget to processe them"
+#   "there are still non-commutative objects -- don't forget to process them"
 class NC_Marker:
     is_Order    = False
     is_Mul      = False
@@ -628,8 +628,10 @@ class Mul(AssocOp):
     def _eval_is_irrational(self):
         for t in self.args:
             a = t.is_irrational
-            if a: return True
-            if a is None: return
+            if a:
+                return True
+            if a is None:
+                return
         return False
 
     def _eval_is_positive(self):
@@ -708,7 +710,7 @@ class Mul(AssocOp):
 
     def _eval_subs(self, old, new):
         # base cases
-        # simpliest
+        # simplest
         if self == old:
             return new
         # pass it off to its own class
@@ -726,23 +728,19 @@ class Mul(AssocOp):
             return self.__class__(*[s._eval_subs(old, new) for s in self.args])
 
         # break up powers, i.e., x**2 -> x*x
-        otemp, stemp = [], []
-        for o in terms_old:
-            if isinstance(o,Pow) and isinstance(o.exp, Integer):
-                if o.exp.is_positive:
-                    for i in range(o.exp): otemp.append(o.base)
-                elif o.exp.is_negative:
-                    for i in range(abs(o.exp)): otemp.append(1/s.base)
-            else: otemp.append(o)
-        for s in terms_self:
-            if isinstance(s,Pow) and isinstance(s.exp, Integer):
-                if s.exp.is_positive:
-                    for i in range(s.exp): stemp.append(s.base)
-                elif s.exp.is_negative:
-                    for i in range(abs(s.exp)): stemp.append(1/s.base)
-            else: stemp.append(s)
-        terms_old = otemp
-        terms_self = stemp
+        def breakup(terms):
+            temp = []
+            for t in terms:
+                if isinstance(t,Pow) and isinstance(t.exp, Integer):
+                    if t.exp.is_positive:
+                        temp.extend([t.base]*int(t.exp))
+                    elif t.exp.is_negative:
+                        temp.extend([1/t.base]*int(abs(t.exp)))
+                else:
+                    temp.append(t)
+            return temp
+        terms_old = breakup(terms_old)
+        terms_self = breakup(terms_self)
 
         # break up old and self terms into commutative and noncommutative lists
         comm_old = []; noncomm_old = []
