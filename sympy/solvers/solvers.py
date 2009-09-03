@@ -728,6 +728,9 @@ def nsolve(*args, **kwargs):
                         % len(args))
     modules = kwargs.get('modules', ['mpmath'])
     if isinstance(f,  (list,  tuple)):
+        for i, fi in enumerate(f):
+            if isinstance(fi, Equality):
+                f[i] = fi.lhs - fi.rhs
         f = Matrix(f).T
     if not isinstance(f, Matrix):
         # assume it's a sympy expression
