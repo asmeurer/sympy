@@ -280,7 +280,7 @@ class Real(Number):
             num[3] = mpmath.libintmath.python_bitcount(num[1])
             num[0] = num[0] % 2
             return Real(float(S.NegativeOne**num[0] * num[1] * S(2)**num[3]))
-            # the following allows one to make a non-standard mpf tuple and 
+            # the following allows one to make a non-standard mpf tuple and
             # is probably not advisable.
             #_mpf_ = tuple(num)
         else:
