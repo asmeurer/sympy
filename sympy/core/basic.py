@@ -648,19 +648,31 @@ class Basic(AssumeMeths):
     @_sympifyit('other', False) # sympy >  other
     def __lt__(self, other):
         #return sympify(other) > self
+        dif = self - other
+        if not dif.is_negative is None:
+            return dif.is_negative
         return StrictInequality(self, other)
 
     @_sympifyit('other', True)  # sympy >  other
     def __gt__(self, other):
+        dif = self - other
+        if not dif.is_negative is None:
+            return dif.is_positive
         return StrictInequality(other, self)
         #return sympify(other) < self
 
     @_sympifyit('other', False) # sympy >  other
     def __le__(self, other):
+        dif = self - other
+        if not dif.is_nonpositive is None:
+            return dif.is_nonpositive
         return Inequality(self, other)
 
     @_sympifyit('other', True)  # sympy >  other
     def __ge__(self, other):
+        dif = self - other
+        if not dif.is_nonnegative is None:
+            return dif.is_nonnegative
         return sympify(other) <= self
 
 
