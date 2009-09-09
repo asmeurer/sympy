@@ -27,19 +27,34 @@ class CoefficientError(PolynomialError):
 
 class UnivariatePolyError(PolynomialError):
 
-    def __init__(self, poly):
-        self.message = "%s is an univariate polynomial" % poly
+    def __init__(self, expr, base_exc=None):
+        self.expr = expr
+        self.base_exc = base_exc
 
     def __str__(self):
-        return self.message
+        if self.base_exc is None:
+            return "UnivariatePolyError: %s" % (self.expr,)
+
+        return "Univariate polynomial '%s' unexpected and raised \
+        exception:\n%s: %s" % (self.expr,
+                               self.base_exc.__class__.__name__,
+                               str(self.base_exc))
 
 class MultivariatePolyError(PolynomialError):
 
-    def __init__(self, poly):
-        self.message = "%s is a multivariate polynomial" % poly
+    def __init__(self, expr, base_exc=None):
+        self.expr = expr
+        self.base_exc = base_exc
 
     def __str__(self):
-        return self.message
+        if self.base_exc is None:
+            return "MultivariatePolyError: %s" % (self.expr,)
+
+        return "Multivariate polynomial '%s' unexpected and raised \
+        exception:\n%s: %s" % (self.expr,
+                               self.base_exc.__class__.__name__,
+                               str(self.base_exc))
+
 
 ##
 ## TODO:

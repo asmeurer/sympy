@@ -276,13 +276,15 @@ class Real(Number):
         if isinstance(num, (str, decimal.Decimal)):
             _mpf_ = mlib.from_str(str(num), prec, rnd)
         elif isinstance(num, tuple) and len(num) == 4:
-            num = list(num)
-            num[3] = mpmath.libintmath.python_bitcount(num[1])
-            num[0] = num[0] % 2
-            return Real(float(S.NegativeOne**num[0] * num[1] * S(2)**num[3]))
-            # the following allows one to make a non-standard mpf tuple and
-            # is probably not advisable.
-            #_mpf_ = tuple(num)
+            if type(num[1]) is str:
+                # it's a hexadecimal (coming from a pickled object)
+                # assume that it is in standard form
+                num = list(num)
+                num[1] = long(num[1], 16)
+                _mpf_ = tuple(num)
+            else:
+                _mpf_ = mpmath.mpf(
+                    S.NegativeOne ** num[0] * num[1] * 2 ** num[2])._mpf_
         else:
             _mpf_ = mpmath.mpf(num)._mpf_
         if not num:
