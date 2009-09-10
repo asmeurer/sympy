@@ -729,3 +729,13 @@ class PyTestReporter(Reporter):
             self.write(" ")
             self.write("[FAIL]", "Red", align="right")
         self.write("\n")
+
+if __name__ == '__main__':
+    from optparse import OptionParser
+    parser = OptionParser()
+    options, args = parser.parse_args()
+    #I don't know how to do all the argument parsing but this works when called like this:
+    '''
+    C:\DOCUME~2\chris\sympy>\Python26\python.exe sympy\utilities\runtests.py core solvers verbose=True
+    '''
+    test(*args, **options.__dict__)
