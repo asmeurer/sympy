@@ -4,7 +4,7 @@ from sympy.core.function import Lambda, Function, Function, expand_log
 from sympy.core.cache import cacheit
 
 from sympy.utilities.decorator import deprecated
-
+from sympy.mpmath.libmpf import from_int
 class exp(Function):
 
     nargs = 1
@@ -289,6 +289,14 @@ class log(Function):
         if base is not None:
             base = sympify(base)
 
+            if base is S(2) and arg.is_positive and arg.is_Integer:
+                s,m,e,b = from_int(str(arg))
+                assert m % 2 == 1 #in standard form mantissa should be odd
+                if e != 0:
+                    rv = e
+                    if m != 1L:
+                        rv += log(m, 2)
+                    return rv
             if base is not S.Exp1:
                 return cls(arg)/cls(base)
             else:
