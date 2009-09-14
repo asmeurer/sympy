@@ -304,7 +304,8 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
 
         - See test_ode.py for many tests, which serves also as a set of
           examples for how to use dsolve().
-        - dsolve always returns an Equality class.  If possible, it
+        - dsolve always returns an Equality class (except for the case
+          when the hint is "all" or "all_Integral").  If possible, it
           solves the solution explicitly for the function being solved
           for. Otherwise, it returns an implicit solution.
         - Arbitrary constants are symbols named C1, C2, and so on.
@@ -348,13 +349,13 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
     # Magic that should only be used internally.  Prevents classify_ode from
     # being called more than it needs to be by passing its results through
     # recursive calls.
-    if not kwargs.has_key('classify') or kwargs['classify']:
+    if not kwargs.get('classify', False):
         hints = classify_ode(eq, func, dict=True)
     else:
-        if kwargs.has_key('hints'):
-            hints = kwargs['hints']
-        else:
-            hints = {'default': hint, hint: kwargs['match'], 'order': kwargs['order']}
+        hints = kwargs.get('hint',
+                           {'default': hint,
+                            hint: kwargs['match'],
+                            'order': kwargs['order']})
 
     if not hints['default']:
         # classify_ode will set hints['default'] to None if no hints match.
@@ -659,9 +660,9 @@ def classify_ode(eq, func, dict=False):
         r = _nth_linear_match(eq, func, order) # Alternate matching function
 
         # Constant coefficient case (a_i is constant for all i)
-        if r and all([not r[i].has(x) for i in range(order + 1)]):
+        if r and not any(r[i].has(x) for i in r if i != 'b'):
             # Inhomogeneous case: F(x) is not identically 0
-            if r['b']:
+            if r.get('b', 0):
                 undetcoeff = _undetermined_coefficients_match(r['b'], x)
                 matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
                 matching_hints["nth_linear_constant_coeff_variation_of_parameters" + \
@@ -711,7 +712,7 @@ def odesimp(eq, func, order, hint):
     This function should have no effect on expressions returned by
     dsolve(), as dsolve already calls odesimp(), but the individual hint
     functions do not call odesimp (because the dsolve() wrapper does).
-    Therefore, this function is designed for mainly internal use.s
+    Therefore, this function is designed for mainly internal use.
 
     == Example ==
         >>> from sympy import *
@@ -2008,36 +2009,24 @@ def _nth_linear_match(eq, func, order):
 
     """
     from sympy import S
+    from sympy.utilities.iterables import make_list
     x = func.args[0]
-    terms={'b': S.Zero}
-    for i in range(order + 1):
-        terms[i] = S.Zero
-    # FIXME: use .as_Add() here, when the new polys module is merged in.
-    if eq.is_Add:
-        eqargs = eq.args
-    else:
-        eqargs = [eq]
-    for i in eqargs:
+    terms={}
+    for i in make_list(eq, Add):
         if not i.has(func):
-            terms['b'] += i
+            terms.setdefault('b', []).append(i)
         else:
-             # .coeff(func) gets func and all derivatives of func
-            c = i.coeff(func)
-            if not c:
+            c, f = i.as_independent(func)
+            # f must be func or one of its derivatives in only var x
+            dargs = f.args[1:]
+            if not (f.is_Function and
+                    f == func or
+                    isinstance(f, Derivative) and
+                    all(w == x for w in dargs)):
                 return None
-            else:
-                t = i.extract_multiplicatively(c)
-                if t == func:
-                    terms[0] += c
-                elif isinstance(t, Derivative):
-                    # Make sure every symbol is x
-                    if not all(map(lambda t: t == x, t.symbols)) or \
-                        not t.expr == func:
-                            return None
-                    else:
-                        terms[len(t.symbols)] += c
-                else:
-                    return None
+            terms.setdefault(len(dargs), []).append(c)
+    for i in terms:
+        terms[i] = Add(*terms[i])
     return terms
 
 def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='sol'):

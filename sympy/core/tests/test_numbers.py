@@ -127,7 +127,7 @@ def test_Real():
     assert str(x2_str) == str(Real(1.2))
     # but are different at the mpf level
     assert Real(1.2)._mpf_ == (0, 5404319552844595L, -52, 53)
-    assert x2_str._mpf_ == (0, 10808639105689190L, -53, 53) 
+    assert x2_str._mpf_ == (0, 10808639105689190L, -53, 53)
 
 def test_Real_eval():
     a = Real(3.2)
