@@ -238,6 +238,7 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
             an ODE.  The default hint, 'default', will use whatever hint
             is returned first by classify_ode().  See Hints below for
             more options that you can use for hint.
+
         ``simplify`` enables simplification by odesimp().  See its
             docstring for more information.  Turn this off, for example,
             to disable solving of solutions for func or simplification
