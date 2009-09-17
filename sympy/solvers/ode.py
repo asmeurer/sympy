@@ -434,7 +434,7 @@ def classify_ode(eq, func, dict=False):
     docstring for different meta-hints you can use.
 
     If dict is true, classify_ode() will return a dictionary of
-    hint:match expression terms. This is indendened for internal use by
+    hint:match expression terms. This is intended for internal use by
     dsolve().  Note that because dictionaries are ordered arbitrarily,
     this will most likely not be in the same order as the tuple.
 
@@ -494,7 +494,7 @@ def classify_ode(eq, func, dict=False):
         The word "coeff" in a hint refers to the coefficients of
         something in the ODE, usually of the derivative terms.  See the
         docstring for the individual methods for more info (help(ode)).
-        This is contrast to "coefficients", as in
+        This is in contrast to "coefficients", as in
         "undetermined_coefficients", which refers to the common name of
         a method.
 
@@ -640,30 +640,13 @@ def classify_ode(eq, func, dict=False):
     if order > 0:
         # nth order linear ODE
 
-        # I used to use the below match, but bugs in match would prevent
-        # it from matching in all cases, so I wrote _match_nth_linear instead.
-        # See issues 1429 and 1601.
-        # a_n(x)y^(n) + ... + a_1(x)y' + a_0(x)y = F(x)
-#        j = 0
-#        s = S(0)
-#        wilds = []
-#        # Build a match expression for a nth order linear ode
-#        for i in numbered_symbols(prefix='a', function=Wild, exclude=[f(x)]):
-#            if j == order+1:
-#                break
-#            wilds.append(i)
-#            s += i*f(x).diff(x,j)
-#            j += 1
-#        s += b
-
-#        r = eq.match(s)
 
         r = _nth_linear_match(eq, func, order) # Alternate matching function
 
         # Constant coefficient case (a_i is constant for all i)
-        if r and not any(r[i].has(x) for i in r if i != 'b'):
+        if r:
             # Inhomogeneous case: F(x) is not identically 0
-            if r.get('b', 0):
+            if r['b']:
                 undetcoeff = _undetermined_coefficients_match(r['b'], x)
                 matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
                 matching_hints["nth_linear_constant_coeff_variation_of_parameters" + \
@@ -2012,22 +1995,19 @@ def _nth_linear_match(eq, func, order):
     from sympy import S
     from sympy.utilities.iterables import make_list
     x = func.args[0]
-    terms={}
+    one_x = set([x])
+    terms = dict([('b', S.Zero)] + [(i, S.Zero) for i in range(order+1)])
     for i in make_list(eq, Add):
         if not i.has(func):
-            terms.setdefault('b', []).append(i)
+            terms['b'] += i
         else:
             c, f = i.as_independent(func)
-            # f must be func or one of its derivatives in only var x
-            dargs = f.args[1:]
-            if not (f.is_Function and
-                    f == func or
-                    isinstance(f, Derivative) and
-                    all(w == x for w in dargs)):
+            if c.has(x) or not (f == func or
+                                isinstance(f, Derivative) and
+                                set(f.symbols) == one_x):
                 return None
-            terms.setdefault(len(dargs), []).append(c)
-    for i in terms:
-        terms[i] = Add(*terms[i])
+            else:
+                terms[len(f.args[1:])] += c
     return terms
 
 def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='sol'):

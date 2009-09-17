@@ -1843,16 +1843,23 @@ class Basic(AssumeMeths):
         return S.Zero, (self,)
 
     def as_numer_denom(self):
-        # a/b -> a,b
-        if 0: #this is not a trivial change...it causes many failures
-            from sympy.core.relational import Equality
-            from sympy import Eq
-            if isinstance(self, Equality):
-                l = Symbol('l', dummy=True)
-                r = Symbol('r', dummy=True)
-                n, d = (l*self.lhs - r*self.rhs).as_numer_denom()
-                return Eq(n.subs({l: 1, r: 0}),
-                          n.subs({l: 0, r: -1})), d.subs({l: 1, r: 1})
+        """a/b -> a,b
+
+        This does not do anything to the arguments of an Equality other
+        than return the (Eq, 1). The following is something that could
+        be done, but at present it is not a trivial change as it causes
+        many failures:
+        
+        from sympy.core.relational import Equality
+        from sympy import Eq
+        if isinstance(self, Equality):
+            l = Symbol('l', dummy=True)
+            r = Symbol('r', dummy=True)
+            n, d = (l*self.lhs - r*self.rhs).as_numer_denom()
+            return Eq(n.subs({l: 1, r: 0}),
+                      n.subs({l: 0, r: -1})), d.subs({l: 1, r: 1})
+        """
+        
         base, exp = self.as_base_exp()
         coeff, terms = exp.as_coeff_terms()
         if coeff.is_negative:
