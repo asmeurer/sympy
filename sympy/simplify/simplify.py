@@ -707,6 +707,7 @@ def separatevars(expr, dict=False, symbols=[]):
     {'coeff': 2, x: x**2, y: 1 + sin(y), z: z}
     >>> separatevars(2*x+y*sin(x), dict=True, symbols=(x, y)) == None
     True
+
     """
     if dict:
         return _separatevars_dict(_separatevars(expr), *symbols)
@@ -796,6 +797,7 @@ def ratsimp(expr):
         >>> y = Symbol('y')
         >>> ratsimp(1/x + 1/y)
         (x + y)/(x*y)
+
     """
     expr = sympify(expr)
     if expr.is_Pow:
@@ -862,6 +864,7 @@ def trigsimp(expr, deep=False, recursive=False):
         log(2*cos(x)**2 + 2*sin(x)**2)
         >>> trigsimp(log(e), deep=True)
         log(2)
+
     """
     from sympy.core.basic import S
     sin, cos, tan, cot = C.sin, C.cos, C.tan, C.cot
@@ -924,6 +927,7 @@ def trigsimp_nonrecursive(expr, deep=False):
         log(2*cos(x)**2 + 2*sin(x)**2)
         >>> trigsimp_nonrecursive(log(e), deep=True)
         log(2)
+
     """
     from sympy.core.basic import S
     sin, cos, tan, cot = C.sin, C.cos, C.tan, C.cot
@@ -1005,6 +1009,7 @@ def radsimp(expr):
         >>> e = ( (2+2*sqrt(2))*x+(2+sqrt(8))*y )/( 2+sqrt(2) )
         >>> radsimp(e)
         x*2**(1/2) + y*2**(1/2)
+
     """
     n,d = fraction(expr)
     a,b,c = map(Wild, 'abc')
@@ -1073,6 +1078,7 @@ def powsimp(expr, deep=False, combine='all'):
         log(exp(x)*exp(y))
         >>> powsimp(log(exp(x)*exp(y)), deep=True)
         x + y
+
     """
     if combine not in ['all', 'exp', 'base']:
             raise ValueError, "combine must be one of ('all', 'exp', 'base')."
@@ -1387,6 +1393,7 @@ def logcombine(expr, assume_pos_real=False):
     >>> a = Symbol('a', real=True)
     >>> logcombine(a*log(x)+log(y)-log(z))
     log(y*x**a/z)
+
     """
     # Try to make (a+bi)*log(x) == a*log(x)+bi*log(x).  This needs to be a
     # separate function call to avoid infinite recursion.

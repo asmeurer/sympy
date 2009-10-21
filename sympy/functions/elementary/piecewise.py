@@ -54,6 +54,7 @@ class Piecewise(Function):
       1
       >>> p.subs(x,5)
       log(5)
+
     """
 
     nargs=None
