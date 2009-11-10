@@ -74,7 +74,7 @@ class DiracDelta(Function):
            --------
 
            >>> from sympy import *
-           >>> x, y = symbols('xy')
+           >>> from sympy.abc import x, y
 
            >>> DiracDelta(x*y).simplify(x)
            DiracDelta(x)/abs(y)
@@ -122,7 +122,7 @@ class DiracDelta(Function):
            --------
 
            >>> from sympy import *
-           >>> x, y = symbols('xy')
+           >>> from sympy.abc import x, y
 
            >>> DiracDelta(x*y).is_simple(x)
            True

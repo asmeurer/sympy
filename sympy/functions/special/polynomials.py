@@ -77,7 +77,8 @@ class chebyshevt(PolynomialSequence):
 
     Examples
     ========
-        >>> x = Symbol('x')
+        >>> from sympy import chebyshevt
+        >>> from sympy.abc import x
         >>> chebyshevt(0, x)
         1
         >>> chebyshevt(1, x)
@@ -109,7 +110,8 @@ class chebyshevu(PolynomialSequence):
 
     Examples
     ========
-        >>> x = Symbol('x')
+        >>> from sympy import chebyshevu
+        >>> from sympy.abc import x
         >>> chebyshevu(0, x)
         1
         >>> chebyshevu(1, x)
@@ -133,6 +135,7 @@ class chebyshevt_root(Function):
     Examples
     ========
 
+    >>> from sympy import chebyshevt, chebyshevt_root
     >>> chebyshevt_root(3, 2)
     -3**(1/2)/2
     >>> chebyshevt(3, chebyshevt_root(3, 2))
@@ -161,6 +164,7 @@ class chebyshevu_root(Function):
     Examples
     ========
 
+        >>> from sympy import chebyshevu, chebyshevu_root
         >>> chebyshevu_root(3, 2)
         -2**(1/2)/2
         >>> chebyshevu(3, chebyshevu_root(3, 2))
@@ -195,7 +199,8 @@ class legendre(PolynomialSequence):
 
     Examples
     ========
-        >>> x = Symbol('x')
+        >>> from sympy import legendre
+        >>> from sympy.abc import x
         >>> legendre(0, x)
         1
         >>> legendre(1, x)
@@ -228,7 +233,8 @@ class assoc_legendre(PolynomialSequence2):
 
     Examples
     ========
-        >>> x = Symbol('x')
+        >>> from sympy import assoc_legendre
+        >>> from sympy.abc import x
         >>> assoc_legendre(0,0, x)
         1
         >>> assoc_legendre(1,0, x)
@@ -292,7 +298,8 @@ class hermite(PolynomialSequence):
 
     Examples
     ========
-        >>> x = Symbol('x')
+        >>> from sympy import hermite
+        >>> from sympy.abc import x
         >>> hermite(0, x)
         1
         >>> hermite(1, x)

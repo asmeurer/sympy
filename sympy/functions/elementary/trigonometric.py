@@ -24,7 +24,7 @@ class sin(Function):
     Examples
     ========
         >>> from sympy import *
-        >>> x = Symbol('x')
+        >>> from sympy.abc import x
         >>> sin(x**2).diff(x)
         2*x*cos(x**2)
         >>> sin(1).diff(x)
@@ -261,7 +261,7 @@ class cos(Function):
     Examples
     ========
         >>> from sympy import *
-        >>> x = Symbol('x')
+        >>> from sympy.abc import x
         >>> cos(x**2).diff(x)
         -2*x*sin(x**2)
         >>> cos(1).diff(x)
@@ -499,7 +499,7 @@ class tan(Function):
     Examples
     ========
         >>> from sympy import *
-        >>> x = Symbol('x')
+        >>> from sympy.abc import x
         >>> tan(x**2).diff(x)
         2*x*(1 + tan(x**2)**2)
         >>> tan(1).diff(x)
