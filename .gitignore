@@ -1,8 +1,10 @@
+*.patch
 *.pyc
 *.pyo
 *.swp
 tags
 
+my/
 dist/
 build/
 
