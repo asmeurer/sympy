@@ -170,7 +170,7 @@ class RisingFactorial(Function):
        more information check "Concrete mathematics" by Graham, pp. 66
        or visit http://mathworld.wolfram.com/RisingFactorial.html page.
 
-       >>> from sympy import *
+       >>> from sympy import rf
        >>> from sympy.abc import x
 
        >>> rf(x, 0)
@@ -238,7 +238,7 @@ class FallingFactorial(Function):
        more information check "Concrete mathematics" by Graham, pp. 66
        or visit http://mathworld.wolfram.com/FallingFactorial.html page.
 
-       >>> from sympy import *
+       >>> from sympy import ff
        >>> from sympy.abc import x
 
        >>> ff(x, 0)

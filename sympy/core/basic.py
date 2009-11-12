@@ -450,7 +450,7 @@ class Basic(AssumeMeths):
            algorithms where uniform handling of int, long values and
            and sympy expressions is required.
 
-           >>> from sympy import *
+           >>> from sympy import S
            >>> from sympy.abc import x, y
 
            >>> bool(0)
@@ -481,7 +481,6 @@ class Basic(AssumeMeths):
 
         Example:
 
-        >>> from sympy import *
         >>> from sympy.abc import x, y
         >>> x.compare(y)
         -1
@@ -769,7 +768,7 @@ class Basic(AssumeMeths):
 
            Examples::
 
-           >>> from sympy import *
+           >>> from sympy import I, pi, sin
            >>> from sympy.abc import x, y
            >>> list((1+x+2*sin(y+I*pi)).atoms())
            [y, I, 2, x, 1, pi]
@@ -779,6 +778,7 @@ class Basic(AssumeMeths):
 
            Examples::
 
+           >>> from sympy import Number, NumberSymbol, Symbol
            >>> sorted((1+x+2*sin(y+I*pi)).atoms(Symbol))
            [x, y]
 
@@ -804,6 +804,7 @@ class Basic(AssumeMeths):
            of sympy atom, while type(S(2)) is type Integer and will find all
            integers in an expression::
 
+           >>> from sympy import S
            >>> sorted((1+x+2*sin(y+I*pi)).atoms(S(1)))
            [1]
 
@@ -815,6 +816,7 @@ class Basic(AssumeMeths):
            and those types of "atoms" as found in scanning the arguments of the
            expression nonrecursively::
 
+           >>> from sympy import Function, Mul
            >>> sorted((1+x+2*sin(y+I*pi)).atoms(Function))
            [sin(y + pi*I)]
 
@@ -863,7 +865,7 @@ class Basic(AssumeMeths):
     def is_number(self):
         """Returns True if 'self' is a number.
 
-           >>> from sympy import *
+           >>> from sympy import log
            >>> from sympy.abc import x, y
 
            >>> x.is_number
@@ -1005,7 +1007,7 @@ class Basic(AssumeMeths):
            then all  available symbols will be collected and used to form
            a new polynomial.
 
-           >>> from sympy import *
+           >>> from sympy import Poly, sin
            >>> from sympy.abc import x, y
 
            >>> print (x**2 + x*y).as_poly()
@@ -1034,7 +1036,7 @@ class Basic(AssumeMeths):
     def as_basic(self):
         """Converts polynomial to a valid sympy expression.
 
-           >>> from sympy import *
+           >>> from sympy import sin
            >>> from sympy.abc import x, y
 
            >>> p = (x**2 + x*y).as_poly(x, y)
@@ -1059,7 +1061,7 @@ class Basic(AssumeMeths):
 
         Examples:
 
-        >>> from sympy import *
+        >>> from sympy import pi
         >>> from sympy.abc import x, y
         >>> (1+x*y).subs(x, pi)
         1 + pi*y
@@ -1102,7 +1104,6 @@ class Basic(AssumeMeths):
 
         Examples:
 
-        >>> from sympy import *
         >>> from sympy.abc import x, y
         >>> (x+y)._subs_list( [(x, 3),     (y, x**2)] )
         3 + x**2
@@ -1130,7 +1131,7 @@ class Basic(AssumeMeths):
            gives only partial order and all asymptotically faster
            fail (depending on the initial order).
 
-           >>> from sympy import *
+           >>> from sympy import sqrt, sin, cos, exp
            >>> from sympy.abc import x, y
 
            >>> from sympy.abc import a, b, c, d, e
@@ -1194,7 +1195,7 @@ class Basic(AssumeMeths):
     def has_any_symbols(self, *syms):
         """Return True if 'self' has any of the symbols.
 
-           >>> from sympy import *
+           >>> from sympy import sin
            >>> from sympy.abc import x, y, z
 
            >>> (x**2 + sin(x*y)).has_any_symbols(z)
@@ -1248,7 +1249,7 @@ class Basic(AssumeMeths):
     def has_all_symbols(self, *syms):
         """Return True if 'self' has all of the symbols.
 
-           >>> from sympy import *
+           >>> from sympy import sin
            >>> from sympy.abc import x, y, z
 
            >>> (x**2 + sin(x*y)).has_all_symbols(x, y)
@@ -1546,7 +1547,7 @@ class Basic(AssumeMeths):
            evaluated recursively, unless some species were excluded via 'hints'
            or unless the 'deep' hint was set to 'False'.
 
-           >>> from sympy import *
+           >>> from sympy import Integral
            >>> from sympy.abc import x, y
 
            >>> 2*Integral(x, x)
@@ -1639,7 +1640,7 @@ class Basic(AssumeMeths):
            defined called 'deep'. When 'deep' is set to False it will
            forbid functions to rewrite their contents.
 
-           >>> from sympy import *
+           >>> from sympy import sin, exp, I
            >>> from sympy.abc import x, y
 
            >>> sin(x).rewrite(sin, exp)
@@ -1731,7 +1732,7 @@ class Basic(AssumeMeths):
            of 'expr' and 'expr'-free coefficient. If such separation
            is not possible it will return None.
 
-           >>> from sympy import *
+           >>> from sympy import E, pi, sin, I
            >>> from sympy.abc import x, y
 
            >>> E.as_coefficient(E)
@@ -1774,7 +1775,7 @@ class Basic(AssumeMeths):
            dependent on them in the other. Both parts are valid
            SymPy expressions.
 
-           >>> from sympy import *
+           >>> from sympy import sin, cos
            >>> from sympy.abc import x, y
 
            >>> (2*x*sin(x)+y+x).as_independent(x)
@@ -2096,10 +2097,7 @@ class Basic(AssumeMeths):
            For any expression, the set {e.could_extract_minus_sign(),
            (-e).could_extract_minus_sign()} must be {True, False}.
 
-           >>> from sympy import *
-
            >>> from sympy.abc import x, y
-
            >>> (x-y).could_extract_minus_sign() != (y-x).could_extract_minus_sign()
            True
 

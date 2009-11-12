@@ -296,7 +296,7 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
 
     == Tips ==
         - You can declare the derivative of an unknown function this way:
-            >>> from sympy import *
+            >>> from sympy import Function, Derivative
             >>> from sympy.abc import x # x is the independent variable
             >>> f = Function("f")(x) # f is a function of x
             >>> # f_ will be the derivative of f with respect to x
@@ -322,7 +322,7 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
 
     == Examples ==
 
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, Derivative, sin, cos
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> dsolve(Derivative(f(x),x,x)+9*f(x), f(x))
@@ -511,7 +511,7 @@ def classify_ode(eq, func, dict=False):
 
 
     == Examples ==
-        >>> from sympy import *
+        >>> from sympy import Function, classify_ode, Eq
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> classify_ode(Eq(f(x).diff(x), 0), f(x))
@@ -1396,7 +1396,7 @@ def ode_order(expr, func):
     This function is implemented recursively.
 
     == Examples ==
-        >>> from sympy import *
+        >>> from sympy import Function, ode_order
         >>> from sympy.abc import x
         >>> f, g = map(Function, ['f', 'g'])
         >>> ode_order(f(x).diff(x, 2) + f(x).diff(x)**2 +
@@ -1462,7 +1462,7 @@ def ode_1st_exact(eq, func, order, match):
     solving for.
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, cos, sin
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> dsolve(cos(f(x)) - (x*sin(f(x)) - f(x)**2)*f(x).diff(x),
@@ -1505,7 +1505,7 @@ def ode_1st_homogeneous_coeff_best(eq, func, order, match):
 
     == Example ==
     ::
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, pprint
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(2*x*f(x) + (x**2 + f(x)**2)*f(x).diff(x), f(x),
@@ -1557,7 +1557,7 @@ def ode_1st_homogeneous_coeff_subs_dep_div_indep(eq, func, order, match):
     P(x, f(x)) + Q(x, f(x))*diff(f(x), x) = 0, then the general solution
     is::
 
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, pprint
         >>> from sympy.abc import x
         >>> f, g, h = map(Function, ['f', 'g', 'h'])
         >>> pprint(dsolve(g(f(x)/x) + h(f(x)/x)*f(x).diff(x), f(x),
@@ -1581,7 +1581,7 @@ def ode_1st_homogeneous_coeff_subs_dep_div_indep(eq, func, order, match):
 
     == Example ==
     ::
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(2*x*f(x) + (x**2 + f(x)**2)*f(x).diff(x), f(x),
@@ -1631,7 +1631,7 @@ def ode_1st_homogeneous_coeff_subs_indep_div_dep(eq, func, order, match):
     P(x, f(x)) + Q(x, f(x))*diff(f(x), x) = 0, then the general solution
     is:
 
-    >>> from sympy import *
+    >>> from sympy import Function, dsolve, pprint
     >>> from sympy.abc import x
     >>> f, g, h = map(Function, ['f', 'g', 'h'])
     >>> pprint(dsolve(g(x/f(x)) + h(x/f(x))*f(x).diff(x), f(x),
@@ -1655,7 +1655,7 @@ def ode_1st_homogeneous_coeff_subs_indep_div_dep(eq, func, order, match):
     ode_1st_homogeneous_coeff_subs_dep_div_indep().
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, pprint
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(2*x*f(x) + (x**2 + f(x)**2)*f(x).diff(x), f(x),
@@ -1708,9 +1708,8 @@ def homogeneous_order(eq, *symbols):
     list of symbols, None is returned.
 
     Example::
-        >>> from sympy import *
-        >>> from sympy.abc import x
-        >>> from sympy.abc import y
+        >>> from sympy import Function, homogeneous_order, sqrt
+        >>> from sympy.abc import x, y
         >>> f = Function('f')
         >>> homogeneous_order(f(x), f(x)) == None
         True
@@ -1861,7 +1860,7 @@ def ode_1st_linear(eq, func, order, match):
     way.  The integrating factor exp(Integral(P(x), x)) will turn the
     equation into a separable equation.  The general solution is::
 
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint, diff, sin
         >>> from sympy.abc import x
         >>> f, P, Q = map(Function, ['f', 'P', 'Q'])
         >>> pprint(dsolve(Eq(f(x).diff(x) + P(x)*f(x), Q(x)), f(x),
@@ -1879,8 +1878,6 @@ def ode_1st_linear(eq, func, order, match):
 
 
     == Example ==
-        >>> from sympy import *
-        >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(Eq(x*diff(f(x), x) - f(x), x**2*sin(x)),
         ... f(x), '1st_linear'))
@@ -1909,7 +1906,7 @@ def ode_Bernoulli(eq, func, order, match):
     form into one that is linear (see the docstring of
     ode_1st_linear()).  The general solution is::
 
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint
         >>> from sympy.abc import x, n
         >>> f, P, Q = map(Function, ['f', 'P', 'Q'])
 
@@ -1946,7 +1943,7 @@ def ode_Bernoulli(eq, func, order, match):
 
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint
         >>> from sympy.abc import x
         >>> f = Function('f')
 
@@ -1978,7 +1975,7 @@ def ode_Liouville(eq, func, order, match):
 
     The general form of a Liouville ODE is
     d^2y/dx^2 + g(y)*(dy/dx)**2 + h(x)*dy/dx.  The general solution is::
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint, diff
         >>> from sympy.abc import x
         >>> f, g, h = map(Function, ['f', 'g', 'h'])
         >>> pprint(dsolve(Eq(diff(f(x),x,x) + g(f(x))*diff(f(x),x)**2 +
@@ -1997,7 +1994,7 @@ def ode_Liouville(eq, func, order, match):
 
     == Example ==
     ::
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(diff(f(x), x, x) + diff(f(x), x)**2/f(x) +
@@ -2050,7 +2047,7 @@ def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='s
     If SymPy cannot find exact roots to the characteristic equation, a
     RootOf instance will be return in it's stead.
 
-    >>> from sympy import *
+    >>> from sympy import Function, dsolve, Eq
     >>> from sympy.abc import x
     >>> f = Function('f')
     >>> dsolve(f(x).diff(x, 5) + 10*f(x).diff(x) - 2*f(x), f(x),
@@ -2078,7 +2075,7 @@ def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='s
      'list': list of linearly independent solutions}.
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, pprint
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(f(x).diff(x, 4) + 2*f(x).diff(x, 3) -
@@ -2202,7 +2199,7 @@ def ode_nth_linear_constant_coeff_undetermined_coefficients(eq, func, order, mat
     multiplied by sufficient x to make them linearly independent.
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, pprint, exp, cos
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(f(x).diff(x, 2) + 2*f(x).diff(x) + f(x) -
@@ -2348,7 +2345,7 @@ def _undetermined_coefficients_match(expr, x):
     coefficients on it.
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import log, exp
         >>> from sympy.solvers.ode import _undetermined_coefficients_match
         >>> from sympy.abc import x
         >>> _undetermined_coefficients_match(9*x*exp(x) + exp(-x), x)
@@ -2508,7 +2505,7 @@ def ode_nth_linear_constant_coeff_variation_of_parameters(eq, func, order, match
     equation has trigonometric functions in it.
 
     == Example ==
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, pprint, exp, log
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(f(x).diff(x, 3) - 3*f(x).diff(x, 2) +
@@ -2594,7 +2591,7 @@ def ode_separable(eq, func, order, match):
     convert a separable equation F(x, y) into the proper form P(x)*Q(y).
     The general solution is::
 
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq, pprint
         >>> from sympy.abc import x
         >>> a, b, c, d, f = map(Function, ['a', 'b', 'c', 'd', 'f'])
         >>> pprint(dsolve(Eq(a(x)*b(f(x))*f(x).diff(x), c(x)*d(f(x))), f(x),
@@ -2610,7 +2607,7 @@ def ode_separable(eq, func, order, match):
 
     == Example ==
     ::
-        >>> from sympy import *
+        >>> from sympy import Function, dsolve, Eq
         >>> from sympy.abc import x
         >>> f = Function('f')
         >>> pprint(dsolve(Eq(f(x)*f(x).diff(x) + x, 3*x*f(x)**2), f(x),
