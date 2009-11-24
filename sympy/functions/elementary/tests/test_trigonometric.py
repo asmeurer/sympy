@@ -407,3 +407,14 @@ def test_sincos_rewrite():
     assert cos(y-x) == cos(y-x)
     assert cos(x-y) == cos(x-y)
 
+def test_issue1448():
+    x = Symbol('x')
+    assert cot(x).inverse() == acot
+    assert sin(x)._eval_rewrite_as_cot(x) == 2*cot(x/2)/(1 + cot(x/2)**2)
+    assert cos(x)._eval_rewrite_as_cot(x) == -(1 - cot(x/2)**2)/(1 + cot(x/2)**2)
+    assert tan(x)._eval_rewrite_as_cot(x) == 1/cot(x)
+    assert cot(x).fdiff() == -1 - cot(x)**2
+
+
+
+
