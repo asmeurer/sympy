@@ -97,10 +97,10 @@ def curvature(Rmn):
 
 #class lam(Function):
 #    def getname(self):
-#        return r"\lambda"
-#        return r"lambda"
+#        return r"\lamda"
+#        return r"lamda"
 nu = Function("nu")
-lam = Function("lambda")
+lam = Function("lamda")
 
 t=Symbol("t")
 r=Symbol("r")
