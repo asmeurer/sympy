@@ -36,12 +36,17 @@ more information on each (run help(ode)):
     - 1st order linear differential equations
     - 1st order Bernoulli differential equations.
     - 2nd order Liouville differential equations.
-    - nth order linear homogeneous differential equation with constant
-      coefficients.
-    - nth order linear inhomogeneous differential equation with constant
-      coefficients using the method of undetermined coefficients.
-    - nth order linear inhomogeneous differential equation with constant
-      coefficients using the method of variation of parameters.
+    - The following nth order linear differential equations/methods:
+        o Homogeneous:
+            + Constant coefficients.
+            + Cauchy-Euler.
+        o Inhomogeneous:
+            + The methods of undetermined coefficients.
+            + The method of variation of parameters.
+
+Each nth order linear inhomogeneous solver requires that the
+corresponding homogeneous equation match one of the supported nth order
+linear homogenous methods.
 
 **Philosophy behind this module**
 
@@ -200,7 +205,8 @@ from sympy.core.sympify import sympify
 
 from sympy.functions import cos, exp, im, log, re, sin, sign
 from sympy.matrices import wronskian
-from sympy.polys import RootsOf, discriminant, RootOf
+from sympy.polys import RootsOf, discriminant, RootOf, PolynomialError, \
+factor
 from sympy.series import Order
 from sympy.simplify import collect, logcombine, powsimp, separatevars, \
     simplify, trigsimp
@@ -221,16 +227,33 @@ import sympy.solvers
 # anyway).
 # "default", "all", "best", and "all_Integral" meta-hints should not be
 # included in this list, but "_best" and "_Integral" hints should be included.
-allhints = ("separable", "1st_exact", "1st_linear", "Bernoulli",
-"1st_homogeneous_coeff_best", "1st_homogeneous_coeff_subs_indep_div_dep",
-"1st_homogeneous_coeff_subs_dep_div_indep", "nth_linear_constant_coeff_homogeneous",
-"nth_linear_constant_coeff_undetermined_coefficients",
-"nth_linear_constant_coeff_variation_of_parameters",
-"Liouville", "separable_Integral", "1st_exact_Integral", "1st_linear_Integral",
-"Bernoulli_Integral", "1st_homogeneous_coeff_subs_indep_div_dep_Integral",
-"1st_homogeneous_coeff_subs_dep_div_indep_Integral",
-"nth_linear_constant_coeff_variation_of_parameters_Integral",
-"Liouville_Integral")
+allhints = (
+    'separable',
+    '1st_exact',
+    '1st_linear',
+    'Bernoulli',
+    '1st_homogeneous_coeff_best',
+    '1st_homogeneous_coeff_subs_indep_div_dep',
+    '1st_homogeneous_coeff_subs_dep_div_indep',
+    'nth_linear_constant_coeff_homogeneous',
+    'nth_linear_Cauchy_Euler_homogeneous',
+    'nth_linear_constant_coeff_undetermined_coefficients',
+    'nth_linear_Cauchy_Euler_undetermined_coefficients',
+    'nth_linear_constant_coeff_variation_of_parameters',
+    'nth_linear_Cauchy_Euler_variation_of_parameters',
+    'Liouville',
+    'separable_Integral',
+    '1st_exact_Integral',
+    '1st_linear_Integral',
+    'Bernoulli_Integral',
+    '1st_homogeneous_coeff_subs_indep_div_dep_Integral',
+    '1st_homogeneous_coeff_subs_dep_div_indep_Integral',
+    'nth_linear_constant_coeff_variation_of_parameters_Integral',
+    'nth_linear_Cauchy_Euler_variation_of_parameters_Integral',
+    'Liouville_Integral',
+    )
+
+
 
 
 def dsolve(eq, func, hint="default", simplify=True, **kwargs):
@@ -264,7 +287,10 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
             of arbitrary constants.  It will still integrate with this
             hint. Note that the solution may contain more arbitrary
             constants than the order of the ODE with this option
-            enabled.
+            enabled, though due to automatic renumbering of arbitrary
+            constants after simplification, this option may be
+            necessary for a solution to have the correct number of
+            constants for the order of the corresponding ODE.
 
     **Hints**
 
@@ -370,7 +396,7 @@ def dsolve(eq, func, hint="default", simplify=True, **kwargs):
     # Magic that should only be used internally.  Prevents classify_ode from
     # being called more than it needs to be by passing its results through
     # recursive calls.
-    if not kwargs.get('classify', False):
+    if kwargs.get('classify', True):
         hints = classify_ode(eq, func, dict=True)
     else:
         hints = kwargs.get('hint',
@@ -587,6 +613,8 @@ def classify_ode(eq, func, dict=False):
     k = Wild('k', exclude=[df])
     n = Wild('n', exclude=[f(x)])
     c1 = Wild('c1', exclude=[x])
+    c2 = Wild('c2', exclude=[x])
+    c3 = Wild('c3', exclude=[x])
 
     eq = expand(eq)
 
@@ -709,21 +737,49 @@ def classify_ode(eq, func, dict=False):
 
         r = _nth_linear_match(reduced_eq, func, order)
 
-        # Constant coefficient case (a_i is constant for all i)
-        if r and not any(r[i].has(x) for i in r if i >= 0):
-            # Inhomogeneous case: F(x) is not identically 0
-            if r[-1]:
-                undetcoeff = _undetermined_coefficients_match(r[-1], x)
-                matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
-                matching_hints["nth_linear_constant_coeff_variation_of_parameters" + \
-                    "_Integral"] = r
-                if undetcoeff['test']:
-                    r['trialset'] = undetcoeff['trialset']
-                    matching_hints["nth_linear_constant_coeff_undetermined_" + \
-                        "coefficients"] = r
-            # Homogeneous case: F(x) is identically 0
-            else:
-                matching_hints["nth_linear_constant_coeff_homogeneous"] = r
+        if r:
+            # Clean up the coefficients (mostly for Cauchy-Euler)
+            for i in r:
+                try:
+                    r[i] = factor(r[i])
+                except PolynomialError:
+                    pass
+            # Constant coefficient case (a_i is constant for all i)
+            if not any(r[i].has(x) for i in r if i >= 0):
+                # Inhomogeneous case: F(x) is not identically 0
+                if r[-1]:
+                    undetcoeff = _undetermined_coefficients_match(r[-1], x)
+                    matching_hints["nth_linear_constant_coeff_variation_of_parameters"] = r
+                    matching_hints["nth_linear_constant_coeff_variation_of_parameters" + \
+                        "_Integral"] = r
+                    if undetcoeff['test']:
+                        r['trialset'] = undetcoeff['trialset']
+                        matching_hints["nth_linear_constant_coeff_undetermined_" + \
+                            "coefficients"] = r
+                # Homogeneous case: F(x) is identically 0
+                else:
+                    matching_hints["nth_linear_constant_coeff_homogeneous"] = r
+
+
+            # Cauchy-Euler ODE, a_i(x) == b_i*(x - x0)**i for some constants b_i and x0
+            cauchyeuler = True
+            s = _nth_linear_Cauchy_Euler_match(r, func, order)
+
+            if s:
+                # Inomogeneous case:
+                if r[-1]:
+                    undetcoeff = _undetermined_coefficients_match(r[-1], x)
+                    matching_hints["nth_linear_Cauchy_Euler_variation_of_parameters"] = r
+                    matching_hints["nth_linear_Cauchy_Euler_variation_of_parameters" + \
+                        "_Integral"] = r
+                    if undetcoeff['test']:
+                        r['trialset'] = undetcoeff['trialset']
+                        matching_hints["nth_linear_Cauchy_Euler_undetermined_" + \
+                            "coefficients"] = r
+
+                # Homogeneous case
+                else:
+                    matching_hints["nth_linear_Cauchy_Euler_homogeneous"] = r
 
 
     # Order keys based on allhints.
@@ -735,8 +791,8 @@ def classify_ode(eq, func, dict=False):
 
     if dict:
         # Dictionaries are ordered arbitrarily, so we need to make note of which
-        # hint would come first for dsolve().  In Python 3, this should be replaced
-        # with an ordered dictionary.
+        # hint would come first for dsolve().  In Python 3/2.7, this should
+        # probably be replaced with an ordered dictionary.
         matching_hints["default"] = None
         matching_hints["ordered_hints"] = tuple(retlist)
         for i in allhints:
@@ -2077,6 +2133,46 @@ def _nth_linear_match(eq, func, order):
             else:
                 terms[len(f.args[1:])] += c
     return terms
+
+def _nth_linear_Cauchy_Euler_match():
+    s = {}
+    leadingm = r[order].match(c1*(c2 - x)**c3)
+    # We need to consider that some or all of the (x - x0) terms may have
+    # been divided through.
+    if leadingm:
+        if leadingm.has_key(c2):
+            offset = leadingm[c2]
+        else:
+            m2 = r[0].match(c1*(x - c2)**c3)
+            if m2 and m2[c1] != 0 and m2[c3] != 0:
+                offset = m2[c2]
+            else:
+                cauchyeuler = False
+        leadpow = leadingm[c3]
+        if cauchyeuler:
+            for i in r:
+                if i < 0 or type(i) == str or i == order:
+                    pass
+                else:
+                    m = r[i].match(c1*(offset - x)**(i - order + leadpow))
+                    if m:
+                        s[i] = m
+                    else:
+                        cauchyeuler = False
+                        break
+    else:
+        cauchyeuler = False
+    return s
+
+
+def ode_nth_linear_Cauchy_Euler_homogeneous(eq, func, order, match):
+    raise NotImplementedError("Placeholder")
+
+def ode_nth_linear_Cauchy_Euler_undetermined_coefficients(eq, func, order, match):
+    raise NotImplementedError("Placeholder")
+
+def ode_nth_linear_Cauchy_Euler_undetermined_coefficients(eq, func, order, match):
+    raise NotImplementedError("Placeholder")
 
 def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='sol'):
     """

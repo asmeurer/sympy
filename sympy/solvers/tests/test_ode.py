@@ -56,7 +56,8 @@ def test_dsolve_options():
         '1st_homogeneous_coeff_subs_dep_div_indep_Integral', \
         '1st_homogeneous_coeff_subs_indep_div_dep', \
         '1st_homogeneous_coeff_subs_indep_div_dep_Integral', '1st_linear', \
-        '1st_linear_Integral', 'best', 'best_hint', 'default', 'order', \
+        '1st_linear_Integral', 'best', 'best_hint', 'default', \
+        'nth_linear_Cauchy_Euler_homogeneous', 'order', \
         'separable', 'separable_Integral']
     assert sorted(a.keys()) == keys
     assert a['order'] == ode_order(eq, f(x))
@@ -505,6 +506,15 @@ def test_1st_homogeneous_coeff_corner_case():
     assert "1st_homogeneous_coeff_subs_indep_div_dep" not in classify_ode(eq1, f(x))
     assert "1st_homogeneous_coeff_subs_dep_div_indep" not in classify_ode(eq2, f(x))
     assert "1st_homogeneous_coeff_subs_indep_div_dep" not in classify_ode(eq2, f(x))
+
+def test_nth_linear_Cauchy_Euler_homogeneous():
+    hint = 'nth_linear_Cauchy_Euler_homogeneous'
+    assert hint in classify_ode((x - 2)**3*f(x).diff(x, x, x) + \
+    (x - 2)**2*f(x).diff(x, x) + 2*f(x), f(x))
+    assert hint in classify_ode((x + 2)**3*f(x).diff(x, x, x) + \
+    (x + 2)**2*f(x).diff(x, x) + 2*f(x), f(x))
+    assert hint not in classify_ode((x - 2)**3*f(x).diff(x, x, x) + \
+    (x + 2)**2*f(x).diff(x, x) + 2*f(x), f(x))
 
 def test_nth_linear_constant_coeff_homogeneous():
     # From Exercise 20, in Ordinary Differential Equations, Tenenbaum and Pollard
