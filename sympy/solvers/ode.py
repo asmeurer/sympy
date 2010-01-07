@@ -761,7 +761,8 @@ def classify_ode(eq, func, dict=False):
                     matching_hints["nth_linear_constant_coeff_homogeneous"] = r
 
 
-            # Cauchy-Euler ODE, a_i(x) == b_i*(x - x0)**i for some constants b_i and x0
+            # Cauchy-Euler ODE, a_i(x) == b_i*(a*x - x0)**i for some constants
+            # b_i, a, and x0
             cauchyeuler = True
             s = _nth_linear_Cauchy_Euler_match(r, func, order)
 
