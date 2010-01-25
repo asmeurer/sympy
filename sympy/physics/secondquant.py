@@ -2125,7 +2125,8 @@ class NO(Function):
         >>> a,b,c,d = symbols('abcd',above_fermi=True)
         >>> from sympy.physics.secondquant import NO, F, Fd
         >>> no = NO(Fd(a)*F(i)*Fd(j)*F(b))
-        >>> no.iter_q_creators()
+
+        >> no.iter_q_creators()
         <generator object iter_q_creators at 0x...>
         >>> list(no.iter_q_creators())
         [0, 1]
@@ -2151,7 +2152,8 @@ class NO(Function):
         >>> a,b,c,d = symbols('abcd',above_fermi=True)
         >>> from sympy.physics.secondquant import NO, F, Fd
         >>> no = NO(Fd(a)*F(i)*Fd(j)*F(b))
-        >>> no.iter_q_creators()
+
+        >> no.iter_q_creators()
         <generator object iter_q_creators at 0x...>
         >>> list(no.iter_q_creators())
         [0, 1]
