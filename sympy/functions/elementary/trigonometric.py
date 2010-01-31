@@ -552,17 +552,17 @@ class tan(Function):
             S.ImaginaryUnit*C.sinh(im)*C.cosh(im))/denom
 
     def _eval_expand_trig(self, deep=True, **hints):
-        arg = self[0].expand()
+        arg = self.args[0].expand()
         x = None
-        if isinstance(arg, Basic.Add):
+        if arg.is_Add:
             # f(x+y)
-            x = arg[0]
-            y = Basic.Add(*arg[1:])
+            x = arg.args[0]
+            y = C.Add(*arg.args[1:])
         else:
             # f(5*x)
             coeff, terms = arg.as_coeff_terms()
-            if not isinstance(coeff, Basic.One) and isinstance(coeff, Basic.Integer) and terms:
-                x = Basic.Mul(*terms)
+            if coeff != 1 and coeff.is_Integer and terms:
+                x = C.Mul(*terms)
                 y = (coeff-1)*x
         if x is not None:
             return (tan(x)+tan(y)) / (1 - tan(x)*tan(y))
