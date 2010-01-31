@@ -361,6 +361,43 @@ def test_acot():
     assert acot(I*pi) == -I*acoth(pi)
     assert acot(-2*I) == I*acoth(2)
 
+def test_trig_expand_add():
+    x, y = symbols('xy')
+
+    assert sin(x + y).expand(trig=True) == sin(x)*cos(y) + cos(x)*sin(y)
+    assert sin(x - y).expand(trig=True) == sin(x)*cos(y) - cos(x)*sin(y)
+    assert cos(x + y).expand(trig=True) == cos(x)*cos(y) - sin(x)*sin(y)
+    assert cos(x - y).expand(trig=True) == cos(x)*cos(y) + sin(x)*sin(y)
+
+    assert tan(x + y).expand(trig=True) == (tan(x) + tan(y)) / (1 - tan(x)*tan(y))
+    assert tan(x - y).expand(trig=True) == (tan(x) - tan(y)) / (1 + tan(x)*tan(y))
+
+    assert cot(x + y).expand(trig=True) == (cot(x)*cot(y) - 1) / (cot(x) + cot(y))
+    assert cot(x - y).expand(trig=True) == (cot(x)*cot(y) + 1) / (cot(y) - cot(x))
+
+def test_trig_expand_mul():
+    x, y = symbols('xy')
+
+    assert sin(x)  .expand(trig=True)   == sin(x)
+    assert sin(2*x).expand(trig=True)   == 2*sin(x)*cos(x)
+    assert sin(3*x).expand(trig=True)   == 3*cos(x)**2 * sin(x) - sin(x)**3
+    assert sin(4*x).expand(trig=True)   == 4*cos(x)**3 * sin(x) - 4*cos(x)*sin(x)**3
+
+    assert cos(x)  .expand(trig=True)   == cos(x)
+    assert cos(2*x).expand(trig=True)   == cos(x)**2 - sin(x)**2
+    assert cos(3*x).expand(trig=True)   == cos(x)**3 - 3*cos(x)*sin(x)**2
+    assert cos(4*x).expand(trig=True)   == sin(x)**4 - 6*cos(x)**2*sin(x)**2 + cos(x)**4
+
+    assert tan(x)  .expand(trig=True)   == tan(x)
+    assert tan(2*x).expand(trig=True)   == 2*tan(x)/(1-tan(x)**2)
+    assert tan(3*x).expand(trig=True)   == (3*tan(x) - tan(x)**3) / (1 - 3*tan(x)**2)
+    assert tan(4*x).expand(trig=True)   == (4*tan(x) - 4*tan(x)**3) / (tan(x)**4 - 6*tan(x)**2 + 1)
+
+    assert cot(x)  .expand(trig=True)   == cot(x)
+    assert cot(2*x).expand(trig=True)   == (cot(x)**2 - 1) / (2*cot(x))
+    assert cot(3*x).expand(trig=True)   == (cot(x)**3 - 3*cot(x)) / (3*cot(x)**2 - 1)
+    assert cot(4*x).expand(trig=True)   == (cot(x)**4 - 6*cot(x)**2 + 1) / (4*cot(x)**3 - 4*cot(x))
+
 def test_attributes():
     x = Symbol('x')
     assert sin(x).args == (x,)
