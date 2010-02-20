@@ -3,7 +3,7 @@ from sympy import Rational, Symbol, Real, I, sqrt, oo, nan, pi, E, Integer, \
 from sympy.core.power import integer_nthroot
 
 from sympy.core.numbers import igcd, ilcm, igcdex, seterr
-from sympy.utilities.pytest import raises
+from sympy.utilities.pytest import raises, XFAIL
 from sympy import mpmath
 
 def test_seterr():
@@ -516,3 +516,15 @@ def test_relational():
     x = pi
     assert (x != cos) is True
     assert (x == cos) is False
+
+def test_sequence_left_multiplication():
+    assert Integer(5)*[0] == [0, 0, 0, 0, 0]
+    assert Integer(5)*(0,) == (0, 0, 0, 0, 0)
+    assert Integer(5)*'a' == 'aaaaa'
+
+def test_sequence_right_multiplication():
+    # This works in Python2.4 and Python2.5, but fails in Python2.6
+    # See Python issue 7972
+    assert [0]*Integer(5) == [0, 0, 0, 0, 0]
+    assert (0,)*Integer(5) == (0, 0, 0, 0, 0)
+    assert 'a'*Integer(5) == 'aaaaa'

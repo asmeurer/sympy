@@ -156,6 +156,9 @@ def test_relational():
 def test_basic_nostr():
     for obj in basic_objs:
         for op in ['+','-','*','/','**']:
+            if obj.is_Integer and op =='*':
+                # This is sequence multiplication, 5*'1' == '11111'
+                continue
             raises(TypeError, "obj %s '1'" % op)
 
 def test_leadterm():

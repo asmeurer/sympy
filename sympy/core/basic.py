@@ -704,9 +704,13 @@ class Basic(AssumeMeths):
 
     @_sympifyit('other', NotImplemented)
     def __mul__(self, other):
+        if type(other) in (tuple, list, str) and self.is_Integer:
+            return int(self)*other
         return Mul(self, other)
     @_sympifyit('other', NotImplemented)
     def __rmul__(self, other):
+        if type(other) in (tuple, list, str) and self.is_Integer:
+            return other*int(self)
         return Mul(other, self)
 
     @_sympifyit('other', NotImplemented)
