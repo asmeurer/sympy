@@ -2,6 +2,7 @@ from basic import Basic, SingletonMeta, S
 from sympify import _sympify
 from sympy.mpmath import mpi
 
+
 class Set(Basic):
     """
     Represents any kind of set.
@@ -175,7 +176,10 @@ class Set(Basic):
         return self.complement
 
     def __contains__(self, other):
-        return self.contains(other)
+        result = self.contains(other)
+        if not isinstance(result, bool):
+            raise TypeError('contains did not evaluate to a bool: %r' % result)
+        return result
 
     def _eval_subs(self, old, new):
         if self == old: return new
@@ -188,6 +192,10 @@ class Set(Basic):
             else:
                 new_args.append(arg)
         return self.__class__(*new_args)
+
+    @property
+    def is_number(self):
+        return False
 
 class Interval(Set):
     """
@@ -525,10 +533,9 @@ class Union(Set):
         return complement
 
     def _contains(self, other):
-        for set in self.args:
-            if other in set:
-                return True
-        return False
+        from sympy.logic.boolalg import Or
+        or_args = [the_set.contains(other) for the_set in self.args]
+        return Or(*or_args)
 
     @property
     def _measure(self):
