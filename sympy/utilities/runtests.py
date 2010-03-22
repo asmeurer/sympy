@@ -780,7 +780,7 @@ class PyTestReporter(Reporter):
     def start(self):
         self.write_center("test process starts")
         executable = sys.executable
-        v = sys.version_info
+        v = tuple(sys.version_info)
         python_version = "%s.%s.%s-%s-%s" % v
         self.write("executable:   %s  (%s)\n" % (executable, python_version))
         from sympy.polys.algebratools import GROUND_TYPES
