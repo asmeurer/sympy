@@ -302,12 +302,6 @@ class Mul(AssocOp):
             c_part.insert(0, coeff)
 
 
-        # we are done
-        if len(c_part)==2 and c_part[0].is_Number and c_part[1].is_Add:
-            # 2*(1+a) -> 2 + 2 * a
-            coeff = c_part[0]
-            c_part = [Add(*[coeff*f for f in c_part[1].args])]
-
         return c_part, nc_part, order_symbols
 
 
