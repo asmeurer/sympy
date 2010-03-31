@@ -481,9 +481,6 @@ class Add(AssocOp):
             terms.append(newterm)
         return self.new(*terms)
 
-    def __neg__(self):
-        return Add(*[-t for t in self.args])
-
     def _sage_(self):
         s = 0
         for x in self.args:
