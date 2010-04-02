@@ -1273,6 +1273,7 @@ def hypersimp(f, k):
     g = expand_func(g)
     g = powsimp(g, deep=True, combine='exp')
 
+    return g
     if g.is_rational_function(k):
         return simplify(g)
     else:
