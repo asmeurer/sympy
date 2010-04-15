@@ -1645,7 +1645,7 @@ class Poly(Basic):
         return not f.is_zero
 
 def NonStrictPoly(f, *gens, **args):
-    """Create a Poly instance with `strict` keyword set.  """
+    """Create a Poly instance with `strict` keyword unset.  """
     args = dict(args)
     args['strict'] = False
     return Poly(f, *gens, **args)

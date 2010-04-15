@@ -3,7 +3,7 @@
 from sympy import S, Symbol, symbols, I, log, atan, \
     resultant, roots, collect, solve, RootSum, Lambda, cancel
 
-from sympy.polys import Poly, subresultants, resultant, ZZ
+from sympy.polys import Poly, subresultants, resultant, ZZ, groebner
 from sympy.polys.polyroots import number_of_real_roots
 
 def ratint(f, x, **flags):
@@ -136,7 +136,7 @@ def ratint_ratpart(f, g, x):
 
     return rat_part, log_part
 
-def ratint_logpart(f, g, x, t=None):
+def ratint_logpart2(f, g, x, t=None):
     """Lazard-Rioboo-Trager algorithm.
 
        Given a field K and polynomials f and g in K[x], such that f and g
@@ -197,6 +197,33 @@ def ratint_logpart(f, g, x, t=None):
             H.append((h, q))
 
     return H
+
+def ratint_logpart(f, g, x, t=None):
+    """
+    Czichowki Algorithm.
+
+    Pg. 54
+    """
+    f, g = Poly(f, x), Poly(g, x)
+
+    t = t or Symbol('t', dummy=True)
+
+    a, b = g, f - g.diff()*Poly(t, x)
+    print a, b
+    basis = groebner([a, b], x, t, order='lex')
+    # We want the basis to be sorted by increasing highest term
+    basis.reverse()
+    m, H = len(basis), []
+    for i in range(m - 1):
+
+        c1 = Poly(Poly(basis[i], x).rep.content(), t)
+        c2 = Poly(Poly(basis[i + 1], x).rep.content(), t)
+        q = c1.exquo(c2)
+        h = basis[i + 1].exquo(c2) # pp(basis[i + 1])
+        H.append((h, q))
+
+    return H
+
 
 def log_to_atan(f, g):
     """Convert complex logarithms to real arctangents.
