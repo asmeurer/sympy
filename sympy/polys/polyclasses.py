@@ -617,9 +617,8 @@ class GFP(object):
         =======
         >>> from sympy.polys.polyclasses import GFP
         >>> from sympy.polys.algebratools import ZZ
-
-        >> GFP([ZZ(1), ZZ(0), ZZ(1), ZZ(1)], 2, ZZ).quo(
-        ... GFP([ZZ(1), ZZ(1), ZZ(0)], 2, ZZ))
+        >>> GFP([ZZ(1), ZZ(0), ZZ(1), ZZ(1)], 2, ZZ).quo(
+        ... GFP([ZZ(1), ZZ(1), ZZ(0)], 2, ZZ)) #doctest: +SKIP
         Traceback (most recent call last):
         ...
         ExactQuotientFailed: [1, 1, 0] does not divide [1, 0, 1, 1]
@@ -1088,8 +1087,7 @@ class DMP(object):
         =======
         >>> from sympy.polys.polyclasses import DMP
         >>> from sympy.polys.algebratools import ZZ, QQ
-
-        >> DMP([ZZ(1), ZZ(2)], ZZ).unify(DMP([[QQ(1)], [QQ(2)]], QQ))
+        >>> DMP([ZZ(1), ZZ(2)], ZZ).unify(DMP([[QQ(1)], [QQ(2)]], QQ)) #doctest: +SKIP
         (0, ZZ, <bound method DMP.per of DMP([1, 2], ZZ)>, [1, 2], [[1], [2]])
         """
         # XXX: ???
@@ -1637,8 +1635,7 @@ class DMP(object):
         =======
         >>> from sympy.polys.polyclasses import DMP
         >>> from sympy.polys.algebratools import ZZ
-
-        >> DMP([ZZ(1), ZZ(0), ZZ(1)], ZZ).pquo(DMP([ZZ(2), ZZ(-4)], ZZ))
+        >>> DMP([ZZ(1), ZZ(0), ZZ(1)], ZZ).pquo(DMP([ZZ(2), ZZ(-4)], ZZ)) #doctest: +SKIP
         Traceback (most recent call last):
         ...
         ExactQuotientFailed: [2, -4] does not divide [1, 0, 1]
@@ -1706,8 +1703,7 @@ class DMP(object):
         =======
         >>> from sympy.polys.polyclasses import DMP
         >>> from sympy.polys.algebratools import QQ
-
-        >> DMP([QQ(1), QQ(0), QQ(1)], QQ).quo(DMP([QQ(2), QQ(-4)], QQ))
+        >>> DMP([QQ(1), QQ(0), QQ(1)], QQ).quo(DMP([QQ(2), QQ(-4)], QQ)) #doctest: +SKIP
         Traceback (most recent call last):
         ...
         ExactQuotientFailed: [1, -1] does not divide [1, 0, 1]
@@ -2491,7 +2487,7 @@ class DMP(object):
         =======
         >>> from sympy.polys.polyclasses import DMP
         >>> from sympy.polys.algebratools import ZZ
-        >>> DMP([[ZZ(1), ZZ(0)], [ZZ(2)]], ZZ).is_linear
+        >>> DMP([[ZZ(1)], [ZZ(2)]], ZZ).is_linear
         True
         >>> DMP([[ZZ(1), ZZ(0)], [ZZ(2)], []], ZZ).is_linear
         False
@@ -3003,7 +2999,7 @@ class DMF(object):
         >>> from sympy.polys.algebratools import ZZ
         >>> DMF(([[]], [[ZZ(1)]]), ZZ).is_zero
         True
-        >>> DMF(([[ZZ(1)]], [ZZ(1)]), ZZ).is_zero
+        >>> DMF(([[ZZ(1)]], [[ZZ(1)]]), ZZ).is_zero
         False
         """
         return dmp_zero_p(f.num, f.lev)
@@ -3018,7 +3014,7 @@ class DMF(object):
         >>> from sympy.polys.algebratools import ZZ
         >>> DMF(([[]], [[ZZ(1)]]), ZZ).is_one
         False
-        >>> DMF(([[ZZ(1)]], [ZZ(1)]), ZZ).is_one
+        >>> DMF(([[ZZ(1)]], [[ZZ(1)]]), ZZ).is_one
         True
         """
         return dmp_one_p(f.num, f.lev, f.dom) and \
