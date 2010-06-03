@@ -85,7 +85,7 @@ def test_ratint():
 
 def test_ratint_logpart():
     assert ratint_logpart(x, x**2-9, x, t) == \
-        [(Poly(x**2 - 9, x, t), Poly(-2*t + 1, t))]
+        [(Poly(x**2 - 9, x, t, domain='QQ'), Poly(t - S(1)/2, t, domain='QQ'))]
     assert ratint_logpart(x**2, x**3-5, x, t) == \
-        [(Poly(x**3 - 5, x, t), Poly(-3*t + 1, t))]
+        [(Poly(x**3 - 5, x, t, domain='QQ'), Poly(t - S(1)/3, t, domain='QQ'))]
 

@@ -204,22 +204,22 @@ def ratint_logpart(f, g, x, t=None):
 
     Pg. 54
     """
+    # WARNING: this does not work for EX domain
     f, g = Poly(f, x), Poly(g, x)
 
     t = t or Symbol('t', dummy=True)
 
     a, b = g, f - g.diff()*Poly(t, x)
-    print a, b
+
     basis = groebner([a, b], x, t, order='lex')
     # We want the basis to be sorted by increasing highest term
     basis.reverse()
     m, H = len(basis), []
     for i in range(m - 1):
-
-        c1 = Poly(Poly(basis[i], x).rep.content(), t)
-        c2 = Poly(Poly(basis[i + 1], x).rep.content(), t)
-        q = c1.exquo(c2)
-        h = basis[i + 1].exquo(c2) # pp(basis[i + 1])
+        c1 = Poly(Poly(basis[i], x).content(), t)
+        c2 = Poly(Poly(basis[i + 1], x).content(), t)
+        q = c1.quo(c2)
+        h = basis[i + 1].quo(c2) # pp(basis[i + 1])
         H.append((h, q))
 
     return H
