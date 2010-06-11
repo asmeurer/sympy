@@ -1452,7 +1452,7 @@ class Poly(Basic):
         >>> from sympy.abc import x, y
         >>> Poly(x**2 + y*x + 1, x, y).degree()
         2
-        >>> Poly(x**2 + y*x + y, x, y).degree(1)
+        >>> Poly(x**2 + y*x + y, x, y).degree(y)
         1
         """
         j = f._gen_to_level(gen)
@@ -1675,7 +1675,7 @@ class Poly(Basic):
         except AttributeError: # pragma: no cover
             raise OperationNotSupported(f, 'clear_denoms')
 
-        coeff, f = f.rep.dom.to_sympy(coeff), f.per(result)
+        coeff, f = f.rep.dom.get_ring().to_sympy(coeff), f.per(result)
 
         if not convert:
             return coeff, f
@@ -1757,7 +1757,7 @@ class Poly(Basic):
         >>> from sympy.abc import x, y
         >>> Poly(x**2 + 2*x + 3, x).eval(2)
         11
-        >>> Poly(2*x*y + 3*x + y + 2, x, y).eval(2, gen=0)
+        >>> Poly(2*x*y + 3*x + y + 2, x, y).eval(2, gen=x)
         Poly(5*y + 8, y, domain='ZZ')
         """
         j = f._gen_to_level(gen)
@@ -2451,6 +2451,8 @@ class Poly(Basic):
         if dom.has_Field and dom.has_assoc_Ring:
             cF, F = F.clear_denoms()
             cG, G = G.clear_denoms()
+            cF = dom.convert(cF, f.rep.dom.get_ring())
+            cG = dom.convert(cG, g.rep.dom.get_ring())
 
             F = F.to_ring()
             G = G.to_ring()
