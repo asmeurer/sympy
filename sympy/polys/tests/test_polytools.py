@@ -974,6 +974,10 @@ def test_Poly_ground_to_ring():
     assert Poly(2*x + 1).ground_to_ring() == (1, Poly(2*x + 1, domain='ZZ'))
     assert Poly(x/2 + 1).ground_to_ring() == (2, Poly(x + 2, domain='QQ'))
 
+    coeff, poly = Poly(1/x*y, y, domain='ZZ(x)').ground_to_ring()
+
+    assert coeff == x and poly == Poly(y, y) and poly.get_domain() == ZZ.frac_field(x)
+
 def test_Poly_integrate():
     assert Poly(x + 1).integrate() == Poly(x**2/2 + x)
     assert Poly(x + 1).integrate(x) == Poly(x**2/2 + x)
@@ -1042,6 +1046,11 @@ def test_Poly_eval():
     assert Poly(x*y, x, y).eval(7, gen=y) == Poly(7*x, x)
 
     raises(CoercionFailed, "Poly(x+1, domain='ZZ').eval(S(1)/2)")
+
+def test_poly_cancel():
+    a = Poly(y, y, domain='ZZ(x)')
+    b = Poly(1, y, domain='ZZ[x]')
+    assert a.cancel(b) == (1, Poly(y, y, domain='ZZ(x)'), Poly(1, y, domain='ZZ(x)'))
 
 def test__polify_basic():
     assert _polify_basic(x-1, x**2-1, x) == (Poly(x-1, x), Poly(x**2-1, x))

@@ -1732,7 +1732,7 @@ class PolynomialRing(Ring):
     def __eq__(self, other):
         """Returns `True` if two algebras are equivalent. """
         if self.dtype == other.dtype:
-            return self.gens == other.gens
+            return self.gens == other.gens and self.dom == other.dom
         else:
             return False
 
@@ -1903,7 +1903,7 @@ class FractionField(Field):
     def __eq__(self, other):
         """Returns `True` if two algebras are equivalent. """
         if self.dtype == other.dtype:
-            return self.gens == other.gens
+            return self.gens == other.gens and self.dom == other.dom
         else:
             return False
 

@@ -1133,7 +1133,7 @@ class Poly(Basic):
         except AttributeError: # pragma: no cover
             raise OperationNotSupported(f, 'ground_to_ring')
 
-        return f.rep.dom.to_sympy(coeff), f.per(result)
+        return f.rep.dom.get_ring().to_sympy(coeff), f.per(result)
 
     def integrate(f, *specs, **args):
         """Computes indefinite integral of `f`. """
@@ -1450,6 +1450,8 @@ class Poly(Basic):
         if dom.has_Field and dom.has_assoc_Ring:
             cF, F = F.ground_to_ring()
             cG, G = G.ground_to_ring()
+            cF = dom.convert(cF, f.rep.dom.get_ring())
+            cG = dom.convert(cG, g.rep.dom.get_ring())
 
             F = F.to_ring()
             G = G.to_ring()
