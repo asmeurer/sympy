@@ -1655,7 +1655,7 @@ if HAS_FRACTION:
 
         def from_QQ_gmpy(K1, a, K0):
             """
-            Convert a GMPY `mpq` object to `dtype`(`fractions.Fraction`).
+            Convert a GMPY `mpq` object to `dtype` (`fractions.Fraction`).
 
             Example
             =======
@@ -3179,7 +3179,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_sympy(self, a):
         """
-        Convert SymPy's Integer to `dtype` (`mpf`)
+        Convert SymPy's Integer to `dtype` (`mpf`).
 
         Example
         =======
@@ -3199,7 +3199,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_ZZ_python(K1, a, K0):
         """
-        Convert a Python `int` object to `dtype` (`mpf`)
+        Convert a Python `int` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3213,7 +3213,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_QQ_python(K1, a, K0):
         """
-        Convert a Python `Fraction` object to `dtype` (`mpf`)
+        Convert a Python `Fraction` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3234,7 +3234,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_ZZ_sympy(K1, a, K0):
         """
-        Convert a SymPy `Integer` object to `dtype` (`mpf`)
+        Convert a SymPy `Integer` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3249,7 +3249,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_QQ_sympy(K1, a, K0):
         """
-        Convert a SymPy `Rational` object to `dtype` (`mpf`)
+        Convert a SymPy `Rational` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3264,7 +3264,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_ZZ_gmpy(K1, a, K0):
         """
-        Convert a GMPY `mpz` object to `dtype` (`mpf`)
+        Convert a GMPY `mpz` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3284,7 +3284,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_QQ_gmpy(K1, a, K0):
         """
-        Convert a GMPY `mpq` object to `dtype` (`mpf`)
+        Convert a GMPY `mpq` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3304,7 +3304,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_RR_sympy(K1, a, K0):
         """
-        Convert a SymPy `Real` object to `dtype` (`mpf`)
+        Convert a SymPy `Real` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3319,7 +3319,7 @@ class RR_mpmath(RealAlgebra):
 
     def from_RR_mpmath(K1, a, K0):
         """
-        Convert a mpmath `mpf` object to `dtype` (`mpf`)
+        Convert a mpmath `mpf` object to `dtype` (`mpf`).
 
         Example
         =======
@@ -3570,7 +3570,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_sympy(self, a):
         """
-        Convert SymPy's Integer to `dtype` (`complex`)
+        Convert SymPy's Integer to `dtype` (`complex`).
 
         Example
         =======
@@ -3598,7 +3598,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_ZZ_python(K1, a, K0):
         """
-        Convert a Python `int` object to `dtype` (`complex`)
+        Convert a Python `int` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3612,7 +3612,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_QQ_python(K1, a, K0):
         """
-        Convert a Python `Fraction` object to `dtype` (`complex`)
+        Convert a Python `Fraction` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3631,7 +3631,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_ZZ_sympy(K1, a, K0):
         """
-        Convert a SymPy `Integer` object to `dtype` (`complex`)
+        Convert a SymPy `Integer` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3646,7 +3646,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_QQ_sympy(K1, a, K0):
         """
-        Convert a SymPy `Rational` object to `dtype` (`complex`)
+        Convert a SymPy `Rational` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3661,7 +3661,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_ZZ_gmpy(K1, a, K0):
         """
-        Convert a GMPY `mpz` object to `dtype` (`complex`)
+        Convert a GMPY `mpz` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3680,7 +3680,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_QQ_gmpy(K1, a, K0):
         """
-        Convert a GMPY `mpq` object to `dtype` (`complex`)
+        Convert a GMPY `mpq` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3699,7 +3699,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_RR_sympy(K1, a, K0):
         """
-        Convert a SymPy `Real` object to `dtype` (`complex`)
+        Convert a SymPy `Real` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3714,7 +3714,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_RR_mpmath(K1, a, K0):
         """
-        Convert a mpmath `mpf` object to `dtype` (`complex`)
+        Convert a mpmath `mpf` object to `dtype` (`complex`).
 
         Example
         =======
@@ -3729,7 +3729,7 @@ class CC_complex(RealAlgebra): # XXX: tmp solution
 
     def from_FF_float(K1, a, K0):
         """
-        Convert a `FF` object to `dtype` (`complex`)
+        Convert a `FF` object to `dtype` (`complex`).
 
         Example
         =======
@@ -4630,7 +4630,7 @@ class FractionField(Field):
 
     def from_RR_sympy(K1, a, K0):
         r"""
-        Convert a SymPy `Real` object to `dtype`(`DMF`).
+        Convert a SymPy `Real` object to `dtype` (`DMF`).
 
         Example
         =======
@@ -4648,7 +4648,7 @@ class FractionField(Field):
 
     def from_RR_mpmath(K1, a, K0):
         r"""
-        Convert a mpmath `mpf` object to `dtype`(`DMF`).
+        Convert a mpmath `mpf` object to `dtype` (`DMF`).
 
         Example
         =======
@@ -4666,7 +4666,7 @@ class FractionField(Field):
 
     def from_PolynomialRing(K1, a, K0):
         r"""
-        Convert a `DMP` object to `dtype`(`DMF`).
+        Convert a `DMP` object to `dtype` (`DMF`).
 
         Example
         =======
@@ -4697,7 +4697,7 @@ class FractionField(Field):
 
     def from_FractionField(K1, a, K0):
         r"""
-        Convert a `DMF` object to `dtype`(`DMF`).
+        Convert a `DMF` object to `dtype` (`DMF`).
 
         Example
         =======
