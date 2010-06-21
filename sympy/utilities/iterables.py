@@ -355,3 +355,35 @@ def numbered_symbols(prefix='x', function=None, start=0, *args, **assumptions):
         name = '%s%s' % (prefix, start)
         yield function(name, *args, **assumptions)
         start += 1
+
+def cyclic_decomposition(perm):
+    """
+    Decomposes a permutation into cycles.
+
+    Given a permutation of [0, 1, ..., n - 1], returns a list disjoint cycles
+    that the product of the cycles is equal to the original permutation.  The
+    cycles of length >= 2 in the product are unique. The entire decomposition
+    is therefore unique up to reordering (disjoint cycles commute).  This
+    algorithm includes cycles of length 1 (identity cycles).  Also note that
+    the cycle must be numbered starting at 0, not 1.
+
+    **Example**
+    >>> from sympy.utilities.iterables import cyclic_decomposition
+    >>> cyclic_decomposition([1, 0, 2, 4, 3])
+    [[1, 0], [2], [4, 3]]
+
+    **Reference**
+    J. A. Beachy and W. D. Blair, “Abstract Algebra,” third edition,
+    Waveland Press, Long Grove, IL, 2006.
+    """
+    ret = []
+    used = set([])
+    for i in range(len(perm)):
+        b = []
+        while perm[i] not in used:
+            used.add(perm[i])
+            b.append(perm[i])
+            i = perm[i]
+        if b:
+            ret.append(b)
+    return ret
