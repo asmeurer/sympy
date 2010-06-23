@@ -3090,7 +3090,7 @@ def pquo(f, g, *gens, **args):
     >>> pquo(x**2 + 1, 2*x - 4)
     Traceback (most recent call last):
     ...
-    ExactQuotientFailed: -4 + 2*x does not divide 1 + x**2
+    ExactQuotientFailed: -4 + 2*x does not divide 1 + x**2 in ZZ
     >>> pquo(x**2 - 1, 2*x - 2)
     2 + 2*x
     """
@@ -3104,7 +3104,7 @@ def pquo(f, g, *gens, **args):
     try:
         q = F.pquo(G)
     except ExactQuotientFailed:
-        raise ExactQuotientFailed("%s does not divide %s" % (g, f))
+        raise ExactQuotientFailed("%s does not divide %s in %s" % (g, f, F.get_domain()))
 
     if _should_return_basic(f, g, **args):
         return q.as_basic()
@@ -3203,7 +3203,7 @@ def quo(f, g, *gens, **args):
     >>> quo(x**2 + 1, 2*x - 4)
     Traceback (most recent call last):
     ...
-    ExactQuotientFailed: -4 + 2*x does not divide 1 + x**2
+    ExactQuotientFailed: -4 + 2*x does not divide 1 + x**2 in ZZ
     >>> quo(x**2 - 1, x - 1)
     1 + x
     """
@@ -3217,7 +3217,7 @@ def quo(f, g, *gens, **args):
     try:
         q = F.quo(G)
     except ExactQuotientFailed:
-        raise ExactQuotientFailed("%s does not divide %s" % (g, f))
+        raise ExactQuotientFailed("%s does not divide %s in %s" % (g, f, F.get_domain()))
 
     if _should_return_basic(f, g, **args):
         return q.as_basic()
