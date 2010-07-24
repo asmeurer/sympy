@@ -30,14 +30,15 @@ from sympy.polys.densearith import (
     dup_max_norm, dmp_max_norm,
     dup_l1_norm, dmp_l1_norm,
     dup_expand, dmp_expand,
+    dup_revert,
 )
 
 from sympy.polys.polyerrors import (
-    ExactQuotientFailed,
+    ExactQuotientFailed, NotReversible,
 )
 
 from sympy.polys.specialpolys import f_0
-from sympy.polys.algebratools import ZZ, QQ
+from sympy.polys.domains import FF, ZZ, QQ
 
 from sympy import raises
 
@@ -384,6 +385,10 @@ def test_dup_mul():
 
     assert dup_mul(f, f, ZZ) == h
 
+    K = FF(6)
+
+    assert dup_mul([K(2),K(1)], [K(3),K(4)], K) == [K(5),K(4)]
+
 def test_dmp_mul():
     assert dmp_mul([ZZ(5)], [ZZ(7)], 0, ZZ) == \
            dup_mul([ZZ(5)], [ZZ(7)], ZZ)
@@ -402,6 +407,10 @@ def test_dmp_mul():
     assert dmp_mul([[[QQ(2,7)]]], [[[QQ(1,3)]]], 2, QQ) == [[[QQ(2,21)]]]
     assert dmp_mul([[[QQ(1,7)]]], [[[QQ(2,3)]]], 2, QQ) == [[[QQ(2,21)]]]
 
+    K = FF(6)
+
+    assert dmp_mul([[K(2)],[K(1)]], [[K(3)],[K(4)]], 1, K) == [[K(5)],[K(4)]]
+
 def test_dup_sqr():
     assert dup_sqr([], ZZ) == []
     assert dup_sqr([ZZ(2)], ZZ) == [ZZ(4)]
@@ -415,6 +424,10 @@ def test_dup_sqr():
 
     assert dup_sqr(f, ZZ) == dup_normal([4,0,0,4,28,0,1,14,49], ZZ)
 
+    K = FF(9)
+
+    assert dup_sqr([K(3),K(4)], K) == [K(6),K(7)]
+
 def test_dmp_sqr():
     assert dmp_sqr([ZZ(1),ZZ(2)], 0, ZZ) == \
            dup_sqr([ZZ(1),ZZ(2)], ZZ)
@@ -424,6 +437,10 @@ def test_dmp_sqr():
 
     assert dmp_sqr([[[]]], 2, QQ) == [[[]]]
     assert dmp_sqr([[[QQ(2,3)]]], 2, QQ) == [[[QQ(4,9)]]]
+
+    K = FF(9)
+
+    assert dmp_sqr([[K(3)],[K(4)]], 1, K) == [[K(6)],[K(7)]]
 
 def test_dup_pow():
     assert dup_pow([], 0, ZZ) == [ZZ(1)]
@@ -664,4 +681,12 @@ def test_dmp_expand():
     assert dmp_expand((), 1, ZZ) == [[1]]
     assert dmp_expand(([[1],[2],[3]], [[1],[2]], [[7],[5],[4],[3]]), 1, ZZ) == \
         dmp_mul([[1],[2],[3]], dmp_mul([[1],[2]], [[7],[5],[4],[3]], 1, ZZ), 1, ZZ)
+
+def test_dup_revert():
+    f = [-QQ(1,720),QQ(0),QQ(1,24),QQ(0),-QQ(1,2),QQ(0),QQ(1)]
+    g = [QQ(61,720),QQ(0),QQ(5,24),QQ(0), QQ(1,2),QQ(0),QQ(1)]
+
+    assert dup_revert(f, 8, QQ) == g
+
+    raises(NotReversible, "dup_revert([QQ(1), QQ(0)], 3, QQ)")
 

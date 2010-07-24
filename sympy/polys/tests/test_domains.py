@@ -1,24 +1,25 @@
 """Tests for classes defining properties of ground domains, e.g. ZZ, QQ, ZZ[x] ... """
 
-from sympy.polys.algebratools import (
-    ZZ, QQ, RR, CC, PolynomialRing, FractionField, EX, ZZ_sympy, QQ_sympy
+from sympy.polys.domains import (
+    ZZ, QQ, RR, CC_python, PolynomialRing, FractionField, EX, ZZ_sympy, QQ_sympy
 )
 
 from sympy.polys.polyerrors import (
     UnificationFailed,
     GeneratorsNeeded,
+    GeneratorsError,
     DomainError,
 )
 
 from sympy.polys.polyclasses import DMF, DMP
 
-from sympy import S, sqrt, sin, oo, raises, Integer, Rational, I, Real
+from sympy import S, sqrt, sin, oo, raises, all, Integer, Rational, I, Real
 
-from sympy.abc import x, y
+from sympy.abc import x, y, z
 
 ALG = QQ.algebraic_field(sqrt(2)+sqrt(3))
 
-def test_Algebra__unify():
+def test_Domain__unify():
     assert ZZ.unify(ZZ) == ZZ
     assert QQ.unify(QQ) == QQ
 
@@ -175,7 +176,7 @@ def test_Algebra__unify():
     raises(UnificationFailed, "ZZ.poly_ring('x','y').unify(ZZ, gens=('y', 'z'))")
     raises(UnificationFailed, "ZZ.unify(ZZ.poly_ring('x','y'), gens=('y', 'z'))")
 
-def test_Algebra__contains__():
+def test_Domain__contains__():
     assert (0 in EX) == True
     assert (0 in ZZ) == True
     assert (0 in QQ) == True
@@ -308,7 +309,7 @@ def test_Algebra__contains__():
     assert (x**2 + y**2 in QQ[x,y]) == True
     assert (x**2 + y**2 in RR[x,y]) == True
 
-def test_Algebra_get_ring():
+def test_Domain_get_ring():
     assert ZZ.has_assoc_Ring == True
     assert QQ.has_assoc_Ring == True
     assert ZZ[x].has_assoc_Ring == True
@@ -339,7 +340,7 @@ def test_Algebra_get_ring():
     raises(DomainError, "RR.get_ring()")
     raises(DomainError, "ALG.get_ring()")
 
-def test_Algebra_get_field():
+def test_Domain_get_field():
     assert EX.has_assoc_Field == True
     assert ZZ.has_assoc_Field == True
     assert QQ.has_assoc_Field == True
@@ -362,7 +363,7 @@ def test_Algebra_get_field():
 
     raises(DomainError, "RR.get_field()")
 
-def test_Algebra_get_exact():
+def test_Domain_get_exact():
     assert EX.get_exact() == EX
     assert ZZ.get_exact() == ZZ
     assert QQ.get_exact() == QQ
@@ -377,7 +378,7 @@ def test_Algebra_get_exact():
     assert ZZ.frac_field(x,y).get_exact() == ZZ.frac_field(x,y)
     assert QQ.frac_field(x,y).get_exact() == QQ.frac_field(x,y)
 
-def test_Algebra_convert():
+def test_Domain_convert():
     assert QQ.convert(10e-52) != QQ(0)
     assert ZZ.convert(DMP([[ZZ(1)]], ZZ)) == ZZ(1)
 
@@ -407,15 +408,29 @@ def test_sympy_of_type():
     assert QQ_sympy().of_type(Rational(1, 2))
     assert QQ_sympy().of_type(Rational(3, 2))
 
-def test_CC_to_from_sympy():
-    assert CC.from_sympy(Real(1.0)) == 1+0j
-    assert CC.from_sympy(I) == 1j
-    assert CC.from_sympy(2*I) == 2j
-    assert CC.from_sympy(1 + 2*I) == 1+2j
-    assert CC.to_sympy(1+0j) == S.One
-    assert CC.to_sympy(1+2j) == S.One + S(2)*I
-    assert CC.to_sympy(2j) == S(2)*I
+def test_CC_python_to_from_sympy():
+    assert CC_python().from_sympy(Real(1.0)) == 1+0j
+    assert CC_python().from_sympy(I) == 1j
+    assert CC_python().from_sympy(2*I) == 2j
+    assert CC_python().from_sympy(1 + 2*I) == 1+2j
+    assert CC_python().to_sympy(1+0j) == S.One
+    assert CC_python().to_sympy(1+2j) == S.One + S(2)*I
+    assert CC_python().to_sympy(2j) == S(2)*I
 
 def test___eq__():
     assert not QQ['x'] == ZZ['x']
     assert not QQ.frac_field(x) == ZZ.frac_field(x)
+def test_inject():
+    assert ZZ.inject(x, y, z) == ZZ[x, y, z]
+    assert ZZ[x].inject(y, z) == ZZ[x, y, z]
+    raises(GeneratorsError, "ZZ[x].inject(x)")
+
+def test_Domain_map():
+    seq = ZZ.map([1, 2, 3, 4])
+
+    assert all([ ZZ.of_type(elt) for elt in seq ])
+
+    seq = ZZ.map([[1, 2, 3, 4]])
+
+    assert all([ ZZ.of_type(elt) for elt in seq[0] ]) and len(seq) == 1
+

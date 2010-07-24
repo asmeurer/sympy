@@ -7,7 +7,7 @@ from sympy.polys.galoistools import (
     gf_div, gf_rem,
     gf_gcd, gf_gcdex,
     gf_sqf_p,
-    gf_factor_sqf
+    gf_factor_sqf, gf_factor
 )
 
 from sympy.polys.densebasic import (
@@ -60,7 +60,7 @@ from sympy.polys.densetools import (
     dup_inner_gcd, dmp_inner_gcd,
     dup_sqf_norm, dmp_sqf_norm,
     dup_compose, dmp_compose,
-    dup_taylor
+    dup_shift
 )
 
 from sympy.polys.polyutils import _sort_factors
@@ -446,7 +446,7 @@ def dup_zz_factor(f, K):
        Consider polynomial `f = 2*x**4 - 2`::
 
            >>> from sympy.polys.factortools import dup_zz_factor
-           >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.domains import ZZ
 
            >>> dup_zz_factor([2, 0, 0, 0, -2], ZZ)
            (2, [([1, -1], 1), ([1, 1], 1), ([1, 0, 1], 1)])
@@ -930,7 +930,7 @@ def dmp_zz_factor(f, u, K):
        Consider polynomial `f = 2*(x**2 - y**2)`::
 
            >>> from sympy.polys.factortools import dmp_zz_factor
-           >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.domains import ZZ
 
            >>> dmp_zz_factor([[2], [], [-2, 0, 0]], 1, ZZ)
            (2, [([[1], [-1, 0]], 1), ([[1], [1, 0]], 1)])
@@ -987,7 +987,7 @@ def dmp_zz_factor(f, u, K):
     return cont, _sort_factors(factors)
 
 def dup_ext_factor(f, K):
-    """Factor polynomials over algebraic number fields. """
+    """Factor univariate polynomials over algebraic number fields. """
     n, lc = dup_degree(f), dup_LC(f, K)
 
     f = dup_monic(f, K)
@@ -1010,7 +1010,7 @@ def dup_ext_factor(f, K):
     for i, (factor, _) in enumerate(factors):
         h = dup_convert(factor, K.dom, K)
         h, _, g = dup_inner_gcd(h, g, K)
-        h = dup_taylor(h, H, K)
+        h = dup_shift(h, H, K)
         factors[i] = h
 
     factors = dup_trial_division(F, factors, K)
@@ -1019,7 +1019,7 @@ def dup_ext_factor(f, K):
 
 @cythonized("u")
 def dmp_ext_factor(f, u, K):
-    """Factor polynomials over algebraic number fields. """
+    """Factor multivariate polynomials over algebraic number fields. """
     if not u:
         return dup_ext_factor(f, K)
 
@@ -1047,13 +1047,28 @@ def dmp_ext_factor(f, u, K):
 
     return lc, dmp_trial_division(F, factors, u, K)
 
+@cythonized("i")
+def dup_gf_factor(f, K):
+    """Factor univariate polynomials over finite fields. """
+    f = dup_convert(f, K, K.dom)
+
+    coeff, factors = gf_factor(f, K.mod, K.dom)
+
+    for i, (f, k) in enumerate(factors):
+        factors[i] = (dup_convert(f, K.dom, K), k)
+
+    return K.convert(coeff, K.dom), factors
+
+def dmp_gf_factor(f, u, K):
+    """Factor multivariate polynomials over finite fields. """
+    raise DomainError('multivariate polynomials over %s' % K)
+
 @cythonized("i,k,u")
 def dup_factor_list(f, K0):
     """Factor polynomials into irreducibles in `K[x]`. """
-    if not K0.has_CharacteristicZero: # pragma: no cover
-        raise DomainError('only characteristic zero allowed')
-
-    if K0.is_Algebraic:
+    if not K0.has_CharacteristicZero:
+        coeff, factors = dup_gf_factor(f, K0)
+    elif K0.is_Algebraic:
         coeff, factors = dup_ext_factor(f, K0)
     else:
         if not K0.is_Exact:
@@ -1138,9 +1153,8 @@ def dmp_factor_list(f, u, K0):
         return dup_factor_list(f, K0)
 
     if not K0.has_CharacteristicZero: # pragma: no cover
-        raise DomainError('only characteristic zero allowed')
-
-    if K0.is_Algebraic:
+        coeff, factors = dmp_gf_factor(f, u, K0)
+    elif K0.is_Algebraic:
         coeff, factors = dmp_ext_factor(f, u, K0)
     else:
         if not K0.is_Exact:

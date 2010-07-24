@@ -25,8 +25,8 @@ def gf_crt(U, M, K):
     As an example consider a set of residues `U = [49, 76, 65]`
     and a set of moduli `M = [99, 97, 95]`. Then we have::
 
-       >>> from sympy.polys.galoistools import gf_crt
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_crt
+           >>> from sympy.polys.domains import ZZ
 
        >>> gf_crt([49, 76, 65], [99, 97, 95], ZZ)
        639985
@@ -61,7 +61,7 @@ def gf_crt1(M, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_crt1
     >>> gf_crt1([99, 97, 95], ZZ)
     (912285, [9215, 9405, 9603], [62, 24, 12])
@@ -83,7 +83,7 @@ def gf_crt2(U, M, p, E, S, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_crt2
     >>> gf_crt2([49, 76, 65], [99, 97, 95], 912285, [9215, 9405, 9603],
     ... [62, 24, 12], ZZ)
@@ -133,7 +133,7 @@ def gf_LC(f, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_LC
     >>> gf_LC([3, 0, 1], ZZ)
     3
@@ -149,7 +149,7 @@ def gf_TC(f, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_TC
     >>> gf_TC([3, 0, 1], ZZ)
     1
@@ -201,7 +201,7 @@ def gf_normal(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_normal
     >>> gf_normal([5, 10, 21, -3], 5, ZZ)
     [1, 2]
@@ -214,7 +214,7 @@ def gf_convert(f, p, K0, K1):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ, QQ
+    >>> from sympy.polys.domains import ZZ, QQ
     >>> from sympy.polys.galoistools import gf_convert
     >>> gf_convert([QQ(1), QQ(4), QQ(0)], 3, QQ, ZZ)
     [1, 1, 0]
@@ -230,7 +230,7 @@ def gf_from_dict(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_from_dict
     >>> gf_from_dict({10:4, 4:33, 0:-1}, 5, ZZ)
     [4, 0, 0, 0, 0, 0, 3, 0, 0, 0, 4]
@@ -279,7 +279,7 @@ def gf_from_int_poly(f, p):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_from_int_poly
     >>> gf_from_int_poly([7, -2, 3], 5)
     [2, 3, 3]
@@ -309,7 +309,7 @@ def gf_neg(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_neg
     >>> gf_neg([3, 2, 1, 0], 5, ZZ)
     [2, 3, 4, 0]
@@ -322,7 +322,7 @@ def gf_add_ground(f, a, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_add_ground
     >>> gf_add_ground([3, 2, 4], 2, 5, ZZ)
     [3, 2, 1]
@@ -346,7 +346,7 @@ def gf_sub_ground(f, a, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sub_ground
     >>> gf_sub_ground([3, 2, 4], 2, 5, ZZ)
     [3, 2, 2]
@@ -370,7 +370,7 @@ def gf_mul_ground(f, a, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_mul_ground
     >>> gf_mul_ground([3, 2, 4], 2, 5, ZZ)
     [1, 4, 3]
@@ -386,7 +386,7 @@ def gf_exquo_ground(f, a, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_exquo_ground
     >>> gf_exquo_ground([3, 2, 4], 2, 5, ZZ)
     [4, 1, 2]
@@ -400,7 +400,7 @@ def gf_add(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_add
     >>> gf_add([3, 2, 4], [2, 2, 2], 5, ZZ)
     [4, 1]
@@ -432,7 +432,7 @@ def gf_sub(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sub
     >>> gf_sub([3, 2, 4], [2, 2, 2], 5, ZZ)
     [1, 0, 2]
@@ -464,7 +464,7 @@ def gf_mul(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_mul
     >>> gf_mul([3, 2, 4], [2, 2, 2], 5, ZZ)
     [1, 0, 3, 2, 3]
@@ -492,7 +492,7 @@ def gf_sqr(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sqr
     >>> gf_sqr([3, 2, 4], 5, ZZ)
     [4, 2, 3, 1, 1]
@@ -531,7 +531,7 @@ def gf_add_mul(f, g, h, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_add_mul
     >>> gf_add_mul([3, 2, 4], [2, 2, 2], [1, 4], 5, ZZ)
     [2, 3, 2, 2]
@@ -544,7 +544,7 @@ def gf_sub_mul(f, g, h, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sub_mul
     >>> gf_sub_mul([3, 2, 4], [2, 2, 2], [1, 4], 5, ZZ)
     [3, 3, 2, 1]
@@ -558,7 +558,7 @@ def gf_expand(F, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_expand
     >>> gf_expand([([3, 2, 4], 1), ([2, 2], 2), ([3, 1], 3)], 5, ZZ)
     [4, 3, 0, 3, 0, 1, 4, 1]
@@ -587,8 +587,8 @@ def gf_div(f, g, p, K):
 
     Consider polynomials `x**3 + x + 1` and `x**2 + x` in GF(2)::
 
-       >>> from sympy.polys.galoistools import gf_div, gf_add_mul
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_div, gf_add_mul
+           >>> from sympy.polys.domains import ZZ
 
        >>> gf_div([1, 0, 1, 1], [1, 1, 0], 2, ZZ)
        ([1, 1], [1])
@@ -640,7 +640,7 @@ def gf_rem(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_rem
     >>> gf_rem([1, 0, 1, 1], [1, 1, 0], 2, ZZ)
     [1]
@@ -653,7 +653,7 @@ def gf_quo(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_quo
     >>> gf_quo([1, 0, 1, 1], [1, 1, 0], 2, ZZ)
     Traceback (most recent call last):
@@ -667,7 +667,7 @@ def gf_quo(f, g, p, K):
     if not r:
         return q
     else:
-        raise ExactQuotientFailed('%s does not divide %s in %s' % (g, f, K))
+        raise ExactQuotientFailed(f, g, K)
 
 @cythonized("df,dg,dq,dr,i,j")
 def gf_exquo(f, g, p, K):
@@ -676,7 +676,7 @@ def gf_exquo(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_exquo
     >>> gf_exquo([1, 0, 1, 1], [1, 1, 0], 2, ZZ)
     [1, 1]
@@ -712,7 +712,7 @@ def gf_lshift(f, n, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_lshift
     >>> gf_lshift([3, 2, 4], 4, ZZ)
     [3, 2, 4, 0, 0, 0, 0]
@@ -729,7 +729,7 @@ def gf_rshift(f, n, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_rshift
     >>> gf_rshift([1, 2, 3, 4, 0], 3, ZZ)
     ([1, 2], [3, 4, 0])
@@ -745,7 +745,7 @@ def gf_pow(f, n, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_pow
     >>> gf_pow([3, 2, 4], 3, 5, ZZ)
     [2, 4, 4, 2, 2, 1, 4]
@@ -783,7 +783,7 @@ def gf_pow_mod(f, n, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_pow_mod
     >>> gf_pow_mod([3, 2, 4], 3, [1, 1], 5, ZZ)
     []
@@ -826,7 +826,7 @@ def gf_gcd(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_gcd
     >>> gf_gcd([3, 2, 4], [2, 2, 3], 5, ZZ)
     [1, 3]
@@ -842,7 +842,7 @@ def gf_lcm(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_lcm
     >>> gf_lcm([3, 2, 4], [2, 2, 3], 5, ZZ)
     [1, 2, 0, 4]
@@ -861,7 +861,7 @@ def gf_cofactors(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_cofactors
     >>> gf_cofactors([3, 2, 4], [2, 2, 3], 5, ZZ)
     ([1, 3], [3, 3], [2, 1])
@@ -885,8 +885,8 @@ def gf_gcdex(f, g, p, K):
     Consider polynomials `f = (x + 7) (x + 1)`, `g = (x + 7) (x**2 + 1)`
     in `GF(11)[x]`. Application of Extended Euclidean Algorithm gives::
 
-       >>> from sympy.polys.galoistools import gf_gcdex, gf_mul, gf_add
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_gcdex, gf_mul, gf_add
+           >>> from sympy.polys.domains import ZZ
 
        >>> s, t, g = gf_gcdex([1,8,7], [1,7,1,7], 11, ZZ)
        >>> s, t, g
@@ -946,7 +946,7 @@ def gf_monic(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_monic
     >>> gf_monic([3, 2, 4], 5, ZZ)
     (3, [1, 4, 3])
@@ -968,7 +968,7 @@ def gf_diff(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_diff
     >>> gf_diff([3, 2, 4], 5, ZZ)
     [1, 2]
@@ -994,7 +994,7 @@ def gf_eval(f, a, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_eval
     >>> gf_eval([3, 2, 4], 2, 5, ZZ)
     0
@@ -1014,7 +1014,7 @@ def gf_multi_eval(f, A, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_multi_eval
     >>> gf_multi_eval([3, 2, 4], [0, 1, 2, 3, 4], 5, ZZ)
     [4, 4, 0, 2, 0]
@@ -1027,7 +1027,7 @@ def gf_compose(f, g, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_compose
     >>> gf_compose([3, 2, 4], [2, 2, 2], 5, ZZ)
     [2, 4, 0, 3, 0]
@@ -1052,7 +1052,7 @@ def gf_compose_mod(g, h, f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_compose_mod
     >>> gf_compose_mod([3, 2, 4], [2, 2, 2], [4, 3], 5, ZZ)
     [4]
@@ -1088,7 +1088,7 @@ def gf_trace_map(a, b, c, n, f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_trace_map
     >>> gf_trace_map([1, 2], [4, 4], [1, 1], 4, [3, 2, 4], 5, ZZ)
     ([1, 3], [1, 3])
@@ -1132,7 +1132,7 @@ def gf_random(n, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_random
     >>> gf_random(10, 5, ZZ) #doctest: +SKIP
     [1, 2, 3, 2, 1, 1, 1, 2, 0, 4, 2]
@@ -1146,7 +1146,7 @@ def gf_irreducible(n, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_irreducible
     >>> gf_irreducible(10, 5, ZZ) #doctest: +SKIP
     [1, 4, 2, 2, 3, 2, 4, 1, 4, 0, 4]
@@ -1164,7 +1164,7 @@ def gf_irred_p_ben_or(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_irred_p_ben_or
     >>> gf_irred_p_ben_or([1, 4, 2, 2, 3, 2, 4, 1, 4, 0, 4], 5, ZZ)
     True
@@ -1197,7 +1197,7 @@ def gf_irred_p_rabin(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_irred_p_rabin
     >>> gf_irred_p_rabin([1, 4, 2, 2, 3, 2, 4, 1, 4, 0, 4], 5, ZZ)
     True
@@ -1239,7 +1239,7 @@ def gf_irreducible_p(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_irreducible_p
     >>> gf_irreducible_p([1, 4, 2, 2, 3, 2, 4, 1, 4, 0, 4], 5, ZZ)
     True
@@ -1261,7 +1261,7 @@ def gf_sqf_p(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sqf_p
     >>> gf_sqf_p([3, 2, 4], 5, ZZ)
     True
@@ -1281,7 +1281,7 @@ def gf_sqf_part(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_sqf_part
     >>> gf_sqf_part([1, 1, 3, 0, 1, 0, 2, 2, 1], 5, ZZ)
     [1, 4, 3]
@@ -1296,9 +1296,8 @@ def gf_sqf_part(f, p, K):
     return g
 
 @cythonized("i,n,d,r")
-def gf_sqf_list(f, p, K):
-    """
-    Returns the square-free decomposition of a `GF(p)[x]` polynomial.
+def gf_sqf_list(f, p, K, all=False):
+    """Returns square-free decomposition of a `GF(p)[x]` polynomial.
 
     Given a polynomial `f` in `GF(p)[x]`, returns the leading coefficient
     of `f` and a square-free decomposition `f_1**e_1 f_2**e_2 ... f_k**e_k`
@@ -1313,7 +1312,7 @@ def gf_sqf_list(f, p, K):
        ... )
        ... # doctest: +NORMALIZE_WHITESPACE
 
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.domains import ZZ
 
        >>> f = gf_from_dict({11: 1, 0: 1}, 11, ZZ)
 
@@ -1380,6 +1379,9 @@ def gf_sqf_list(f, p, K):
         else:
             break
 
+    if all:
+        raise ValueError("'all=True' is not supported yet")
+
     return lc, factors
 
 @cythonized("n,i,j,r")
@@ -1389,7 +1391,7 @@ def gf_Qmatrix(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_Qmatrix
     >>> gf_Qmatrix([3, 2, 4], 5, ZZ)
     [[1, 0],
@@ -1425,7 +1427,7 @@ def gf_Qbasis(Q, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_Qmatrix, gf_Qbasis
     >>> gf_Qbasis(gf_Qmatrix([1, 0, 0, 0, 1], 5, ZZ), 5, ZZ)
     [[1, 0, 0, 0], [0, 0, 1, 0]]
@@ -1483,7 +1485,7 @@ def gf_berlekamp(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_berlekamp
     >>> gf_berlekamp([1, 0, 0, 0, 1], 5, ZZ)
     [[1, 0, 2], [1, 0, 3]]
@@ -1530,8 +1532,8 @@ def gf_ddf_zassenhaus(f, p, K):
 
     Consider the polynomial `x**15 - 1` in `GF(11)[x]`::
 
-       >>> from sympy.polys.galoistools import gf_from_dict
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_from_dict
+           >>> from sympy.polys.domains import ZZ
 
        >>> f = gf_from_dict({15: 1, 0: -1}, 11, ZZ)
 
@@ -1588,8 +1590,8 @@ def gf_edf_zassenhaus(f, n, p, K):
     Consider the square-free polynomial `f = x**3 + x**2 + x + 1` in
     `GF(5)[x]`. Let's compute its irreducible factors of degree one::
 
-       >>> from sympy.polys.galoistools import gf_edf_zassenhaus
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_edf_zassenhaus
+           >>> from sympy.polys.domains import ZZ
 
        >>> gf_edf_zassenhaus([1,1,1,1], 1, 5, ZZ)
        [[1, 1], [1, 2], [1, 3]]
@@ -1648,7 +1650,7 @@ def gf_ddf_shoup(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_ddf_shoup
     >>> f = [1, 235, 2571, 1793, 2162, 2398, 1171, 2174, 1259, 2057,
     ... 2571, 2117, 154]
@@ -1732,7 +1734,7 @@ def gf_edf_shoup(f, n, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_edf_shoup
     >>> gf_edf_shoup([1, 2837, 2277], 1, 2917, ZZ)
     [[1, 852], [1, 1985]]
@@ -1790,7 +1792,7 @@ def gf_zassenhaus(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_zassenhaus
     >>> gf_zassenhaus([3, 2, 4], 5, ZZ)
     [[3], [1, 1], [1, 3]]
@@ -1809,7 +1811,7 @@ def gf_shoup(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_shoup
     >>> f = [1, 235, 2571, 1793, 2162, 2398, 1171, 2174, 1259, 2057,
     ... 2571, 2117, 154]
@@ -1838,7 +1840,7 @@ def gf_factor_sqf(f, p, K):
 
     Example
     =======
-    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.domains import ZZ
     >>> from sympy.polys.galoistools import gf_factor_sqf
     >>> gf_factor_sqf([3, 2, 4], 5, ZZ)
     (3, [[1, 1], [1, 3]])
@@ -1877,8 +1879,8 @@ def gf_factor(f, p, K):
     Consider a non square-free polynomial `f = (7*x + 1) (x + 2)**2` in
     `GF(11)[x]`. We obtain its factorization into irreducibles as follows::
 
-       >>> from sympy.polys.galoistools import gf_factor
-       >>> from sympy.polys.algebratools import ZZ
+           >>> from sympy.polys.galoistools import gf_factor
+           >>> from sympy.polys.domains import ZZ
 
        >>> gf_factor([5, 2, 7, 2], 11, ZZ)
        (5, [([1, 2], 1), ([1, 8], 2)])
