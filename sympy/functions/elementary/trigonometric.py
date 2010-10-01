@@ -172,9 +172,9 @@ class sin(Function):
             else:
                 return (self, S.Zero)
         if deep:
-            re, im = self.args[0].expand(deep, **hints).as_real_imag()
+            re, im = self.args[0].expand(deep, **hints).as_real_imag(deep=deep)
         else:
-            re, im = self.args[0].as_real_imag()
+            re, im = self.args[0].as_real_imag(deep=deep)
         return (sin(re)*C.cosh(im), cos(re)*C.sinh(im))
 
     def _eval_expand_complex(self, deep=True, **hints):
@@ -382,9 +382,9 @@ class cos(Function):
             else:
                 return (self, S.Zero)
         if deep:
-            re, im = self.args[0].expand(deep, **hints).as_real_imag()
+            re, im = self.args[0].expand(deep, **hints).as_real_imag(deep=deep)
         else:
-            re, im = self.args[0].as_real_imag()
+            re, im = self.args[0].as_real_imag(deep=deep)
         return (cos(re)*C.cosh(im), -sin(re)*C.sinh(im))
 
     def _eval_expand_complex(self, deep=True, **hints):
@@ -549,9 +549,9 @@ class tan(Function):
             else:
                 return (self, S.Zero)
         if deep:
-            re, im = self.args[0].expand(deep, **hints).as_real_imag()
+            re, im = self.args[0].expand(deep, **hints).as_real_imag(deep=deep)
         else:
-            re, im = self.args[0].as_real_imag()
+            re, im = self.args[0].as_real_imag(deep=deep)
         denom = cos(re)**2 + C.sinh(im)**2
         return (sin(re)*cos(re)/denom, C.sinh(im)*C.cosh(im)/denom)
 
@@ -690,9 +690,9 @@ class cot(Function):
             else:
                 return (self, S.Zero)
         if deep:
-            re, im = self.args[0].expand(deep, **hints).as_real_imag()
+            re, im = self.args[0].expand(deep, **hints).as_real_imag(deep=deep)
         else:
-            re, im = self.args[0].as_real_imag()
+            re, im = self.args[0].as_real_imag(deep=deep)
         denom = sin(re)**2 + C.sinh(im)**2
         return (sin(re)*cos(re)/denom, -C.sinh(im)*C.cosh(im)/denom)
 

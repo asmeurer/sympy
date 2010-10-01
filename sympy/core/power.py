@@ -341,7 +341,7 @@ class Pow(Expr):
                 if base.is_number:
                     # Efficiently expand expressions of the form (a + b*I)**n
                     # where 'a' and 'b' are real numbers and 'n' is integer.
-                    a, b = base.as_real_imag()
+                    a, b = base.as_real_imag(deep=deep)
 
                     if a.is_Rational and b.is_Rational:
                         if not a.is_Integer:
@@ -447,7 +447,7 @@ class Pow(Expr):
                 if re.is_Number and im.is_Number:
                     # We can be more efficient in this case
                     expr = expand_multinomial(self.base**exp)
-                    return expr.as_real_imag()
+                    return expr.as_real_imag(deep=deep)
 
                 expr = poly((a + b)**exp) # a = re, b = im; expr = (a + b*I)**exp
             else:
@@ -456,7 +456,7 @@ class Pow(Expr):
                 if re.is_Number and im.is_Number:
                     # We can be more efficient in this case
                     expr = expand_multinomial((re + im*S.ImaginaryUnit)**-exp)
-                    return expr.as_real_imag()
+                    return expr.as_real_imag(deep=deep)
 
                 expr = poly((a + b)**-exp)
 

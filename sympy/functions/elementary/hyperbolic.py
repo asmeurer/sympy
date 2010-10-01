@@ -87,9 +87,9 @@ class sinh(Function):
             else:
                 return (self, S.Zero)
         if deep:
-            re, im = self.args[0].expand(deep, **hints).as_real_imag()
+            re, im = self.args[0].expand(deep, **hints).as_real_imag(deep=deep)
         else:
-            re, im = self.args[0].as_real_imag()
+            re, im = self.args[0].as_real_imag(deep=deep)
         return (sinh(re)*C.cos(im), cosh(re)*C.sin(im))
 
     def _eval_expand_complex(self, deep=True, **hints):

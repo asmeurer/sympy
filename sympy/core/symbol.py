@@ -75,7 +75,7 @@ class Symbol(Atom, Expr, Boolean):
         return (C.re(self), C.im(self))
 
     def _eval_expand_complex(self, deep=True, **hints):
-        re, im = self.as_real_imag()
+        re, im = self.as_real_imag(deep=deep)
         return re + im*S.ImaginaryUnit
 
     def _sage_(self):
