@@ -496,7 +496,18 @@ def dmp_swap(f, i, j, u, K):
 
 @cythonized("u")
 def dmp_permute(f, P, u, K):
-    """Returns a polynomial in `K[x_{P(1)},..,x_{P(n)}]`. """
+    """
+    Returns a polynomial in `K[x_{P(1)},..,x_{P(n)}]`.
+
+    Example
+    =======
+    >>> from sympy.polys.algebratools import ZZ
+    >>> from sympy.polys.densebasic import dmp_permute
+    >>> dmp_permute([[[2], [1, 0]], [[]]], [1, 0, 2], 2, ZZ)
+    [[[2], []], [[1, 0], []]]
+    >>> dmp_permute([[[2], [1, 0]], [[]]], [1, 2, 0], 2, ZZ)
+    [[[1], []], [[2, 0], []]]
+    """
     F, H = dmp_to_dict(f, u), {}
 
     for exp, coeff in F.iteritems():
