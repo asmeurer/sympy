@@ -1,10 +1,17 @@
 """Tests for classes defining properties of ground domains, e.g. ZZ, QQ, ZZ[x] ... """
 
-from sympy.polys.algebratools import ZZ, QQ, RR, PolynomialRing, FractionField, EX
-from sympy.polys.polyerrors import (UnificationFailed, GeneratorsNeeded,
-    DomainError,)
+from sympy.polys.algebratools import (
+    ZZ, QQ, RR, PolynomialRing, FractionField, EX, ZZ_sympy, QQ_sympy
+)
 
-from sympy import S, sqrt, sin, oo
+from sympy.polys.polyerrors import (
+    UnificationFailed,
+    GeneratorsNeeded,
+    DomainError,
+)
+
+from sympy import S, sqrt, sin, oo, Integer, Rational
+
 from sympy.abc import x, y
 
 from sympy.utilities.pytest import raises
@@ -376,3 +383,15 @@ def test_PolynomialRing__init():
 def test_FractionField__init():
     raises(GeneratorsNeeded, "ZZ.frac_field()")
 
+def test_sympy_of_type():
+    assert ZZ_sympy().of_type(Integer(1))
+    assert ZZ_sympy().of_type(Integer(0))
+    assert ZZ_sympy().of_type(Integer(-1))
+    assert ZZ_sympy().of_type(Integer(2))
+    assert not ZZ_sympy().of_type(Rational(1, 2))
+    assert QQ_sympy().of_type(Rational(1))
+    assert QQ_sympy().of_type(Rational(-1))
+    assert QQ_sympy().of_type(Rational(0))
+    assert QQ_sympy().of_type(Rational(2))
+    assert QQ_sympy().of_type(Rational(1, 2))
+    assert QQ_sympy().of_type(Rational(3, 2))
