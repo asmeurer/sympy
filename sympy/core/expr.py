@@ -103,6 +103,60 @@ class Expr(Basic, EvalfMixin):
             return dif.is_nonnegative
         return C.Inequality(other, self)
 
+    def __contains__(self, subexpr):
+        """Check if ``subexpr`` is a part of ``self``. """
+        def _ncsplit(expr):
+            if expr.is_Add or expr.is_Mul:
+                cpart, ncpart = [], []
+
+                for arg in expr.args:
+                    if arg.is_commutative:
+                        cpart.append(arg)
+                    else:
+                        ncpart.append(arg)
+            elif expr.is_commutative:
+                cpart, ncpart = [expr], []
+            else:
+                cpart, ncpart = [], [expr]
+
+            return set(cpart), ncpart
+
+        def _contains(expr, subexpr, iterative, c, nc):
+            if expr == subexpr:
+                return True
+            elif not isinstance(expr, Basic):
+                if not hasattr(expr, '__iter__'):
+                    return False
+            elif iterative and (expr.is_Add or expr.is_Mul):
+                _c, _nc = _ncsplit(expr)
+
+                if (c & _c) == c:
+                    if not nc:
+                        return True
+                    elif len(nc) <= len(_nc):
+                        for i in xrange(len(_nc) - len(nc)):
+                            if _nc[i:i+len(nc)] == nc:
+                                return True
+
+            if isinstance(expr, Basic):
+                args = expr.args
+            else:
+                args = expr
+
+            for arg in args:
+                if _contains(arg, subexpr, iterative, c, nc):
+                    return True
+
+            return False
+
+        expr, subexpr = self, sympify(subexpr)
+        iterative, c, nc = False, None, None
+
+        if subexpr.is_Add or subexpr.is_Mul:
+            iterative, (c, nc) = True, _ncsplit(subexpr)
+
+        return _contains(expr, subexpr, iterative, c, nc)
+
     @staticmethod
     def _from_mpmath(x, prec):
         if hasattr(x, "_mpf_"):
