@@ -132,14 +132,15 @@ def s_poly(cp, u, O, K):
     return lbp_sub(uf, vg, u, O, K)
 
 
-def is_comparable(f, B, K):
+def is_comparable(f, B, u, K):
     for g in B:
-        if monomial_div(Sign(g)[0], Sign(f)[0]) is not None:
+        # completely wrongif monomial_div(Sign(g)[0], Sign(f)[0]) is not None:
+        if monomial_div(sdp_LM(Polyn(f), u), Sign(g)[0]) is not None:
             if Sign(f)[1] < Sign(g)[1]:
                 return True
     return False
 
-def is_rewritable(f, B, K):
+def is_rewritable(f, B, u, K):
     for g in B:
         if Sign(f)[1] == Sign(g)[1]:
             if Num(f) < Num(g):
@@ -147,53 +148,36 @@ def is_rewritable(f, B, K):
                     return True
     return False
 
-def f5_reduce(f, B, u, O, K):
-    #if Polyn(f) != []:
-    #    for g in B:
-    #        t = monomial_div(sdp_LM(Polyn(f), u), sdp_LM(Polyn(g), u))
-    #        if t is not None:
-    #            c = sdp_LC(Polyn(f), K) / sdp_LC(Polyn(g), K)
-    #            gp = lbp_mult(g, (t, c), u, O, K)
-    #            if sig_cmp(Sign(gp), Sign(f), O):
-    #                if not is_comparable(gp, B, K):
-    #                    if not is_rewritable(gp, B, K):
-    #                        return lbp_sub(f, gp, u, O, K)
-    #return None
-    
+def f5_single_reduction(f, B, u, O, K):
+    if Polyn(f) == []:
+        return f
+
     if K.has_Field:
         term_div = _term_ff_div
     else:
         term_div = _term_rr_div
 
+    for g in B:
+        if Polyn(g) != []:
+            t = term_div(sdp_LT(Polyn(f), u, K), sdp_LT(Polyn(g), u, K), K)
+            if t is not None:
+                gp = lbp_mult(g, t, u, O, K)
+                if sig_cmp(Sign(gp), Sign(f), O):
+                    if not is_comparable(gp, B, u, K):
+                        if not is_rewritable(gp, B, u, K):
+                            print(sdp_str(Polyn(f), "x,y,z"), "-", sdp_str(Polyn(gp), "x,y,z"))
+                            return lbp_sub(f, gp, u, O, K)
+    return f
+
+def f5_reduce(f, B, u, O, K):
     if Polyn(f) == []:
         return f
 
-    #reducible = True
-
-    while True: #reducible:
-        #reducible = False
-        for g in B:
-            if Polyn(g) != []:
-                #t = monomial_div(sdp_LM(Polyn(f), u), sdp_LM(Polyn(g), u))
-                t = term_div(sdp_LT(Polyn(f), u, K), sdp_LT(Polyn(g), u, K), K)
-                if t is not None:
-                    #c = sdp_LC(Polyn(f), K) / sdp_LC(Polyn(g), K)
-                    gp = lbp_mult(g, t, u, O, K)
-                    if sig_cmp(Sign(gp), Sign(f), O):
-                        if not is_comparable(gp, B, K):
-                            if not is_rewritable(gp, B, K):
-                                #print(sdp_str(Polyn(f), "x,y"), "lt: ", sdp_str([sdp_LT(Polyn(f), u, K)], "x,y"))
-                                #print(sdp_str(Polyn(gp), "x,y"), "lt: ", sdp_str([sdp_LT(Polyn(gp), u, K)],"x,y"))
-                                f = lbp_sub(f, gp, u, O, K)
-                                #print(sdp_str(Polyn(f), "x,y"))
-                                #raw_input("next")
-                                #reducible = True
-                                break
-        # for ... else: execute else iff for is terminated without calling break
-        else:
-            break
-    return f
-            
+    while True:
+        g = f
+        f = f5_single_reduction(f, B, u, O, K)
+        if g == f:
+            return f
 
 def f5b(F, u, O, K, gens='', verbose = False):
     """
@@ -203,81 +187,58 @@ def f5b(F, u, O, K, gens='', verbose = False):
     if not K.has_Field:
         raise DomainError("can't compute a Groebner basis over %s" % K)
 
-    B = [lbp(sig((0,) * (u + 1), i), F[i], i) for i in xrange(len(F))] # i from 0 to n-1 should work. in the paper it's 1 to n, though.
+    B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))] # i from 0 to n-1 should work. in the paper it's 1 to n, though.
     CP = [critical_pair(B[i], B[j], u, O, K) for i in xrange(len(B)) for j in xrange(i+1, len(B))]
+
+    #print(len(CP))
 
     k = len(B)
 
-    while CP:
+    while len(CP):
         cp = CP.pop()
-        #print(len(CP))
 
         uf = lbp_mult(cp[1], (cp[0], K.one), u, O, K)
         vg = lbp_mult(cp[3], (cp[2], K.one), u, O, K)
 
-        if is_comparable(uf, B, K):
+        if is_comparable(uf, B, u, K):
             continue
-        if is_comparable(vg, B, K):
+        if is_comparable(vg, B, u, K):
             continue
-        if is_rewritable(uf, B, K):
+        if is_rewritable(uf, B, u, K):
             continue
-        if is_rewritable(vg, B, K):
+        if is_rewritable(vg, B, u, K):
             continue
 
-
+        print(len(CP))
         s = s_poly(cp, u, O, K)
-        print(sdp_str(Polyn(s),"x,y,z"))
 
-
-
-        #p = s
-
-        #while s:
-        #    p = s
-        #    s = f5_reduce(s, B, u, O, K)
-        #    if s == None or Polyn(s) == []:
-        #       break
-        #        print(p)
         p = f5_reduce(s, B, u, O, K)
-        print(sdp_str(Polyn(p), "x,y,z"))
 
+        p = lbp(Sign(p), Polyn(p), k + 1)
 
-        #if Polyn(p) != []:
-            #print(sdp_str(Polyn(p), "x,y")) # debug
-
-        p = lbp(Sign(p), Polyn(p), k)
-
-        if Polyn(p) != []: # [], why not K.zero?
+        if Polyn(p) != []:
             CP.extend([critical_pair(p, q, u, O, K) for q in B])
 
-            # these should be outside the "if". Why?!
-            # addendum: not only that, it won't work if it's inside the "if".
         B.append(p)
         k += 1
-        #print("appended", k)
 
     # reduce   
     F = [sdp_strip(sdp_monic(Polyn(g), K)) for g in B]
-    #F = [f for f in F if f != []]
-    #H = []
-    #for i, f in enumerate(F):
-    #    if f != []:
-            #print(f)
-            #print(H + F[i:])
-    #        f = sdp_rem(f, H + F[i + 1:], u, O, K)
-            #print(f)
-            #print("--")
-    #        H.append(f)
+    F = [f for f in F if f != []]
+    H = []
+    for i, f in enumerate(F):
+        if f != []:
+            f = sdp_rem(f, H + F[i + 1:], u, O, K)
+            H.append(f)
 
-    #print("\n\n")
     # test
-    #for i in xrange(len(H)):
-    #    for j in xrange(i + 1, len(H)):
-    #        s = sdp_spoly(H[i], H[j], u, O, K)
-    #        print(sdp_rem(s, H, u, O, K))
+    for i in xrange(len(H)):
+        for j in xrange(i + 1, len(H)):
+            s = sdp_spoly(H[i], H[j], u, O, K)
+            print(sdp_rem(s, H, u, O, K))
     
 
-    return F #H
+    return H
 
 def sdp_spoly(p1, p2, u, O, K):
     """
