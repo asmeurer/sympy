@@ -104,38 +104,69 @@ def lbp_sub(f, g, u, O, K):
 
     return lbp(Sign(max_poly), ret, Num(max_poly))
 
-def lbp_mult(f, cx, u, O, K):
+def lbp_mul_term(f, cx, u, O, K):
     """
     Multiply a labeled polynomial with a term
     """ 
     return lbp(sig_mult(Sign(f), cx[0]), sdp_mul_term(Polyn(f), cx, u, O, K), Num(f))
 
+def lbp_cmp(f, g, O):
+    """
+    Compare two labeled polynomials. Attention: This relation is not antisymmetric!
+    
+    (f < g)
+    """
+    if sig_cmp(Sign(f), Sign(g), O) == True:
+        return True
+    if Sign(f) == Sign(g) and Num(f) > Num(g):
+        return True
+    return False
 
 # algorithm and helper functions
 
 def critical_pair(f, g, u, O, K):
-    lmf = sdp_LM(Polyn(f), u)
-    lmg = sdp_LM(Polyn(g), u)
-    lm = monomial_lcm(lmf, lmg)
+    ltf = sdp_LT(Polyn(f), u, K)
+    ltg = sdp_LT(Polyn(g), u, K)
+    lt = (monomial_lcm(ltf[0], ltg[0]), K.one)
 
-    um = monomial_div(lm, lmf)
-    vm = monomial_div(lm, lmg)
+    print(ltf)
+    print(ltg)
+    print(lt)
+    print("\n")
 
-    return (um, f, vm, g)
+    if K.has_Field:
+        term_div = _term_ff_div
+    else:
+        term_div = _term_rr_div
+
+
+    um = term_div(lt, ltf, K)
+    vm = term_div(lt, ltg, K)
+
+    #um = (monomial_div(lm, lmf), K(sdp_LC(Polyn(f), K))**-1)
+    #vm = (monomial_div(lm, lmg), K(sdp_LC(Polyn(g), K))**-1)
+
+    fr = lbp_mul_term(f, um, u, O, K)
+    gr = lbp_mul_term(g, vm, u, O, K)
+
+    if lbp_cmp(fr, gr, O):
+        return (gr, fr)
+    else:
+        return (fr, gr)
 
 def s_poly(cp, u, O, K):
     # might not work with rings that aren't fields atm
     
-    uf = lbp_mult(cp[1], (cp[0], sdp_LC(Polyn(cp[3]), K)), u, O, K)
-    vg = lbp_mult(cp[3], (cp[2], sdp_LC(Polyn(cp[1]), K)), u, O, K)
+    #uf = lbp_mul_term(cp[1], cp[0], u, O, K)
+    #vg = lbp_mul_term(cp[3], cp[2], u, O, K)
 
-    return lbp_sub(uf, vg, u, O, K)
+    return lbp_sub(cp[0], cp[1], u, O, K)
 
 
 def is_comparable(f, B, u, K):
     for g in B:
-        # completely wrongif monomial_div(Sign(g)[0], Sign(f)[0]) is not None:
-        if monomial_div(sdp_LM(Polyn(f), u), Sign(g)[0]) is not None:
+        if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
+        #if monomial_div(sdp_LM(Polyn(f), u), Sign(g)[0]) is not None:
             if Sign(f)[1] < Sign(g)[1]:
                 return True
     return False
@@ -144,7 +175,7 @@ def is_rewritable(f, B, u, K):
     for g in B:
         if Sign(f)[1] == Sign(g)[1]:
             if Num(f) < Num(g):
-                if monomial_div(Sign(g)[0], Sign(f)[0]) is not None:
+                if monomial_div(Sign(f)[0], Sign(g)[0]) is not None:
                     return True
     return False
 
@@ -161,7 +192,7 @@ def f5_single_reduction(f, B, u, O, K):
         if Polyn(g) != []:
             t = term_div(sdp_LT(Polyn(f), u, K), sdp_LT(Polyn(g), u, K), K)
             if t is not None:
-                gp = lbp_mult(g, t, u, O, K)
+                gp = lbp_mul_term(g, t, u, O, K)
                 if sig_cmp(Sign(gp), Sign(f), O):
                     if not is_comparable(gp, B, u, K):
                         if not is_rewritable(gp, B, u, K):
@@ -197,8 +228,10 @@ def f5b(F, u, O, K, gens='', verbose = False):
     while len(CP):
         cp = CP.pop()
 
-        uf = lbp_mult(cp[1], (cp[0], K.one), u, O, K)
-        vg = lbp_mult(cp[3], (cp[2], K.one), u, O, K)
+        #uf = lbp_mul_term(cp[1], cp[0], u, O, K)
+        #vg = lbp_mul_term(cp[3], cp[2], u, O, K)
+        uf = cp[0]
+        vg = cp[1]
 
         if is_comparable(uf, B, u, K):
             continue
@@ -209,6 +242,7 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if is_rewritable(vg, B, u, K):
             continue
 
+        print("never happens")
         print(len(CP))
         s = s_poly(cp, u, O, K)
 
