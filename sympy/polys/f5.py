@@ -129,11 +129,6 @@ def critical_pair(f, g, u, O, K):
     ltg = sdp_LT(Polyn(g), u, K)
     lt = (monomial_lcm(ltf[0], ltg[0]), K.one)
 
-    print(ltf)
-    print(ltg)
-    print(lt)
-    print("\n")
-
     if K.has_Field:
         term_div = _term_ff_div
     else:
@@ -196,7 +191,7 @@ def f5_single_reduction(f, B, u, O, K):
                 if sig_cmp(Sign(gp), Sign(f), O):
                     if not is_comparable(gp, B, u, K):
                         if not is_rewritable(gp, B, u, K):
-                            print(sdp_str(Polyn(f), "x,y,z"), "-", sdp_str(Polyn(gp), "x,y,z"))
+                            #print(sdp_str(Polyn(f), "x,y,z"), "-", sdp_str(Polyn(gp), "x,y,z"))
                             return lbp_sub(f, gp, u, O, K)
     return f
 
@@ -242,7 +237,6 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if is_rewritable(vg, B, u, K):
             continue
 
-        print("never happens")
         print(len(CP))
         s = s_poly(cp, u, O, K)
 
@@ -263,7 +257,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
     for i, f in enumerate(F):
         if f != []:
             f = sdp_rem(f, H + F[i + 1:], u, O, K)
-            H.append(f)
+            if f != []:
+                H.append(f)
 
     # test
     for i in xrange(len(H)):
@@ -272,7 +267,7 @@ def f5b(F, u, O, K, gens='', verbose = False):
             print(sdp_rem(s, H, u, O, K))
     
 
-    return H
+    return sorted(H, key = lambda f: O(sdp_LM(f, u)), reverse = True)
 
 def sdp_spoly(p1, p2, u, O, K):
     """
