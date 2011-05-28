@@ -16,9 +16,18 @@ class Vector:
         This is the constructor for the Vector class.  
         It should only be used in construction of the basis vectors,
         which is part of the reference frame construction.  
-        It takes in a SymPy matrix and a frame.  
+        It takes in a SymPy matrix and a ReferenceFrame.  
         '''
         self.args=[[mat,frame]]
+
+    def copy(self):
+        newvec = Vector(Matrix([0,0,0]),None)
+        for i in range(len(self.args)-1):
+            newvec.args.append([Matrix([0,0,0]),None])
+        for i in range(len(self.args)):
+            newvec.args[i][0][0:] = self.args[i][0][0:]
+            newvec.args[i][1] = self.args[i][1]
+        return newvec
 
     def __str__(self):
         '''
@@ -59,14 +68,16 @@ class Vector:
         It checks that other is a Vector, otherwise it throws an error.
         '''
         if not(isinstance(other,Vector)): # Rejects adding a scalar to a vector
-            raise NameError('cant do that')
-        self2 = deepcopy(self)
+            raise NameError('You can only add two Vectors')
+        self2 = self.copy()
+        other2 = other.copy()
         for i in range(len(self2.args)):
-            for j in range(len(other.args)):
-                if self2.args[i][1] == other.args[j][1]:
-                    self2.args[i][0] += other.args[j][0]
-                else:
-                    self2.args += other.args[j]
+            for j in range(len(other2.args)):
+                if self2.args[i][1] == other2.args[j][1]:
+                    self2.args[i][0] += other2.args[j][0]
+                    other2.args.remove(j)
+        self2.args += other.args[j]
+        
         return self2
 
     def __sub__(self,other):
@@ -83,8 +94,8 @@ class Vector:
         '''
         if isinstance(other,Vector): # Rejects scalar multiplication of two vectors
             raise NameError('Why u try to mul vecs?')
-        self2 = deepcopy(self)
-        for i in range(len(self.args)):
+        self2 = self.copy()
+        for i in range(len(self2.args)):
             self2.args[i][0] *= other
         return self2
 
@@ -203,12 +214,12 @@ class ReferenceFrame:
             ptr = ptr.parent
         return leg1.T * leg2
 
-    def orientnew(self,newname,rot_type,amounts,rot_order):
+    def orientnew(self, newname, rot_type, amounts, rot_order):
         newframe = ReferenceFrame(newname)
         newframe.orient(self,rot_type,amounts,rot_order)
         return newframe
 
-    def orient(self,parent,rot_type,amounts,rot_order):
+    def orient(self, parent, rot_type, amounts, rot_order):
         '''
         This function will be used to define the orientation of a
         ReferenceFrame relative to a parent.  It takes in the parent frame,
