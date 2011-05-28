@@ -1,6 +1,5 @@
 from sympy import *
 from copy import deepcopy
-import dcm
 
 class Vector:
     '''
@@ -9,7 +8,7 @@ class Vector:
         subscript_indices - a 3 character string used for printing
 
     '''
-    
+
     subscript_indices = "xyz"
 
     def __init__(self,mat,frame):
@@ -23,7 +22,8 @@ class Vector:
 
     def __str__(self):
         '''
-        Printing method.  Uses Vector Attribute subscript_indices.
+        Printing method.  Uses Vector Attribute subscript_indices to choose how
+        to show basis vector indices.
         '''
         ar = self.args # just to shorten things
         ol = [] # output list, to be concatenated to a string
@@ -32,11 +32,11 @@ class Vector:
                 if ar[i][0][j] == 1: # if the coef of the basis vector is 1, we skip the 1
                     if len(ol) != 0: 
                         ol.append(' + ')
-                    ol.append( ar[i][1].lower() + self.subscript_indices[j] + '>' )
+                    ol.append( ar[i][1].name.lower() + self.subscript_indices[j] + '>' )
                 elif ar[i][0][j] == -1: # if the coef of the basis vector is -1, we skip the 1
                     if len(ol) != 0:
                         ol.append(' ')
-                    ol.append( '- ' + ar[i][1].lower() + self.subscript_indices[j] + '>' )
+                    ol.append( '- ' + ar[i][1].name.lower() + self.subscript_indices[j] + '>' )
                 elif ar[i][0][j] != 0: 
                     '''
                     If the coefficient of the basis vector is not 1 or -1, 
@@ -44,7 +44,7 @@ class Vector:
                     '''
                     if len(ol) != 0:
                         ol.append(' + ')
-                    ol.append('(' +  `ar[i][0][j]` + ')*' + ar[i][1].lower() + self.subscript_indices[j] + '>' )
+                    ol.append('(' +  `ar[i][0][j]` + ')*' + ar[i][1].name.lower() + self.subscript_indices[j] + '>' )
         return ''.join(ol)
 
     def __repr__(self):
@@ -66,7 +66,7 @@ class Vector:
                 if self2.args[i][1] == other.args[j][1]:
                     self2.args[i][0] += other.args[j][0]
                 else:
-                    self2.args += other.args
+                    self2.args += other.args[j]
         return self2
 
     def __sub__(self,other):
@@ -87,28 +87,53 @@ class Vector:
         for i in range(len(self.args)):
             self2.args[i][0] *= other
         return self2
-    
+
     def __rmul__(self,other):
         '''
         This wraps mul. 
         '''
         return self.__mul__(other)
-    
+
     def __div__(self,other):
         '''
         This uses mul and inputs self and 1 divided by other.  
         '''
         return self.__mul__(1/other)
 
-    def dot(self,other):
+    def __and__(self,other):
         '''
         Dot product of two vectors.  
-        Wraps around & operator, which is the designated operator for dot.
         '''
         out = 0
-        a
+        for i in range(len(self.args)):
+            for j in range(len(other.args)):
+                out += ((other.args[j][0].T)\
+                        *(self.args[i][1].dcm(other.args[j][1]))\
+                        *(self.args[i][0]))[0]
+        return out
 
-    
+    def dot(self,other):
+        '''
+        Wraps around & operator, which is the designated operator for dot.
+        '''
+        return self&other
+
+    def express(self,otherframe):
+        '''
+        Returns the vector, expressed in the other frame.
+        Uses a DCM from each basis vector triplet's current frame to the other
+        frame.
+        Takes in a frame.
+        '''
+        assert isinstance(otherframe,ReferenceFrame), 'Needs a frame to express in'
+        out = Vector(Matrix([0,0,0],ReferenceFrame))
+        for i in range(len(self.args)):
+            if self.args[i][1] == otherframe:
+                out.args[i][0] += self.args[i][0]
+            else:
+                out.args[i][0] += self.args[i][1].dcm(otherframe) *\
+                self.args[i][0]
+        return out
 
 
 class ReferenceFrame:
@@ -117,21 +142,141 @@ class ReferenceFrame:
     It will store its basis vectors as attributes, 
     and orientation information to a parent frame,
     or it will be at the top of a tree.
-    
     '''
-    
-    def __init__(self, name='', parent=None):
+
+    def __init__(self, name=''):
         '''
-        Initialization for 
+        Constructor for ReferenceFrame
         '''
         self.name = name
-        self.parent = parent
-        self.x = Vector(Matrix([1,0,0]),name)
-        self.y = Vector(Matrix([0,1,0]),name)
-        self.z = Vector(Matrix([0,0,1]),name)
-    
-    
-    def 
+        self.parent = None
+        self.x = Vector(Matrix([1,0,0]),self)
+        self.y = Vector(Matrix([0,1,0]),self)
+        self.z = Vector(Matrix([0,0,1]),self)
 
+    def __str__(self):
+        '''
+        Returns the name of the frame.
+        '''
+        return self.name
+    
+    def __repr__(self):
+        '''
+        Wraps __str__
+        '''
+        return self.name
+
+    def dcm(self,other):
+        '''
+        This will return the direction cosine matrix from self to other;
+        other's basis = DCM * self's basis is the definition.
+        All it takes in is the other frame.  
+        nxyz = N.dcm(B)*bxyz
+        '''
+        assert isinstance(other,ReferenceFrame), 'You have to use 2\
+        reference frames'
+        leg1 = [self]
+        ptr = self
+        while ptr.parent != None:
+            ptr = ptr.parent
+            leg1.append(ptr)
+        leg2 = [other]
+        ptr = other
+        while ptr.parent != None:
+            ptr = ptr.parent
+            leg2.append(ptr)
+        try:
+            commonframe = (set(leg1) & set(leg2)).pop()
+        except:
+            raise ValueError('No Common Parent')
+        # form DCM from self to first common frame
+        leg1 = eye(3)
+        ptr = self
+        while ptr != commonframe:
+            leg1 *= ptr.parent_orient
+            ptr = ptr.parent
+        # form DCM from other to first common frame
+        leg2 = eye(3)
+        ptr = other
+        while ptr != commonframe:
+            leg2 *= ptr.parent_orient
+            ptr = ptr.parent
+        return leg1.T * leg2
+
+    def orientnew(self,newname,rot_type,amounts,rot_order):
+        newframe = ReferenceFrame(newname)
+        newframe.orient(self,rot_type,amounts,rot_order)
+        return newframe
+
+    def orient(self,parent,rot_type,amounts,rot_order):
+        '''
+        This function will be used to define the orientation of a
+        ReferenceFrame relative to a parent.  It takes in the parent frame,
+        type of rotation, amount(s) of rotation, and if applicable, order of
+        rotations.  
+        The format for this needs to be spelled out and made explicit, with
+        example.  
+        '''
+
+        def _rot(axis, angle): 
+            """
+            Returns direction cosine matrix for simple 1,2,3 rotations
+            """
+            if axis == 1:
+                return Matrix([[1, 0, 0],
+                    [0, cos(angle), -sin(angle)],
+                    [0, sin(angle), cos(angle)]])
+            elif axis == 2:
+                return Matrix([[cos(angle), 0, sin(angle)],
+                    [0, 1, 0],
+                    [-sin(angle), 0, cos(angle)]])
+            elif axis == 3:
+                return Matrix([[cos(angle), -sin(angle), 0],
+                    [sin(angle), cos(angle), 0],
+                    [0, 0, 1]])
+
+        self.parent = parent
+        approved_orders = ('123','231','312','132',\
+                '213','321','121','131','212','232',\
+                '313','323','1','2','3')
+        rot_order = str(rot_order).upper() # Now we need to make sure XYZ = 123
+        rot_type  = rot_type.upper()
+        rot_order = [i.replace('X','1') for i in rot_order]
+        rot_order = [i.replace('Y','2') for i in rot_order]
+        rot_order = [i.replace('Z','3') for i in rot_order]
+        rot_order = ''.join(rot_order)
+        assert rot_order in approved_orders, 'Not approved order'
+
+        if rot_type == 'AXIS':
+            raise NotImplementedError('Axis rotation not yet implemented')
+        elif rot_type == 'EULER':
+            assert len(amounts)==4, 'Euler orietation requires 4 values'
+            assert rot_order=='', 'Euler orientation take no rotation order'
+            # TODO need to finish this up...
+        elif rot_type == 'BODY':
+            assert len(amounts)==3, 'Body orientation requires 3 values'
+            assert len(rot_order)==3, 'Body orientation requires 3 orders'
+            a1 = int(rot_order[0])
+            a2 = int(rot_order[1])
+            a3 = int(rot_order[2])
+            self.parent_orient = _rot(a1, amounts[0]) * _rot(a2, amounts[1])\
+                    * _rot(a3, amounts[2])
+        elif rot_type == 'SPACE':
+            assert len(amounts)==3, 'Space orientation requires 3 values'
+            assert len(rot_order)==3, 'Space orientation requires 3 orders'
+            a1 = int(rot_order[0])
+            a2 = int(rot_order[1])
+            a3 = int(rot_order[2])
+            self.parent_orient = _rot(a3, amounts[2]) * _rot(a2, amounts[1])\
+                    * _rot(a1, amounts[0])
+        elif rot_type == 'SIMPLE':
+            assert not(isinstance(amounts,(list,tuple))), 'Simple takes in a\
+            single value for amount'
+            assert not(isinstance(rot_order,(list,tuple))), 'Simple takes in a\
+            single value for rotation order'
+            a = int(rot_order)
+            self.parent_orient = _rot(a,amounts)
+        else:
+            raise NotImplementedError('That is not an implemented rotation')
 
 
