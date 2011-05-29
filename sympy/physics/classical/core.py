@@ -10,16 +10,33 @@ class Vector:
 
     subscript_indices = "xyz"
 
-    def __init__(self,mat,frame):
+    def __init__(self, inlist):
         """
         This is the constructor for the Vector class.  
         It should only be used in construction of the basis vectors,
         which is part of the ReferenceFrame construction.  
         It takes in a SymPy matrix and a ReferenceFrame.  
         """
-        self.args=[[mat,frame]]
+        self.args=[]
+        while len(inlist) != 0:
+            added = 0
+            for i in range(len(self.args)):
+                if inlist[0][1] == self.args[i][1]:
+                    self.args[i] = (self.args[i][0]+inlist[0][0],inlist[0][1])
+                    inlist.remove(inlist[0])
+                    added = 1
+                    break
+            if added != 1:
+                self.args.append(inlist[0])
+                inlist.remove(inlist[0])
+        i = 0
+        while i<len(self.args):
+            if (self.args[i][0][0]==0)&(self.args[i][0][1]==0)&(self.args[i][0][2]==0):
+                self.args.remove(self.args[i])
+                i -= 1
+            i += 1
 
-def __str__(self):
+    def __str__(self):
         """
         Printing method.  Uses Vector Attribute subscript_indices to choose how
         to show basis vector indices.
@@ -57,16 +74,7 @@ def __str__(self):
         """
         if not(isinstance(other,Vector)): # Rejects adding a scalar to a vector
             raise TypeError('You can only add two Vectors')
-        self2 = self.copy()
-        other2 = other.copy()
-        for i in range(len(self2.args)):
-            for j in range(len(other2.args)):
-                if self2.args[i][1] == other2.args[j][1]:
-                    self2.args[i][0] += other2.args[j][0]
-                    other2.args.remove(j)
-        self2.args += other.args[j]
-        
-        return self2
+        return Vector(self.args+other.args)
 
     def __and__(self, other):
         """
@@ -75,10 +83,10 @@ def __str__(self):
         out = 0
         for i in range(len(self.args)):
             for j in range(len(other.args)):
-                out += ((other.args[j][0].T)\
-                        *(self.args[i][1].dcm(other.args[j][1]))\
+                out += ((other.args[j][0].T)
+                        *(self.args[i][1].dcm(other.args[j][1]))
                         *(self.args[i][0]))[0]
-        return out
+                return out
 
     def __div__(self, other):
         """
@@ -92,11 +100,11 @@ def __str__(self):
         Throws an error if another Vector is entered.  
         """
         if isinstance(other, Vector): # Rejects scalar multiplication of two vectors
-            raise TypeError('Why u try to mul vecs?')
-        self2 = self.copy()
-        for i in range(len(self2.args)):
-            self2.args[i][0] *= other
-        return self2
+            raise TypeError('You can\'t do scalar multiplcation for two vectors')
+        newlist = [i for i in self.args]
+        for i in range(len(newlist)):
+            newlist[i] = (other*newlist[i][0],newlist[i][1])
+        return Vector(newlist)
 
     def __rmul__(self, other):
         """
@@ -110,15 +118,6 @@ def __str__(self):
         Reuses add and multiplication operations.  
         """
         return self.__add__(other*-1)
-
-    def copy(self):
-        newvec = Vector(Matrix([0,0,0]),None)
-        for i in range(len(self.args)-1):
-            newvec.args.append([Matrix([0,0,0]),None])
-        for i in range(len(self.args)):
-            newvec.args[i][0][0:] = self.args[i][0][0:]
-            newvec.args[i][1] = self.args[i][1]
-        return newvec
 
     def dot(self, other):
         """
@@ -134,13 +133,13 @@ def __str__(self):
         Takes in a frame.
         """
         assert isinstance(otherframe, ReferenceFrame), 'Needs a frame to express in'
-        out = Vector(Matrix([0,0,0], ReferenceFrame))
+        out = Vector([(Matrix([0,0,0]), ReferenceFrame)])
         for i in range(len(self.args)):
             if self.args[i][1] == otherframe:
                 out.args[i][0] += self.args[i][0]
             else:
-                out.args[i][0] += self.args[i][1].dcm(otherframe) *\
-                self.args[i][0]
+                out.args[i][0] += (self.args[i][1].dcm(otherframe) * 
+                        self.args[i][0])
         return out
 
 
@@ -158,16 +157,16 @@ class ReferenceFrame:
         """
         self.name = name
         self.parent = None
-        self.x = Vector(Matrix([1,0,0]), self)
-        self.y = Vector(Matrix([0,1,0]), self)
-        self.z = Vector(Matrix([0,0,1]), self)
+        self.x = Vector([(Matrix([1,0,0]), self)])
+        self.y = Vector([(Matrix([0,1,0]), self)])
+        self.z = Vector([(Matrix([0,0,1]), self)])
 
     def __str__(self):
         """
         Returns the name of the frame.
         """
         return self.name
-    
+
     def __repr__(self):
         """
         Wraps __str__
@@ -182,7 +181,7 @@ class ReferenceFrame:
         nxyz = N.dcm(B)*bxyz
         """
         assert isinstance(other, ReferenceFrame), 'You have to use 2\
-        reference frames'
+                reference frames'
         leg1 = [self]
         ptr = self
         while ptr.parent != None:
@@ -243,7 +242,7 @@ class ReferenceFrame:
                     [sin(angle), cos(angle), 0],
                     [0, 0, 1]])
 
-        self.parent = parent
+                self.parent = parent
         approved_orders = ('123','231','312','132',\
                 '213','321','121','131','212','232',\
                 '313','323','1','2','3')
@@ -267,21 +266,21 @@ class ReferenceFrame:
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
-            self.parent_orient = _rot(a1, amounts[0]) * _rot(a2, amounts[1])\
-                    * _rot(a3, amounts[2])
+            self.parent_orient = (_rot(a1, amounts[0]) * _rot(a2, amounts[1])
+                    * _rot(a3, amounts[2]))
         elif rot_type == 'SPACE':
             assert len(amounts)==3, 'Space orientation requires 3 values'
             assert len(rot_order)==3, 'Space orientation requires 3 orders'
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
-            self.parent_orient = _rot(a3, amounts[2]) * _rot(a2, amounts[1])\
-                    * _rot(a1, amounts[0])
+            self.parent_orient = (_rot(a3, amounts[2]) * _rot(a2, amounts[1])
+                    * _rot(a1, amounts[0]))
         elif rot_type == 'SIMPLE':
             assert not(isinstance(amounts,(list,tuple))), 'Simple takes in a\
-            single value for amount'
+                    single value for amount'
             assert not(isinstance(rot_order,(list,tuple))), 'Simple takes in a\
-            single value for rotation order'
+                    single value for rotation order'
             a = int(rot_order)
             self.parent_orient = _rot(a, amounts)
         else:
