@@ -1,12 +1,6 @@
 "Experimental F5(B)"
 
 """
-A signature is a tuple (monomial, index). monomial is not a term!
-
-A labeled polynomial is a tuple (signature, polynomial, number)
-"""
-
-"""
 Signature = (monomial, index) where monomial is a monomial as in monomialtools, NOT A TERM!
 
 Labeled Polynomial = (signature, polynomial, number) where polynomial is a sdp, number an integer.
@@ -134,12 +128,8 @@ def critical_pair(f, g, u, O, K):
     else:
         term_div = _term_rr_div
 
-
     um = term_div(lt, ltf, K)
     vm = term_div(lt, ltg, K)
-
-    #um = (monomial_div(lm, lmf), K(sdp_LC(Polyn(f), K))**-1)
-    #vm = (monomial_div(lm, lmg), K(sdp_LC(Polyn(g), K))**-1)
 
     fr = lbp_mul_term(f, um, u, O, K)
     gr = lbp_mul_term(g, vm, u, O, K)
@@ -150,18 +140,13 @@ def critical_pair(f, g, u, O, K):
         return (fr, gr)
 
 def s_poly(cp, u, O, K):
-    # might not work with rings that aren't fields atm
-    
-    #uf = lbp_mul_term(cp[1], cp[0], u, O, K)
-    #vg = lbp_mul_term(cp[3], cp[2], u, O, K)
-
     return lbp_sub(cp[0], cp[1], u, O, K)
 
 
 def is_comparable(f, B, u, K):
     for g in B:
-        if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
-            if Sign(f)[1] < Sign(g)[1]:
+        if Sign(f)[1] < Sign(g)[1]:
+            if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
                 return True
     return False
 
@@ -211,7 +196,7 @@ def f5b(F, u, O, K, gens='', verbose = False):
     if not K.has_Field:
         raise DomainError("can't compute a Groebner basis over %s" % K)
 
-    B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))] # i from 0 to n-1 should work. in the paper it's 1 to n, though.
+    B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))]
     CP = [critical_pair(B[i], B[j], u, O, K) for i in xrange(len(B)) for j in xrange(i+1, len(B))]
 
     k = len(B)
@@ -219,8 +204,6 @@ def f5b(F, u, O, K, gens='', verbose = False):
     while len(CP):
         cp = CP.pop()
 
-        #uf = lbp_mul_term(cp[1], cp[0], u, O, K)
-        #vg = lbp_mul_term(cp[3], cp[2], u, O, K)
         uf = cp[0]
         vg = cp[1]
 
