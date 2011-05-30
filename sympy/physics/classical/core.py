@@ -30,8 +30,8 @@ class Vector:
                 inlist.remove(inlist[0])
         i = 0
         while i<len(self.args):
-            if (self.args[i][0][0] == 0) & (self.args[i][0][1] == 0) & 
-                (self.args[i][0][2] == 0):
+            if ((self.args[i][0][0] == 0) & (self.args[i][0][1] == 0) & 
+                (self.args[i][0][2] == 0)):
                 self.args.remove(self.args[i])
                 i -= 1
             i += 1
@@ -99,7 +99,7 @@ class Vector:
         tempcross = self ^ other
         crosscheck = True
         for i,v in enumerate(tempcross.args):
-            if tempcross.args[i][0] != Matrix([0, 0, 0])):
+            if tempcross.args[i][0] != Matrix([0, 0, 0]):
                 crosscheck = False
         return dotcheck & crosscheck
 
