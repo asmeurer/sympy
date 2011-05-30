@@ -95,8 +95,13 @@ class Vector:
 
     def __eq__(self, other):
         assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
-        # finish this after doing cross
-
+        dotcheck = (self & self == self & other)
+        tempcross = self ^ other
+        crosscheck = True
+        for i,v in enumerate(tempcross.args):
+            if tempcross.args[i][0] != Matrix([0, 0, 0])):
+                crosscheck = False
+        return dotcheck & crosscheck
 
     def __mul__(self, other):
         """
@@ -105,7 +110,7 @@ class Vector:
         """
         assert not(isinstance(other, Vector)), \
                 'Two Vectors can\'t be multiplied'
-        newlist = [i for i in self.args]
+        newlist = [v for v in self.args]
         for i, v in enumerate(newlist):
             newlist[i] = (other * newlist[i][0], newlist[i][1])
         return Vector(newlist)
