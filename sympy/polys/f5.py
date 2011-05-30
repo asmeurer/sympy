@@ -158,6 +158,9 @@ def s_poly(cp, u, O, K):
     return lbp_sub(cp[0], cp[1], u, O, K)
 
 
+
+
+
 def is_comparable(f, B, u, K):
     for g in B:
         if Sign(f)[1] < Sign(g)[1]:
@@ -172,6 +175,18 @@ def is_rewritable(f, B, u, K):
                 if monomial_div(Sign(f)[0], Sign(g)[0]) is not None:
                     return True
     return False
+
+def is_rewritable_or_comparable(f, B, u, K):
+    for g in B:
+        if Sign(f)[1] < Sign(g)[1]:
+            if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
+                return True        
+        if Sign(f)[1] == Sign(g)[1]:
+            if Num(f) < Num(g):
+                if monomial_div(Sign(f)[0], Sign(g)[0]) is not None:
+                    return True
+    return False
+            
 
 def f5_single_reduction(f, B, u, O, K):
     if Polyn(f) == []:
@@ -188,9 +203,10 @@ def f5_single_reduction(f, B, u, O, K):
             if t is not None:
                 gp = lbp_mul_term(g, t, u, O, K)
                 if sig_cmp(Sign(gp), Sign(f), O) == -1:
-                    if not is_comparable(gp, B, u, K):
-                        if not is_rewritable(gp, B, u, K):
-                            return lbp_sub(f, gp, u, O, K)
+                    #if not is_comparable(gp, B, u, K):
+                    #    if not is_rewritable(gp, B, u, K):
+                    if not is_rewritable_or_comparable(gp, B, u, K):
+                        return lbp_sub(f, gp, u, O, K)
     return f
 
 def f5_reduce(f, B, u, O, K):
@@ -211,6 +227,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
     if not K.has_Field:
         raise DomainError("can't compute a Groebner basis over %s" % K)
 
+    # 
+
     B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))]
     CP = [critical_pair(B[i], B[j], u, O, K) for i in xrange(len(B)) for j in xrange(i+1, len(B))]
 
@@ -224,13 +242,17 @@ def f5b(F, u, O, K, gens='', verbose = False):
         uf = cp[0]
         vg = cp[1]
 
-        if is_comparable(uf, B, u, K):
+        #if is_comparable(uf, B, u, K):
+        #    continue
+        #if is_comparable(vg, B, u, K):
+        #    continue
+        #if is_rewritable(uf, B, u, K):
+        #    continue
+        #if is_rewritable(vg, B, u, K):
+        #    continue
+        if is_rewritable_or_comparable(uf, B, u, K):
             continue
-        if is_comparable(vg, B, u, K):
-            continue
-        if is_rewritable(uf, B, u, K):
-            continue
-        if is_rewritable(vg, B, u, K):
+        if is_rewritable_or_comparable(vg, B, u, K):
             continue
 
         s = s_poly(cp, u, O, K)
@@ -242,16 +264,42 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if Polyn(p) != []:
             CP.extend([critical_pair(p, q, u, O, K) for q in B if Polyn(q) != []])
             CP.sort(lambda c, d: cp_cmp(c, d, O), reverse = True) # causes division by 0??? fixed by checking if Polyn(g) != []
+            
+            B.append(p)
+            #B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
+            B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True) # sorting just by leading monomial seems to be more efficient than sorting by lbp
+            k += 1
+            
+            # idea: when p is added to B, one can take a look at elements from CP,
+            # which would satisfy is_comparable or is_rewritable for p and remove
+            # them. I suppose this is cheaper to do once, than doing so all the time...
+            # the idea for this comes from the description of the algorithm in
+            # "A New Incremental Algorithm for Computing Groebner Bases", Shuhong Gao, Yinhua Guan, Frank Volny IV
+            indices = []
+            for i, cp in enumerate(CP):
+                #if is_comparable(cp[0], [p], u, K):
+                #    indices.append(i)
+                #elif is_comparable(cp[1], [p], u, K):
+                #    indices.append(i)
+                #elif is_rewritable(cp[0], [p], u, K):
+                #    indices.append(i)
+                #elif is_rewritable(cp[1], [p], u, K):
+                #    indices.append(i)
+                if is_rewritable_or_comparable(cp[0], [p], u, K):
+                    indices.append(i)
+                elif is_rewritable_or_comparable(cp[1], [p], u, K):
+                    indices.append(i)
+            for i in reversed(indices):
+                del CP[i]
+            print("%d elements removed from CP" % len(indices))
         else:
             reductions_to_zero += 1
 
-        print(len(CP))
+        print(len(CP), len(B))
             
 
-        B.append(p)
-        B.sort(lambda x, y: lbp_cmp(x, y, O))
-        k += 1
 
+      
     # reduce   
     F = [sdp_strip(sdp_monic(Polyn(g), K)) for g in B]
     F = [f for f in F if f != []]
