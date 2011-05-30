@@ -161,7 +161,6 @@ def s_poly(cp, u, O, K):
 def is_comparable(f, B, u, K):
     for g in B:
         if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
-        #if monomial_div(sdp_LM(Polyn(f), u), Sign(g)[0]) is not None:
             if Sign(f)[1] < Sign(g)[1]:
                 return True
     return False
@@ -191,7 +190,6 @@ def f5_single_reduction(f, B, u, O, K):
                 if sig_cmp(Sign(gp), Sign(f), O):
                     if not is_comparable(gp, B, u, K):
                         if not is_rewritable(gp, B, u, K):
-                            #print(sdp_str(Polyn(f), "x,y,z"), "-", sdp_str(Polyn(gp), "x,y,z"))
                             return lbp_sub(f, gp, u, O, K)
     return f
 
@@ -216,8 +214,6 @@ def f5b(F, u, O, K, gens='', verbose = False):
     B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))] # i from 0 to n-1 should work. in the paper it's 1 to n, though.
     CP = [critical_pair(B[i], B[j], u, O, K) for i in xrange(len(B)) for j in xrange(i+1, len(B))]
 
-    #print(len(CP))
-
     k = len(B)
 
     while len(CP):
@@ -237,7 +233,6 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if is_rewritable(vg, B, u, K):
             continue
 
-        print(len(CP))
         s = s_poly(cp, u, O, K)
 
         p = f5_reduce(s, B, u, O, K)
