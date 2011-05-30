@@ -8,6 +8,7 @@ Labeled Polynomial = (signature, polynomial, number) where polynomial is a sdp, 
 """
 
 from sympy.polys.groebnertools import *
+from bisect import insort
 
 # convenience functions
 
@@ -111,10 +112,13 @@ def lbp_cmp(f, g, O):
     (f < g)
     """
     if sig_cmp(Sign(f), Sign(g), O) == True:
-        return True
-    if Sign(f) == Sign(g) and Num(f) > Num(g):
-        return True
-    return False
+        return 1
+    if Sign(f) == Sign(g):
+        if Num(f) > Num(g):
+            return 1
+        if Num(f) == Num(g):
+            return 0
+    return -1
 
 # algorithm and helper functions
 
@@ -134,7 +138,7 @@ def critical_pair(f, g, u, O, K):
     fr = lbp_mul_term(f, um, u, O, K)
     gr = lbp_mul_term(g, vm, u, O, K)
 
-    if lbp_cmp(fr, gr, O):
+    if lbp_cmp(fr, gr, O) == 1:
         return (gr, fr)
     else:
         return (fr, gr)
@@ -225,7 +229,11 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if Polyn(p) != []:
             CP.extend([critical_pair(p, q, u, O, K) for q in B])
 
+        print(len(CP))
+            
+
         B.append(p)
+        B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
         k += 1
 
     # reduce   
