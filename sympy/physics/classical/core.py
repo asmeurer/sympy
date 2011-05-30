@@ -111,6 +111,9 @@ class Vector:
             newlist[i] = (other * newlist[i][0], newlist[i][1])
         return Vector(newlist)
 
+    def __neg__(self):
+        return self * -1
+
     def __rmul__(self, other):
         """
         This wraps mul. 
@@ -165,6 +168,28 @@ class Vector:
         Wraps around the ^ operator, which is the cross product operator.  
         """
         return self ^ other
+
+    def d(self, wrt):
+        """
+        Takes in a sympifyable value, which cannot be a Vector.
+        Returns the partial derivative of the self Vector with respect 
+        to the input value.
+        """
+        try:
+            sympify(wrt)
+        except:
+            raise SympifyError('Not a Valid Expression')
+        # TODO Finish this up
+
+    def dt(self, otherframe):
+        """
+        Returns the time derivative of the self Vector in the given Reference
+        Frame.  
+        Takes in a ReferenceFrame, and returns a Vector.
+        """
+        assert isinstance(otherframe, ReferenceFrame), 'Need to supply a \
+                ReferenceFrame to find the derivative in'
+        # TODO Finish this up
 
     def express(self, otherframe):
         """
