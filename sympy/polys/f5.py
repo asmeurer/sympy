@@ -143,6 +143,16 @@ def critical_pair(f, g, u, O, K):
     else:
         return (fr, gr)
 
+def cp_cmp(c, d, O):
+    if lbp_cmp(c[0], d[0], O) == -1:
+        return 1
+    if lbp_cmp(c[0], d[0], O) == 0:
+        if lbp_cmp(c[1], d[1], O) == -1:
+            return 1
+        if lbp_cmp(c[1], d[1], O) == 0:
+            return 0
+    return -1
+
 def s_poly(cp, u, O, K):
     return lbp_sub(cp[0], cp[1], u, O, K)
 
@@ -227,7 +237,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
         p = lbp(Sign(p), Polyn(p), k + 1)
 
         if Polyn(p) != []:
-            CP.extend([critical_pair(p, q, u, O, K) for q in B])
+            CP.extend([critical_pair(p, q, u, O, K) for q in B if Polyn(q) != []])
+            CP.sort(lambda c, d: cp_cmp(c, d, O), reverse = True) # causes division by 0??? fixed by checking if Polyn(g) != []
 
         print(len(CP))
             
