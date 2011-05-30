@@ -96,11 +96,7 @@ class Vector:
     def __eq__(self, other):
         assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
         dotcheck = (self & self == self & other)
-        tempcross = self ^ other
-        crosscheck = True
-        for i,v in enumerate(tempcross.args):
-            if tempcross.args[i][0] != Matrix([0, 0, 0]):
-                crosscheck = False
+        crosscheck = ((self ^ other) & (self ^ other) == 0)
         return dotcheck & crosscheck
 
     def __mul__(self, other):
@@ -177,15 +173,14 @@ class Vector:
         frame.
         Takes in a frame.
         """
-        assert isinstance(otherframe, ReferenceFrame), 'Needs a frame to express in'
-        out = Vector([(Matrix([0, 0, 0]), ReferenceFrame)])
+        assert isinstance(otherframe, ReferenceFrame), 'Needs a frame to \
+                express in'
+        outvec = Vector(self.args + [])
         for i, v in enumerate(self.args):
-            if self.args[i][1] == otherframe:
-                out.args[i][0] += self.args[i][0]
-            else:
-                out.args[i][0] += (self.args[i][1].dcm(otherframe) *
-                        self.args[i][0])
-        return out
+            if v[1] != otherframe:
+                outvec += Vector([(v[1].dcm(otherframe) * v[0], otherframe)])
+                outvec -= Vector([v])
+        return outvec
 
 
 class ReferenceFrame:
