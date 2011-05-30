@@ -8,7 +8,6 @@ Labeled Polynomial = (signature, polynomial, number) where polynomial is a sdp, 
 """
 
 from sympy.polys.groebnertools import *
-from bisect import insort
 
 # convenience functions
 
@@ -34,11 +33,13 @@ def sig_cmp(u, v, O):
     (u < v)
     """
     if u[1] > v[1]:
-        return True
+        return -1
     if u[1] == v[1]:
+        if u[0] == v[0]:
+            return 0
         if cmp(O(u[0]), O(v[0])) < 0: # having > was the bug all along...
-            return True
-    return False            
+            return -1
+    return 1        
 
 def sig_mult(s, m):
     """
@@ -77,7 +78,7 @@ def lbp(signature, polynomial, number):
     return (signature, sdp_strip(polynomial), number)
 
 def lbp_add(f, g, u, O, K):
-    if sig_cmp(Sign(f), Sign(g), O):
+    if sig_cmp(Sign(f), Sign(g), O) == -1:
         max_poly = g
     else:
         max_poly = f
@@ -90,7 +91,7 @@ def lbp_sub(f, g, u, O, K):
     """
     Subtract g from f
     """
-    if sig_cmp(Sign(f), Sign(g), O):
+    if sig_cmp(Sign(f), Sign(g), O) == -1:
         max_poly = g
     else:
         max_poly = f
@@ -111,14 +112,14 @@ def lbp_cmp(f, g, O):
     
     (f < g)
     """
-    if sig_cmp(Sign(f), Sign(g), O) == True:
-        return 1
+    if sig_cmp(Sign(f), Sign(g), O) == -1:
+        return -1
     if Sign(f) == Sign(g):
         if Num(f) > Num(g):
-            return 1
+            return -1
         if Num(f) == Num(g):
             return 0
-    return -1
+    return 1
 
 # algorithm and helper functions
 
@@ -138,20 +139,20 @@ def critical_pair(f, g, u, O, K):
     fr = lbp_mul_term(f, um, u, O, K)
     gr = lbp_mul_term(g, vm, u, O, K)
 
-    if lbp_cmp(fr, gr, O) == 1:
+    if lbp_cmp(fr, gr, O) == -1:
         return (gr, fr)
     else:
         return (fr, gr)
 
 def cp_cmp(c, d, O):
     if lbp_cmp(c[0], d[0], O) == -1:
-        return 1
+        return -1
     if lbp_cmp(c[0], d[0], O) == 0:
         if lbp_cmp(c[1], d[1], O) == -1:
-            return 1
+            return -1
         if lbp_cmp(c[1], d[1], O) == 0:
             return 0
-    return -1
+    return 1
 
 def s_poly(cp, u, O, K):
     return lbp_sub(cp[0], cp[1], u, O, K)
@@ -186,7 +187,7 @@ def f5_single_reduction(f, B, u, O, K):
             t = term_div(sdp_LT(Polyn(f), u, K), sdp_LT(Polyn(g), u, K), K)
             if t is not None:
                 gp = lbp_mul_term(g, t, u, O, K)
-                if sig_cmp(Sign(gp), Sign(f), O):
+                if sig_cmp(Sign(gp), Sign(f), O) == -1:
                     if not is_comparable(gp, B, u, K):
                         if not is_rewritable(gp, B, u, K):
                             return lbp_sub(f, gp, u, O, K)
@@ -215,6 +216,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
 
     k = len(B)
 
+    reductions_to_zero = 0
+
     while len(CP):
         cp = CP.pop()
 
@@ -239,12 +242,14 @@ def f5b(F, u, O, K, gens='', verbose = False):
         if Polyn(p) != []:
             CP.extend([critical_pair(p, q, u, O, K) for q in B if Polyn(q) != []])
             CP.sort(lambda c, d: cp_cmp(c, d, O), reverse = True) # causes division by 0??? fixed by checking if Polyn(g) != []
+        else:
+            reductions_to_zero += 1
 
         print(len(CP))
             
 
         B.append(p)
-        B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
+        B.sort(lambda x, y: lbp_cmp(x, y, O))
         k += 1
 
     # reduce   
@@ -263,7 +268,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
             s = sdp_spoly(H[i], H[j], u, O, K)
             print(sdp_rem(s, H, u, O, K))
     
-
+    print("%d reductions to zero" % reductions_to_zero)
+    
     return sorted(H, key = lambda f: O(sdp_LM(f, u)), reverse = True)
 
 def sdp_spoly(p1, p2, u, O, K):
