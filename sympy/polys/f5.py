@@ -291,11 +291,11 @@ def f5b(F, u, O, K, gens='', verbose = False):
                     indices.append(i)
             for i in reversed(indices):
                 del CP[i]
-            print("%d elements removed from CP" % len(indices))
+            #print("%d elements removed from CP" % len(indices))
         else:
             reductions_to_zero += 1
 
-        print(len(CP), len(B))
+        #print(len(CP), len(B))
             
 
 
@@ -314,7 +314,9 @@ def f5b(F, u, O, K, gens='', verbose = False):
     for i in xrange(len(H)):
         for j in xrange(i + 1, len(H)):
             s = sdp_spoly(H[i], H[j], u, O, K)
-            print(sdp_rem(s, H, u, O, K))
+            s = sdp_rem(s, H, u, O, K)
+            if s != []:
+                print(s)
     
     print("%d reductions to zero" % reductions_to_zero)
     
