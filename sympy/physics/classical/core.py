@@ -30,7 +30,8 @@ class Vector:
                 inlist.remove(inlist[0])
         i = 0
         while i<len(self.args):
-            if (self.args[i][0][0]==0)&(self.args[i][0][1]==0)&(self.args[i][0][2]==0):
+            if (self.args[i][0][0] == 0) & (self.args[i][0][1] == 0) & 
+                (self.args[i][0][2] == 0):
                 self.args.remove(self.args[i])
                 i -= 1
             i += 1
@@ -71,8 +72,7 @@ class Vector:
         The add operator for Vector. 
         It checks that other is a Vector, otherwise it throws an error.
         """
-        if not(isinstance(other, Vector)): # Rejects adding a scalar to a vector
-            raise TypeError('You can only add two Vectors')
+        assert isinstance(other, Vector), 'You can only add two Vectors'
         return Vector(self.args + other.args)
 
     def __and__(self, other):
@@ -85,7 +85,7 @@ class Vector:
                 out += ((other.args[j][0].T)
                         * (self.args[i][1].dcm(other.args[j][1]))
                         * (self.args[i][0]))[0]
-                return out
+        return out
 
     def __div__(self, other):
         """
@@ -93,13 +93,18 @@ class Vector:
         """
         return self.__mul__(1 / other)
 
+    def __eq__(self, other):
+        assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
+        # finish this after doing cross
+
+
     def __mul__(self, other):
         """
         Multiplies the Vector by a scalar. 
         Throws an error if another Vector is entered.  
         """
-        if isinstance(other, Vector): # Rejects scalar multiplication of two vectors
-            raise TypeError('You can\'t do scalar multiplcation for two vectors')
+        assert not(isinstance(other, Vector)), \
+                'Two Vectors can\'t be multiplied'
         newlist = [i for i in self.args]
         for i, v in enumerate(newlist):
             newlist[i] = (other * newlist[i][0], newlist[i][1])
@@ -118,11 +123,47 @@ class Vector:
         """
         return self.__add__(other * -1)
 
+    def __xor__(self, other):
+        """
+        The cross product operator for two Vectors. 
+        Takes in two Vectors; order matters. 
+        Returns a Vector which is perpendicular to the two input vectors.
+        This Vector is expressed in the frames of self (first vector). 
+        """
+        def _det(mat):
+            """
+            This is needed as a little method for to find the determinant of a
+            list in python; needs to work for a 3x3 list.
+            SymPy's Matrix won't take in Vector, so need a custom function.
+            """
+            return (mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1])
+                    + mat[0][1] * (mat[1][2] * mat[2][0] - mat[1][0] *
+                    mat[2][2]) + mat[0][2] * (mat[1][0] * mat[2][1] -
+                    mat[1][1] * mat[2][0]))
+
+        outvec = Vector([(Matrix([0, 0, 0]), self.args[0][1])])
+        ar = self.args # For brevity
+        for i, v in enumerate(ar):
+            tempx = ar[i][1].x
+            tempy = ar[i][1].y
+            tempz = ar[i][1].z
+            tempm = ([[tempx, tempy, tempz], [Vector([ar[i]]) & tempx, 
+                Vector([ar[i]]) & tempy, Vector([ar[i]]) & tempz],
+                [other & tempx, other & tempy, other & tempz]])
+            outvec += _det(tempm)
+        return outvec
+
     def dot(self, other):
         """
-        Wraps around & operator, which is the designated operator for dot.
+        Wraps around the & operator, which is the dot product operator.
         """
-        return self&other
+        return self & other
+
+    def cross(self, other):
+        """
+        Wraps around the ^ operator, which is the cross product operator.  
+        """
+        return self ^ other
 
     def express(self, otherframe):
         """
@@ -133,7 +174,7 @@ class Vector:
         """
         assert isinstance(otherframe, ReferenceFrame), 'Needs a frame to express in'
         out = Vector([(Matrix([0, 0, 0]), ReferenceFrame)])
-        for i,v in enumerate(self.args):
+        for i, v in enumerate(self.args):
             if self.args[i][1] == otherframe:
                 out.args[i][0] += self.args[i][0]
             else:
@@ -241,7 +282,7 @@ class ReferenceFrame:
                     [sin(angle), cos(angle), 0],
                     [0, 0, 1]])
 
-                self.parent = parent
+        self.parent = parent
         approved_orders = ('123', '231', '312', '132',
                 '213', '321', '121', '131', '212', '232',
                 '313', '323', '1', '2', '3', '')
@@ -256,20 +297,22 @@ class ReferenceFrame:
         if rot_type == 'AXIS':
             raise NotImplementedError('Axis rotation not yet implemented')
         elif rot_type == 'EULER':
-            assert len(amounts)==4, 'Euler orietation requires 4 values'
+            assert ininstance(amounts, (list, tuple)) & len(amounts) == 4, \
+                    'Amounts need to be in a list or tuple of length 4'
             assert rot_order=='', 'Euler orientation take no rotation order'
+            self.parent_orient = ()
             # TODO need to finish this up...
         elif rot_type == 'BODY':
-            assert len(amounts)==3, 'Body orientation requires 3 values'
-            assert len(rot_order)==3, 'Body orientation requires 3 orders'
+            assert len(amounts) == 3, 'Body orientation requires 3 values'
+            assert len(rot_order) == 3, 'Body orientation requires 3 orders'
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
             self.parent_orient = (_rot(a1, amounts[0]) * _rot(a2, amounts[1])
                     * _rot(a3, amounts[2]))
         elif rot_type == 'SPACE':
-            assert len(amounts)==3, 'Space orientation requires 3 values'
-            assert len(rot_order)==3, 'Space orientation requires 3 orders'
+            assert len(amounts) == 3, 'Space orientation requires 3 values'
+            assert len(rot_order) == 3, 'Space orientation requires 3 orders'
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
