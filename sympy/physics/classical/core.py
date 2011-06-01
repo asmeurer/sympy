@@ -243,6 +243,7 @@ class ReferenceFrame(object):
         """
         self.name = name
         self.parent = None
+        self._ang_vel = None
         self._x = Vector([(Matrix([1, 0, 0]), self)])
         self._y = Vector([(Matrix([0, 1, 0]), self)])
         self._z = Vector([(Matrix([0, 0, 1]), self)])
@@ -258,6 +259,18 @@ class ReferenceFrame(object):
         Wraps __str__
         """
         return self.name
+
+    @property
+    def ang_vel(self):
+        if self._ang_vel != None:
+            raise AssertionError('No angular velocity set for frame ' +
+                    self.name)
+        return self._ang_vel
+
+    @ang_vel.setter
+    def ang_vel(self, value):
+        assert isinstance(value, Vector), 'Angular Velocity must be a Vector'
+        self._ang_vel = value
 
     def dcm(self, other):
         """
@@ -350,9 +363,9 @@ class ReferenceFrame(object):
                     'Amounts need to be in a list or tuple of length 4'
             assert rot_order == '', 'Euler orientation take no rotation order'
             q0 = amounts[0]
-            q0 = amounts[1]
-            q0 = amounts[2]
-            q0 = amounts[3]
+            q1 = amounts[1]
+            q2 = amounts[2]
+            q3 = amounts[3]
             self.parent_orient = (Matrix([[q0 ** 2 + q1 ** 2 - q2 ** 2 - q3 **
                 2, 2 * (q1 * q2 - q0 * q3), 2 * (q0 * q2 + q1 * q3)], 
                 [2 * (q1 * q2 + q0 * q3), q0 ** 2 - q1 ** 2 + q2 **2 - q3 ** 2,
@@ -393,36 +406,11 @@ class ReferenceFrame(object):
     @property
     def x(self):
         return self._x
-
-    @x.setter
-    def x(self, value):
-        raise AssertionError('Cannot assign value to a basis vector')
-    
-    @x.deleter
-    def x(self):
-        raise AssertionError('Cannot delete a basis vector')
-    
+   
     @property
     def y(self):
         return self._y
 
-    @y.setter
-    def y(self, value):
-        raise AssertionError('Cannot assign value to a basis vector')
-
-    @y.deleter
-    def y(self):
-        raise AssertionError('Cannot delete a basis vector')
- 
     @property
     def z(self):
         return self._z
-
-    @z.setter
-    def z(self, value):
-        raise AssertionError('Cannot assign value to a basis vector')
-
-    @z.deleter
-    def z(self):
-        raise AssertionError('Cannot delete a basis vector')
- 
