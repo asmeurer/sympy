@@ -293,13 +293,13 @@ class ReferenceFrame(object):
         """
         commonframe = self._common_frame(other)
         # form DCM from self to first common frame
-        leg1 = eye(3)
+        leg1 = Vector([(Matrix([0,0,0]), self)])
         ptr = self
         while ptr != commonframe:
             leg1 += ptr._ang_vel
             ptr = ptr.parent
         # form DCM from other to first common frame
-        leg2 = eye(3)
+        leg2 = Vector([(Matrix([0,0,0]), self)])
         ptr = other
         while ptr != commonframe:
             leg2 -= ptr._ang_vel
