@@ -278,7 +278,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
 
             B.append(p)
             #B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
-            B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
+            #B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
+            B.sort(key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
             k += 1
             
             # remove useless critical pairs
