@@ -6,15 +6,16 @@ class TVS(Symbol):
     
     def diff(self, *symbols, **assumptions):
         new_symbols = map(sympify, symbols) # e.g. x, 2, y, z
-        if new_symbols[0] == Symbol('t'):
-            self.d = TVS(self.name + '.d')
-            return self.d
+        print 'in diff'
+        print self
+        print symbols
         assumptions.setdefault("evaluate", True)
+        print Derivative(self, *new_symbols, **assumptions)
+        print 'out diff'
+        return Symbol('t')
         return Derivative(self, *new_symbols, **assumptions)
     
     def _eval_derivative(self, s):
-        print s
-        print 'in_eval'
         if self == s:
             return S.One
         return S.Zero
@@ -96,7 +97,11 @@ class Vector(object):
         """
         The add operator for Vector. 
         It checks that other is a Vector, otherwise it throws an error.
+        Also works with adding a zero scalar.  
         """
+        if isinstance(other, int):
+            if other == 0:
+                return self
         assert isinstance(other, Vector), 'You can only add two Vectors'
         return Vector(self.args + other.args)
 
@@ -104,6 +109,7 @@ class Vector(object):
         """
         Dot product of two vectors.  
         """
+        assert isinstance(other, Vector), 'Dot product is between two vectors'
         out = 0
         for i, v in enumerate(self.args):
             for j, v in enumerate(other.args):
@@ -119,6 +125,9 @@ class Vector(object):
         return self.__mul__(1 / other)
 
     def __eq__(self, other):
+        if isinstance(other, int):
+            if (self.args == []) & (other == 0):
+                return True
         assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
         dotcheck = (self & self == self & other)
         crosscheck = ((self ^ other) & (self ^ other) == 0)
@@ -159,6 +168,10 @@ class Vector(object):
         Returns a Vector which is perpendicular to the two input vectors.
         This Vector is expressed in the frames of self (first vector). 
         """
+        if isinstance(other, int):
+            if other == 0:
+                return self * 0
+        assert isinstance(other, Vector), 'Cross products are between Vectors'
         def _det(mat):
             """
             This is needed as a little method for to find the determinant of a
@@ -499,3 +512,62 @@ class ReferenceFrame(object):
         Returns a Vector.
         """
         return self._z
+
+def dot(vec1, vec2):
+    """
+    Returns the dot product of the two vectors
+    """
+    assert isinstance(vec1, Vector), 'Dot product is between two vectors'
+    return vec1.dot(vec2)
+
+def cross(vec1, vec2):
+    """
+    Returns the dot product of the two vectors
+    """
+    assert isinstance(vec1, Vector), 'Cross product is between two vectors'
+    return vec1.cross(vec2)
+
+
+class Point(object):
+    """
+    This object represents a point in a dynamic system.
+    It stores the: position, velocity, and acceleration of a point.
+    The position is a vector defined as the vector distance from a parent
+    point to this point. 
+    """
+
+    def __init__(self, name):
+        """
+        Initialization of a Point object.  Takes in a name, sets 
+        attributes to zero.
+        """
+        self.name = name
+        self._pos = 0
+        self._pos_par = None
+        self._vel = 0
+        self._vel_par = None
+        self._acc = 0
+        self._acc_par = None
+
+    def set_pos(self, value, point):
+        """
+        Used to set the position of this point with respect to another point.
+        """
+        if type(point) == type(None):
+            self._pos_par = None
+        else:
+            assert isinstance(point, Point), 'Need to supply a parent point'
+        if isinstance(value, int):
+            if value == 0:
+                self._pos = 0
+                return
+        assert isinstance(value, Vector)
+        self._pos = value
+
+    def pos(self, otherpoint):
+        """
+        Returns a Vector distance between this point and the other point.
+        """
+
+        
+
