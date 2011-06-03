@@ -51,12 +51,24 @@ class Vector(object):
                 self.args.append(inlist[0])
                 inlist.remove(inlist[0])
         i = 0
+        # This code is to remove empty frames from the list
         while i<len(self.args):
             if ((self.args[i][0][0] == 0) & (self.args[i][0][1] == 0) & 
                 (self.args[i][0][2] == 0)):
                 self.args.remove(self.args[i])
                 i -= 1
             i += 1
+        # This bit of code is to simplify the measure numbers as much as
+        # possible
+        for i,v in enumerate(self.args):
+            j = v[0]
+            for k,v2 in enumerate(j):
+                tempv2 = simplify(v2)
+                while v2 != tempv2:
+                    v2 = tempv2
+                    tempv2 = simplify(tempv2)
+                j[k] = v2
+            self.args[i] = (j, v[1])
 
     def __str__(self):
         """
