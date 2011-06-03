@@ -136,25 +136,28 @@ def critical_pair(f, g, u, O, K):
     um = term_div(lt, ltf, K)
     vm = term_div(lt, ltg, K)
 
-    fr = lbp_mul_term(f, um, u, O, K)
-    gr = lbp_mul_term(g, vm, u, O, K)
+    #fr = lbp_mul_term(f, um, u, O, K)
+    #gr = lbp_mul_term(g, vm, u, O, K)
+
+    fr = lbp_mul_term(lbp(Sign(f), [sdp_LT(Polyn(f), u, K)], Num(f)), um, u, O, K)
+    gr = lbp_mul_term(lbp(Sign(g), [sdp_LT(Polyn(g), u, K)], Num(g)), vm, u, O, K)
 
     if lbp_cmp(fr, gr, O) == -1:
         #return (gr, fr)
-        return (Sign(gr), sdp_LM(Polyn(g), u), vm, g, Sign(fr), sdp_LM(Polyn(f), u), um, f)
+        return (Sign(gr), vm, g, Sign(fr), um, f)
     else:
         #return (fr, gr)
-        return (Sign(fr), sdp_LM(Polyn(f), u), um, f, Sign(gr), sdp_LM(Polyn(g), u), vm, g)
+        return (Sign(fr), um, f, Sign(gr), vm, g)
 
 def cp_cmp(c, d, O):
-    c0 = lbp(c[0], [], Num(c[3]))
-    d0 = lbp(d[0], [], Num(d[3]))
+    c0 = lbp(c[0], [], Num(c[2]))
+    d0 = lbp(d[0], [], Num(d[2]))
 
     if lbp_cmp(c0, d0, O) == -1:
         return -1
     if lbp_cmp(c0, d0, O) == 0:
-        c1 = lbp(c[4], [], Num(c[7]))
-        d1 = lbp(d[4], [], Num(d[7]))
+        c1 = lbp(c[3], [], Num(c[5]))
+        d1 = lbp(d[3], [], Num(d[5]))
 
         if lbp_cmp(c1, d1, O) == -1:
             return -1
@@ -163,7 +166,7 @@ def cp_cmp(c, d, O):
     return 1
 
 def s_poly(cp, u, O, K):
-    return lbp_sub(lbp_mul_term(cp[3], cp[2], u, O, K), lbp_mul_term(cp[7], cp[6], u, O, K), u, O, K)
+    return lbp_sub(lbp_mul_term(cp[2], cp[1], u, O, K), lbp_mul_term(cp[5], cp[4], u, O, K), u, O, K)
 
 
 
@@ -262,8 +265,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
     while len(CP):
         cp = CP.pop()
 
-        uf = lbp(cp[0], [], Num(cp[3]))
-        vg = lbp(cp[4], [], Num(cp[7]))
+        uf = lbp(cp[0], [], Num(cp[2]))
+        vg = lbp(cp[3], [], Num(cp[5]))
 
         if is_rewritable_or_comparable(uf, B, u, K):
             continue
@@ -292,9 +295,9 @@ def f5b(F, u, O, K, gens='', verbose = False):
             # "A New Incremental Algorithm for Computing Groebner Bases", Shuhong Gao, Yinhua Guan, Frank Volny IV
             indices = []
             for i, cp in enumerate(CP):
-                if is_rewritable_or_comparable(lbp(cp[0], [], Num(cp[3])), [p], u, K):
+                if is_rewritable_or_comparable(lbp(cp[0], [], Num(cp[2])), [p], u, K):
                     indices.append(i)
-                elif is_rewritable_or_comparable(lbp(cp[4], [], Num(cp[7])), [p], u, K):
+                elif is_rewritable_or_comparable(lbp(cp[3], [], Num(cp[5])), [p], u, K):
                     indices.append(i)
             for i in reversed(indices):
                 del CP[i]
