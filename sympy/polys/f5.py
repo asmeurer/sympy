@@ -225,8 +225,128 @@ def f5_reduce(f, B, u, O, K):
 
 def f5b(F, u, O, K, gens='', verbose = False):
     """
-    Experimental F5(B)
+    F5B
     """
+
+    if not K.has_Field:
+        raise DomainError("can't compute a Groebner basis over %s" % K)
+
+    #if len(F) == 1:
+    #    return F
+
+    # reduce basis, like in Mario Pernici's algorithm (Becker, Weispfennig, p. 203)
+    B = F
+
+    while True:
+        F = B
+        B = []
+
+        for i in xrange(len(F)):
+            p = F[i]
+            r = sdp_rem(p, F[:i], u, O, K)
+
+            if r != []:
+                B.append(r)
+        
+        if F == B:
+            break
+
+    F.sort(key = lambda f: O(sdp_LM(f, u)), reverse = False)
+
+    B = []
+    for i in xrange(len(F)):
+        B.append(F[i])
+        B = f5_incremental(B, u, O, K)
+        print("---")
+        
+        # reduce B
+        #B = [sdp_monic(g, K) for g in B]
+        #B = [g for g in B if g != []]
+        #H = []
+        #for i, g in enumerate(B):
+        #    g = sdp_rem(g, H + B[i + 1:], u, O, K)
+        #    if g != []:
+        #        H.append(g)
+        #B = H
+                    
+
+    # reduce basis
+    F = [sdp_strip(sdp_monic(g, K)) for g in B]
+    F = [f for f in F if f != []]
+    F.sort(key = lambda f: O(sdp_LM(f, u)), reverse = False) # in order to compute katsura5
+    H = []
+    for i, f in enumerate(F):
+        f = sdp_rem(f, H + F[i + 1:], u, O, K)
+        if f != []:
+            H.append(f)
+
+    # test
+    #for i in xrange(len(H)):
+    #    for j in xrange(i + 1, len(H)):
+    #        s = sdp_spoly(H[i], H[j], u, O, K)
+    #        s = sdp_rem(s, H, u, O, K)
+    #        if s != []:
+    #            print(s)
+    
+    #print("%d reductions to zero" % reductions_to_zero)
+    
+    return sorted(H, key = lambda f: O(sdp_LM(f, u)), reverse = True)
+
+def f5_incremental(F, u, O, K):
+    B = [lbp(sig((0,) * (u + 1), i + 1), F[i], i + 1) for i in xrange(len(F))]
+    CP = [critical_pair(B[i], B[j], u, O, K) for i in xrange(len(B)) for j in xrange(i+1, len(B))]
+
+    k = len(B)
+
+    reductions_to_zero = 0
+
+    while len(CP):
+        cp = CP.pop()
+
+        uf = lbp(cp[0], [], Num(cp[2]))
+        vg = lbp(cp[3], [], Num(cp[5]))
+
+        if is_rewritable_or_comparable(uf, B, u, K):
+            continue
+        if is_rewritable_or_comparable(vg, B, u, K):
+            continue
+
+        s = s_poly(cp, u, O, K)
+
+        p = f5_reduce(s, B, u, O, K)
+
+        p = lbp(Sign(p), Polyn(p), k + 1)
+
+        if Polyn(p) != []:
+            CP.extend([critical_pair(p, q, u, O, K) for q in B if Polyn(q) != []])
+            CP.sort(lambda c, d: cp_cmp(c, d, O), reverse = True) 
+
+            B.append(p)
+            B.sort(key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
+            k += 1
+            
+            # remove useless critical pairs
+            indices = []
+            for i, cp in enumerate(CP):
+                if is_rewritable_or_comparable(lbp(cp[0], [], Num(cp[2])), [p], u, K):
+                    indices.append(i)
+                elif is_rewritable_or_comparable(lbp(cp[3], [], Num(cp[5])), [p], u, K):
+                    indices.append(i)
+            for i in reversed(indices):
+                del CP[i]
+
+            print(len(B), len(CP), "%d critical pairs removed" % len(indices))
+        else:
+            reductions_to_zero += 1
+
+    return [Polyn(q) for q in B if Polyn(q) != []]
+ 
+
+"""
+def f5b(F, u, O, K, gens='', verbose = False):
+    
+    Experimental F5(B)
+    
    
     if not K.has_Field:
         raise DomainError("can't compute a Groebner basis over %s" % K)
@@ -277,8 +397,6 @@ def f5b(F, u, O, K, gens='', verbose = False):
             CP.sort(lambda c, d: cp_cmp(c, d, O), reverse = True) 
 
             B.append(p)
-            #B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
-            #B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
             B.sort(key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
             k += 1
             
@@ -292,11 +410,9 @@ def f5b(F, u, O, K, gens='', verbose = False):
             for i in reversed(indices):
                 del CP[i]
 
-            print(len(B), len(CP), "%d critical pairs removed" % len(indices))
+            #print(len(B), len(CP), "%d critical pairs removed" % len(indices))
         else:
             reductions_to_zero += 1
-
-    print("reduction")
 
     # reduce   
     F = [sdp_strip(sdp_monic(Polyn(g), K)) for g in B]
@@ -304,7 +420,7 @@ def f5b(F, u, O, K, gens='', verbose = False):
     F.sort(key = lambda f: O(sdp_LM(f, u)), reverse = False) # in order to compute katsura5
     H = []
     for i, f in enumerate(F):
-        print(i)
+        #print(i)
         if f != []:
             f = sdp_rem(f, H + F[i + 1:], u, O, K)
             if f != []:
@@ -321,6 +437,7 @@ def f5b(F, u, O, K, gens='', verbose = False):
     #print("%d reductions to zero" % reductions_to_zero)
     
     return sorted(H, key = lambda f: O(sdp_LM(f, u)), reverse = True)
+"""
 
 def sdp_spoly(p1, p2, u, O, K):
     """
