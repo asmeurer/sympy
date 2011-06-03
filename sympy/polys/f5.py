@@ -140,22 +140,30 @@ def critical_pair(f, g, u, O, K):
     gr = lbp_mul_term(g, vm, u, O, K)
 
     if lbp_cmp(fr, gr, O) == -1:
-        return (gr, fr)
+        #return (gr, fr)
+        return (Sign(gr), sdp_LM(Polyn(g), u), vm, g, Sign(fr), sdp_LM(Polyn(f), u), um, f)
     else:
-        return (fr, gr)
+        #return (fr, gr)
+        return (Sign(fr), sdp_LM(Polyn(f), u), um, f, Sign(gr), sdp_LM(Polyn(g), u), vm, g)
 
 def cp_cmp(c, d, O):
-    if lbp_cmp(c[0], d[0], O) == -1:
+    c0 = lbp(c[0], [], Num(c[3]))
+    d0 = lbp(d[0], [], Num(d[3]))
+
+    if lbp_cmp(c0, d0, O) == -1:
         return -1
-    if lbp_cmp(c[0], d[0], O) == 0:
-        if lbp_cmp(c[1], d[1], O) == -1:
+    if lbp_cmp(c0, d0, O) == 0:
+        c1 = lbp(c[4], [], Num(c[7]))
+        d1 = lbp(d[4], [], Num(d[7]))
+
+        if lbp_cmp(c1, d1, O) == -1:
             return -1
-        if lbp_cmp(c[1], d[1], O) == 0:
+        if lbp_cmp(c1, d1, O) == 0:
             return 0
     return 1
 
 def s_poly(cp, u, O, K):
-    return lbp_sub(cp[0], cp[1], u, O, K)
+    return lbp_sub(lbp_mul_term(cp[3], cp[2], u, O, K), lbp_mul_term(cp[7], cp[6], u, O, K), u, O, K)
 
 
 
@@ -177,13 +185,13 @@ def is_rewritable(f, B, u, K):
     return False
 
 def is_rewritable_or_comparable(f, B, u, K):
-    for g in B:
-        if Sign(f)[1] < Sign(g)[1]:
-            if monomial_div(Sign(f)[0], sdp_LM(Polyn(g), u)) is not None:
+    for h in B:
+        if Sign(f)[1] < Sign(h)[1]:
+            if monomial_div(Sign(f)[0], sdp_LM(Polyn(h), u)) is not None:
                 return True        
-        if Sign(f)[1] == Sign(g)[1]:
-            if Num(f) < Num(g):
-                if monomial_div(Sign(f)[0], Sign(g)[0]) is not None:
+        if Sign(f)[1] == Sign(h)[1]:
+            if Num(f) < Num(h):
+                if monomial_div(Sign(f)[0], Sign(h)[0]) is not None:
                     return True
     return False
             
@@ -254,8 +262,8 @@ def f5b(F, u, O, K, gens='', verbose = False):
     while len(CP):
         cp = CP.pop()
 
-        uf = cp[0]
-        vg = cp[1]
+        uf = lbp(cp[0], [], Num(cp[3]))
+        vg = lbp(cp[4], [], Num(cp[7]))
 
         if is_rewritable_or_comparable(uf, B, u, K):
             continue
@@ -284,9 +292,9 @@ def f5b(F, u, O, K, gens='', verbose = False):
             # "A New Incremental Algorithm for Computing Groebner Bases", Shuhong Gao, Yinhua Guan, Frank Volny IV
             indices = []
             for i, cp in enumerate(CP):
-                if is_rewritable_or_comparable(cp[0], [p], u, K):
+                if is_rewritable_or_comparable(lbp(cp[0], [], Num(cp[3])), [p], u, K):
                     indices.append(i)
-                elif is_rewritable_or_comparable(cp[1], [p], u, K):
+                elif is_rewritable_or_comparable(lbp(cp[4], [], Num(cp[7])), [p], u, K):
                     indices.append(i)
             for i in reversed(indices):
                 del CP[i]
