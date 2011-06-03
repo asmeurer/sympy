@@ -1,6 +1,6 @@
 from sympy import *
 # from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow, eye, 
-#         symbols, Derivative, Symbol
+#         symbols, Derivative, Symbol, simplify
 
 class TVS(Symbol):
     
@@ -111,11 +111,15 @@ class Vector(object):
         """
         assert isinstance(other, Vector), 'Dot product is between two vectors'
         out = 0
-        for i, v in enumerate(self.args):
-            for j, v in enumerate(other.args):
-                out += ((other.args[j][0].T)
-                        * (self.args[i][1].dcm(other.args[j][1]))
-                        * (self.args[i][0]))[0]
+        for i, v1 in enumerate(self.args):
+            for j, v2 in enumerate(other.args):
+                out += ((v2[0].T)
+                        * (v2[1].dcm(v1[1]))
+                        * (v1[0]))[0]
+        out2 = simplify(out) # These lines are to simplify as much as we can
+        while out != out2:
+            out = out2
+            out2 = simplify(out2)
         return out
 
     def __div__(self, other):
@@ -125,11 +129,19 @@ class Vector(object):
         return self.__mul__(1 / other)
 
     def __eq__(self, other):
+        """
+        Tests for equality.  If other is 0, and self is empty, returns True.
+        If other is 0 and self is not empty, returns False. 
+        If none of the above, only accepts other as a Vector.
+        """
         if isinstance(other, int):
-            if (self.args == []) & (other == 0):
-                return True
+            if other == 0:
+                if self.args == []:
+                    return True
+                else:
+                    return False
         assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
-        dotcheck = (self & self == self & other)
+        dotcheck = (simplify(self & self) == simplify(self & other))
         crosscheck = ((self ^ other) & (self ^ other) == 0)
         return dotcheck & crosscheck
 
@@ -186,9 +198,9 @@ class Vector(object):
         outvec = Vector([])
         ar = self.args # For brevity
         for i, v in enumerate(ar):
-            tempx = ar[i][1].x
-            tempy = ar[i][1].y
-            tempz = ar[i][1].z
+            tempx = v[1].x
+            tempy = v[1].y
+            tempz = v[1].z
             tempm = ([[tempx, tempy, tempz], [Vector([ar[i]]) & tempx, 
                 Vector([ar[i]]) & tempy, Vector([ar[i]]) & tempz],
                 [other & tempx, other & tempy, other & tempz]])
@@ -242,7 +254,7 @@ class Vector(object):
         outvec = Vector(self.args + [])
         for i, v in enumerate(self.args):
             if v[1] != otherframe:
-                outvec += Vector([(v[1].dcm(otherframe) * v[0], otherframe)])
+                outvec += Vector([(otherframe.dcm(v[1]) * v[0], otherframe)])
                 outvec -= Vector([v])
         return outvec
 
@@ -333,12 +345,11 @@ class ReferenceFrame(object):
         while ptr.parent != None:
             ptr = ptr.parent
             leg2.append(ptr)
-        try:
-            # TODO double check that pop gives the correct frame
-            commonframe = (set(leg1) & set(leg2)).pop()
-        except:
-            raise ValueError('No Common Frame')
-        return commonframe
+        for i,v1 in enumerate(leg1):
+            for j, v2 in enumerate(leg2):
+                if v1 == v2:
+                    return v1
+        raise ValueError('No Common Frame')
 
     def ang_vel(self, other):
         """
@@ -373,15 +384,15 @@ class ReferenceFrame(object):
         leg1 = eye(3)
         ptr = self
         while ptr != commonframe:
-            leg1 *= ptr.parent_orient
+            leg1 = ptr.parent_orient * leg1
             ptr = ptr.parent
         # form DCM from other to first common frame
         leg2 = eye(3)
         ptr = other
         while ptr != commonframe:
-            leg2 *= ptr.parent_orient
+            leg2 = ptr.parent_orient * leg2
             ptr = ptr.parent
-        return leg1.T * leg2
+        return leg2 * leg1.T
 
     def orientnew(self, newname, rot_type, amounts, rot_order):
         newframe = ReferenceFrame(newname)
@@ -513,6 +524,7 @@ class ReferenceFrame(object):
         """
         return self._z
 
+
 def dot(vec1, vec2):
     """
     Returns the dot product of the two vectors
@@ -520,13 +532,21 @@ def dot(vec1, vec2):
     assert isinstance(vec1, Vector), 'Dot product is between two vectors'
     return vec1.dot(vec2)
 
+
 def cross(vec1, vec2):
     """
-    Returns the dot product of the two vectors
+    Returns the dot product of the two vectors.
     """
     assert isinstance(vec1, Vector), 'Cross product is between two vectors'
     return vec1.cross(vec2)
 
+
+def express(vec, frame):
+    """
+    Returns the input Vector in the input ReferenceFrame.
+    """
+    assert isinstance(vec, Vector), 'Can only express Vectors in a frame'
+    return vec.express(frame)
 
 class Point(object):
     """
@@ -549,7 +569,7 @@ class Point(object):
         self._acc = 0
         self._acc_par = None
 
-    def set_pos(self, value, point):
+    def set_pos(self, value, point = None):
         """
         Used to set the position of this point with respect to another point.
         """
@@ -564,10 +584,50 @@ class Point(object):
         assert isinstance(value, Vector)
         self._pos = value
 
-    def pos(self, otherpoint):
+    def pos(self, otherpoint = None):
         """
-        Returns a Vector distance between this point and the other point.
+        Returns a Vector distance between this Point and the other Point.
+        If no other Point is given, the value of this Point's position is
+        returned. 
         """
+        if type(point) == type(None):
+            return self._pos
+        common_pos_par = self._common_pos_par(otherpoint)
+        leg1 = 0
+        ptr = self
+        while ptr != common_pos_par:
+            leg1 += ptr._pos
+            ptr = ptr._pos_par
+        leg2 = 0
+        ptr = 0
+        while ptr != common_pos_par:
+            leg2 -= ptr._pos
+            ptr = ptr._pos_par
+        return leg1 + leg2
 
-        
+    def _common_pos_par(self,other):
+        """
+        This returns the first common parent between two ReferenceFrames.
+        Takes in another ReferenceFrame, and returns a ReferenceFrame.
+        """
+        assert isinstance(other, point), 'You have to use a \
+                ReferenceFrame'
+        leg1 = [self]
+        ptr = self
+        while ptr._pos_par != None:
+            ptr = ptr._pos_par
+            leg1.append(ptr)
+        leg2 = [other]
+        ptr = other
+        while ptr._pos_par != None:
+            ptr = ptr._pos_par
+            leg2.append(ptr)
+        try:
+            # TODO double check that pop gives the correct frame
+            commonpar = (set(leg1) & set(leg2)).pop()
+        except:
+            raise ValueError('No Common Position Parent')
+        return commonpar
+
+
 

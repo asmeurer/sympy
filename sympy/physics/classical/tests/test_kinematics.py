@@ -62,12 +62,11 @@ def test_cross_different_frames1():
     assert cross(N.z, A.z) == 0
 
 def test_cross_method():
-    N = NewtonianReferenceFrame('N')
-    q, qd = N.declare_coords('q', 3)
-    q1, q2, q3 = q
-    A = N.rotate('A', 1, q1)
-    B = N.rotate('B', 2, q2)
-    C = N.rotate('C', 3, q3)
+    q1, q2, q3 = symbols('q1 q2 q3')
+    N = ReferenceFrame('N')
+    A = N.orientnew('A', 'Simple', q1, 1)
+    B = N.orientnew('B', 'Simple', q2, 2)
+    C = N.orientnew('C', 'Simple', q3, 3)
     assert cross(N.x, N.x) == 0
     assert cross(N.x, N.y) == N.z
     assert N.x.cross(N.z) == -N.y
