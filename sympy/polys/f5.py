@@ -37,7 +37,7 @@ def sig_cmp(u, v, O):
     if u[1] == v[1]:
         if u[0] == v[0]:
             return 0
-        if cmp(O(u[0]), O(v[0])) < 0: # having > was the bug all along...
+        if cmp(O(u[0]), O(v[0])) < 0: 
             return -1
     return 1        
 
@@ -136,17 +136,12 @@ def critical_pair(f, g, u, O, K):
     um = term_div(lt, ltf, K)
     vm = term_div(lt, ltg, K)
 
-    #fr = lbp_mul_term(f, um, u, O, K)
-    #gr = lbp_mul_term(g, vm, u, O, K)
-
     fr = lbp_mul_term(lbp(Sign(f), [sdp_LT(Polyn(f), u, K)], Num(f)), um, u, O, K)
     gr = lbp_mul_term(lbp(Sign(g), [sdp_LT(Polyn(g), u, K)], Num(g)), vm, u, O, K)
 
     if lbp_cmp(fr, gr, O) == -1:
-        #return (gr, fr)
         return (Sign(gr), vm, g, Sign(fr), um, f)
     else:
-        #return (fr, gr)
         return (Sign(fr), um, f, Sign(gr), vm, g)
 
 def cp_cmp(c, d, O):
@@ -214,8 +209,6 @@ def f5_single_reduction(f, B, u, O, K):
             if t is not None:
                 gp = lbp_mul_term(g, t, u, O, K)
                 if sig_cmp(Sign(gp), Sign(f), O) == -1:
-                    #if not is_comparable(gp, B, u, K):
-                    #    if not is_rewritable(gp, B, u, K):
                     #if not is_rewritable_or_comparable(gp, B, u, K):
                     return lbp_sub(f, gp, u, O, K)
     return f
@@ -285,14 +278,10 @@ def f5b(F, u, O, K, gens='', verbose = False):
 
             B.append(p)
             #B.sort(lambda x, y: lbp_cmp(x, y, O), reverse = True)
-            B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True) # sorting just by leading monomial seems to be more efficient than sorting by lbp
+            B = sorted(B, key = lambda f: O(sdp_LM(Polyn(f), u)), reverse = True)
             k += 1
             
-            # idea: when p is added to B, one can take a look at elements from CP,
-            # which would satisfy is_comparable or is_rewritable for p and remove
-            # them. I suppose this is cheaper to do once, than doing so all the time...
-            # the idea for this comes from the description of the algorithm in
-            # "A New Incremental Algorithm for Computing Groebner Bases", Shuhong Gao, Yinhua Guan, Frank Volny IV
+            # remove useless critical pairs
             indices = []
             for i, cp in enumerate(CP):
                 if is_rewritable_or_comparable(lbp(cp[0], [], Num(cp[2])), [p], u, K):
@@ -301,14 +290,20 @@ def f5b(F, u, O, K, gens='', verbose = False):
                     indices.append(i)
             for i in reversed(indices):
                 del CP[i]
+
+            print(len(B), len(CP), "%d critical pairs removed" % len(indices))
         else:
             reductions_to_zero += 1
+
+    print("reduction")
 
     # reduce   
     F = [sdp_strip(sdp_monic(Polyn(g), K)) for g in B]
     F = [f for f in F if f != []]
+    F.sort(key = lambda f: O(sdp_LM(f, u)), reverse = False) # in order to compute katsura5
     H = []
     for i, f in enumerate(F):
+        print(i)
         if f != []:
             f = sdp_rem(f, H + F[i + 1:], u, O, K)
             if f != []:
