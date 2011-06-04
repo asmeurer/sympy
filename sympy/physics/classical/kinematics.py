@@ -582,16 +582,13 @@ class Point(object):
         """
         Used to set the position of this point with respect to another point.
         """
-        if type(point) == type(None):
-            self._pos_par = None
-        else:
+        if value != 0:
+            assert isinstance(value, Vector), 'Need to supply a Vector for \
+                    the position of this Point'
+        if point != None:
             assert isinstance(point, Point), 'Need to supply a parent point'
-        if isinstance(value, int):
-            if value == 0:
-                self._pos = 0
-                return
-        assert isinstance(value, Vector)
         self._pos = value
+        self._pos_par = point
 
     def pos(self, otherpoint = None):
         """
@@ -599,7 +596,7 @@ class Point(object):
         If no other Point is given, the value of this Point's position is
         returned. 
         """
-        if type(point) == type(None):
+        if type(otherpoint) == type(None):
             return self._pos
         common_pos_par = self._common_pos_par(otherpoint)
         leg1 = 0
@@ -619,9 +616,6 @@ class Point(object):
         This returns the first common parent between two ReferenceFrames.
         Takes in another ReferenceFrame, and returns a ReferenceFrame.
         """
-        # TODO This needs to be fixed to work with None properly
-        assert isinstance(other, point), 'You have to use a \
-                ReferenceFrame'
         leg1 = [self]
         ptr = self
         while ptr._pos_par != None:
@@ -640,21 +634,44 @@ class Point(object):
 
     def set_vel(self, value, frame):
         """
-        Used to set the velocity of this point in a ReferenceFrame.
+        Used to set the velocity Vector of this Point in a ReferenceFrame.
         """
-        assert isinstance(frame, ReferenceFrame), 'Velocity is defined with \
-                respect to a ReferenceFrame'
-        assert isinstance(value, Vector), 'Velocity is a Vector'
+        assert isinstance(frame, ReferenceFrame), 'Velocity is defined \
+                in a specific ReferenceFrame'
+        if value != 0:
+            assert isinstance(value, Vector), 'Velocity is a Vector'
         self._vel_frame = frame
         self._vel = value
 
     def vel(self, frame):
         """
-        Returns a Vector distance between this Point and the other Point.
-        If no other Point is given, the value of this Point's position is
-        returned. 
+        Returns the velocity of this Point in the ReferenceFrame, as a Vector.
         """
         assert isinstance(frame, ReferenceFrame), 'Velocity is described \
                 in a frame'
-        
+        assert frame == self._vel_frame, 'Velocity has not been defined in \
+                that ReferenceFrame; redefine it first'
+        return self._vel
+
+    def set_acc(self, value, frame):
+        """
+        Used to set the acceleration of this Point in a ReferenceFrame.
+        """
+        assert isinstance(frame, ReferenceFrame), 'Acceleration is defined \
+                in a specific ReferenceFrame'
+        if value != 0:
+            assert isinstance(value, Vector), 'Acceleration is a Vector'
+        self._acc_frame = frame
+        self._acc = value
+
+    def vel(self, frame):
+        """
+        Returns the acceleration of this Point in a ReferenceFrame, as a 
+        Vector.  
+        """
+        assert isinstance(frame, ReferenceFrame), 'Velocity is described \
+                in a frame'
+        assert frame == self._acc_frame, 'Acceleration has not been defined \
+                in that ReferenceFrame; redefine it first'
+        return self._acc
 
