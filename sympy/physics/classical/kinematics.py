@@ -1,6 +1,6 @@
 from sympy import *
-# from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow, eye, 
-#         symbols, Derivative, Symbol, simplify
+# from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow,
+# eye, symbols, Derivative, Symbol, simplify
 
 class DynamicSymbol(Symbol):
     """
@@ -20,6 +20,29 @@ class DynamicSymbol(Symbol):
             return S.One
         else:
             return S.Zero
+
+
+def dynamicsymbols(basename, count, diffno = 0):
+    """
+    Returns a list of DynamicSymbols, and a number of their time derivatives.
+    Needs a base name supplied, number of DynamicSymbols, and number of 
+    time derivatives of the Dynamic Symbols.
+    """
+    sympify(basename)
+    outlist = []
+    for i in range(diffno + 1):
+        innerlist = []
+        tag = ''
+        for j in range(i):
+            tag += 'd'
+        for j in range(count):
+            innerlist.append(DynamicSymbol(basename + str(j) + tag))
+        outlist.append(innerlist)
+    try:
+        outlist[1]
+        return outlist
+    except:
+        return outlist[0]
 
 
 class Vector(object):
@@ -70,12 +93,14 @@ class Vector(object):
         ol = [] # output list, to be concatenated to a string
         for i, v in enumerate(ar):
             for j in 0, 1, 2:
-                if ar[i][0][j] == 1: # if the coef of the basis vector is 1, we skip the 1
+                # if the coef of the basis vector is 1, we skip the 1
+                if ar[i][0][j] == 1: 
                     if len(ol) != 0: 
                         ol.append(' + ')
                     ol.append( ar[i][1].name.lower() +
                               self.subscript_indices[j] + '>' )
-                elif ar[i][0][j] == -1: # if the coef of the basis vector is -1, we skip the 1
+                # if the coef of the basis vector is -1, we skip the 1
+                elif ar[i][0][j] == -1: 
                     if len(ol) != 0:
                         ol.append(' ')
                     ol.append( '- ' + ar[i][1].name.lower() +
@@ -542,14 +567,6 @@ class ReferenceFrame(object):
         return self._z
 
 
-def dot(vec1, vec2):
-    """
-    Returns the dot product of the two vectors
-    """
-    assert isinstance(vec1, Vector), 'Dot product is between two vectors'
-    return vec1.dot(vec2)
-
-
 def cross(vec1, vec2):
     """
     Returns the dot product of the two vectors.
@@ -558,12 +575,21 @@ def cross(vec1, vec2):
     return vec1.cross(vec2)
 
 
+def dot(vec1, vec2):
+    """
+    Returns the dot product of the two vectors
+    """
+    assert isinstance(vec1, Vector), 'Dot product is between two vectors'
+    return vec1.dot(vec2)
+
+
 def express(vec, frame):
     """
     Returns the input Vector in the input ReferenceFrame.
     """
     assert isinstance(vec, Vector), 'Can only express Vectors in a frame'
     return vec.express(frame)
+
 
 class Point(object):
     """
@@ -672,7 +698,7 @@ class Point(object):
         self._acc_frame = frame
         self._acc = value
 
-    def vel(self, frame):
+    def acc(self, frame):
         """
         Returns the acceleration of this Point in a ReferenceFrame, as a 
         Vector.  
