@@ -2,19 +2,20 @@ from sympy import *
 # from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow, eye, 
 #         symbols, Derivative, Symbol, simplify
 
-class TVS(Symbol):
+class DynamicSymbol(Symbol):
+    """
+    Class for time-varying quantities.  When DynamicSymbol's derivative
+    is taken with respect to Symbol 't', a time differentiated version is
+    returned.  
+    """
     
-    def diff(self, *symbols, **assumptions):
-        new_symbols = map(sympify, symbols) # e.g. x, 2, y, z
-        return Derivative(self, *new_symbols, evaluate = True)
-
     @property
     def free_symbols(self):
         return set([Symbol('t'), self])
 
     def _eval_derivative(self, s):
         if s == Symbol('t'):
-            return TVS(self.name+'dt')
+            return DynamicSymbol(self.name+'d')
         elif self == s:
             return S.One
         else:
