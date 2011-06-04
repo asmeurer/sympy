@@ -2,26 +2,21 @@ from sympy import *
 # from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow, eye, 
 #         symbols, Derivative, Symbol, simplify
 
-class TVS(Symbol, Function):
+class TVS(Symbol):
     
     def diff(self, *symbols, **assumptions):
         new_symbols = map(sympify, symbols) # e.g. x, 2, y, z
-        print 'in diff'
-        print self
-        print symbols
-        print Derivative(self, *new_symbols, evaluate = True)
-        print 'out diff'
-        return Symbol(self.name+'dt')
         return Derivative(self, *new_symbols, evaluate = True)
-    
+
+    @property
+    def free_symbols(self):
+        return set([Symbol('t'), self])
+
     def _eval_derivative(self, s):
-        print 'in eval'
-        print s
-        print self.name+'dt'
-        print s == TVS('t')
         if s == Symbol('t'):
-            return S.Zero
-            return Symbol(self.name+'dt')
+            return TVS(self.name+'dt')
+        elif self == s:
+            return S.One
         else:
             return S.Zero
 
