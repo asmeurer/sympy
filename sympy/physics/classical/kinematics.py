@@ -8,7 +8,7 @@ class DynamicSymbol(Symbol):
     is taken with respect to Symbol 't', a time differentiated version is
     returned.  
     """
-    
+
     @property
     def free_symbols(self):
         return set([Symbol('t'), self])
@@ -228,6 +228,17 @@ class Vector(object):
         Returns the partial derivative of the self Vector with respect 
         to the input value.
         """
+        wrt = sympify(wrt)
+        assert isinstance(otherframe, ReferenceFrame), 'Need to supply a \
+                ReferenceFrame to find the derivative in'
+        outvec = 0
+        for i,v in enumerate(self.args):
+            if v[1] == otherframe:
+                outvec += Vector(v[0].diff(wrt), otherframe)
+            else:
+                diffed = (Vector(v).express(otherframe))[0].diff(wrt)
+                outvec += Vector(diff, otherframe).express(v[1])
+
     def dt(self, otherframe):
         """
         Returns the time derivative of the self Vector in the given Reference
@@ -236,13 +247,14 @@ class Vector(object):
         """
         assert isinstance(otherframe, ReferenceFrame), 'Need to supply a \
                 ReferenceFrame to find the derivative in'
-        outvec = Vector([])
+        outvec = 0
         for i,v in enumerate(self.args):
-            if v[1] == ReferenceFrame:
-                outvec += v[0].diff(symbols('t'))
+            if v[1] == otherframe:
+                outvec += Vector(v[0].diff(Symbol('t')), otherframe)
             else:
-                outvec += (v[0].diff(symbols('t')) +
-                    v[1].ang_vel_in(otherframe) ^ Vector([v]))
+                outvec += (Vector(v[0].diff(Symbol('t')), otherframe) +
+                    Vector(v[1].ang_vel_in(otherframe), otherframe) ^ 
+                    Vector([v]))
         return outvec
 
     def express(self, otherframe):
