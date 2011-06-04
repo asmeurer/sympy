@@ -2,23 +2,28 @@ from sympy import *
 # from sympy import Matrix, sympify, SympifyError, sin, cos, tan, Mul, Pow, eye, 
 #         symbols, Derivative, Symbol, simplify
 
-class TVS(Symbol):
+class TVS(Symbol, Function):
     
     def diff(self, *symbols, **assumptions):
         new_symbols = map(sympify, symbols) # e.g. x, 2, y, z
         print 'in diff'
         print self
         print symbols
-        assumptions.setdefault("evaluate", True)
-        print Derivative(self, *new_symbols, **assumptions)
+        print Derivative(self, *new_symbols, evaluate = True)
         print 'out diff'
-        return Symbol('t')
-        return Derivative(self, *new_symbols, **assumptions)
+        return Symbol(self.name+'dt')
+        return Derivative(self, *new_symbols, evaluate = True)
     
     def _eval_derivative(self, s):
-        if self == s:
-            return S.One
-        return S.Zero
+        print 'in eval'
+        print s
+        print self.name+'dt'
+        print s == TVS('t')
+        if s == Symbol('t'):
+            return S.Zero
+            return Symbol(self.name+'dt')
+        else:
+            return S.Zero
 
 
 class Vector(object):
@@ -240,8 +245,8 @@ class Vector(object):
             if v[1] == ReferenceFrame:
                 outvec += v[0].diff(symbols('t'))
             else:
-                outvec += (v[0].diff(symbols('t')) + 
-                    v[1].ang_vel(otherframe) ^ Vector([v]))
+                outvec += (v[0].diff(symbols('t')) +
+                    v[1].ang_vel_in(otherframe) ^ Vector([v]))
         return outvec
 
     def express(self, otherframe):
@@ -353,22 +358,22 @@ class ReferenceFrame(object):
                     return v1
         raise ValueError('No Common Frame')
 
-    def ang_vel(self, other):
+    def ang_vel_in(self, other):
         """
         Returns the angular velocity of the current frame relative to
         the input frame: angular velocity of self in other
         Takes in ReferenceFrame, returns Vector.
-        Form is N.ang_vel(A) is angular velocity of A in N, or N_w_A
+        Form is A.ang_vel_in(N) is A's angular velocity in N, or N_w_A
         """
         commonframe = self._common_frame(other)
         # form DCM from self to first common frame
-        leg1 = Vector([])
+        leg1 = 0
         ptr = self
         while ptr != commonframe:
             leg1 += ptr._ang_vel
             ptr = ptr.parent
         # form DCM from other to first common frame
-        leg2 = Vector([])
+        leg2 = 0
         ptr = other
         while ptr != commonframe:
             leg2 -= ptr._ang_vel
@@ -493,7 +498,8 @@ class ReferenceFrame(object):
         Takes in a Vector for angular velocity vector, and ReferenceFrame, 
         for the frame to this to be defined in.
         """
-        assert isinstance(value, Vector), 'Angular velocity needs to be a \
+        if value != 0:
+            assert isinstance(value, Vector), 'Angular velocity needs to be a \
         Vector.'
         assert isinstance(other, ReferenceFrame), 'Need to define the \
         angular velocity with respect to another ReferenceFrame.'
@@ -565,11 +571,11 @@ class Point(object):
         attributes to zero.
         """
         self.name = name
-        self._pos = 0
+        self._pos = None
         self._pos_par = None
-        self._vel = 0
+        self._vel = None
         self._vel_frame = None
-        self._acc = 0
+        self._acc = None
         self._acc_frame = None
 
     def set_pos(self, value, point = None):
@@ -613,6 +619,7 @@ class Point(object):
         This returns the first common parent between two ReferenceFrames.
         Takes in another ReferenceFrame, and returns a ReferenceFrame.
         """
+        # TODO This needs to be fixed to work with None properly
         assert isinstance(other, point), 'You have to use a \
                 ReferenceFrame'
         leg1 = [self]
@@ -625,12 +632,11 @@ class Point(object):
         while ptr._pos_par != None:
             ptr = ptr._pos_par
             leg2.append(ptr)
-        try:
-            # TODO double check that pop gives the correct frame
-            commonpar = (set(leg1) & set(leg2)).pop()
-        except:
-            raise ValueError('No Common Position Parent')
-        return commonpar
+        for i,v1 in enumerate(leg1):
+            for j, v2 in enumerate(leg2):
+                if v1 == v2:
+                    return v1
+        raise ValueError('No Common Position Parent')
 
     def set_vel(self, value, frame):
         """
@@ -650,31 +656,5 @@ class Point(object):
         """
         assert isinstance(frame, ReferenceFrame), 'Velocity is described \
                 in a frame'
-        self._vel_frame.ang_vel(frame)
-
-    def _common_pos_par(self,other):
-        """
-        This returns the first common parent between two ReferenceFrames.
-        Takes in another ReferenceFrame, and returns a ReferenceFrame.
-        """
-        assert isinstance(other, point), 'You have to use a \
-                ReferenceFrame'
-        leg1 = [self]
-        ptr = self
-        while ptr._pos_par != None:
-            ptr = ptr._pos_par
-            leg1.append(ptr)
-        leg2 = [other]
-        ptr = other
-        while ptr._pos_par != None:
-            ptr = ptr._pos_par
-            leg2.append(ptr)
-        try:
-            # TODO double check that pop gives the correct frame
-            commonpar = (set(leg1) & set(leg2)).pop()
-        except:
-            raise ValueError('No Common Position Parent')
-        return commonpar
-
-
+        
 
