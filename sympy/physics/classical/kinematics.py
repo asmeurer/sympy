@@ -43,7 +43,8 @@ class Vector(object):
             added = 0
             for i, v in enumerate(self.args):
                 if inlist[0][1] == self.args[i][1]:
-                    self.args[i] = (self.args[i][0] + inlist[0][0], inlist[0][1])
+                    self.args[i] = (self.args[i][0] +
+                            inlist[0][0], inlist[0][1])
                     inlist.remove(inlist[0])
                     added = 1
                     break
@@ -58,22 +59,11 @@ class Vector(object):
                 self.args.remove(self.args[i])
                 i -= 1
             i += 1
-        # This bit of code is to simplify the measure numbers as much as
-        # possible
-        for i,v in enumerate(self.args):
-            j = v[0]
-            for k,v2 in enumerate(j):
-                tempv2 = simplify(v2)
-                while v2 != tempv2:
-                    v2 = tempv2
-                    tempv2 = simplify(tempv2)
-                j[k] = v2
-            self.args[i] = (j, v[1])
 
     def __str__(self):
         """
-        Printing method.  Uses Vector Attribute subscript_indices to choose how
-        to show basis vector indices.
+        Printing method.  Uses Vector Attribute subscript_indices to choose
+        how to show basis vector indices.
         """
         ar = self.args # just to shorten things
         ol = [] # output list, to be concatenated to a string
@@ -153,7 +143,7 @@ class Vector(object):
                 else:
                     return False
         assert isinstance(other,Vector), 'Vectors can only compare to Vectors'
-        dotcheck = (simplify(self & self) == simplify(self & other))
+        dotcheck = (self & self) == (self & other)
         crosscheck = ((self ^ other) & (self ^ other) == 0)
         return dotcheck & crosscheck
 
@@ -368,6 +358,7 @@ class ReferenceFrame(object):
         Returns the angular velocity of the current frame relative to
         the input frame: angular velocity of self in other
         Takes in ReferenceFrame, returns Vector.
+        Form is N.ang_vel(A) is angular velocity of A in N, or N_w_A
         """
         commonframe = self._common_frame(other)
         # form DCM from self to first common frame
@@ -577,9 +568,9 @@ class Point(object):
         self._pos = 0
         self._pos_par = None
         self._vel = 0
-        self._vel_par = None
+        self._vel_frame = None
         self._acc = 0
-        self._acc_par = None
+        self._acc_frame = None
 
     def set_pos(self, value, point = None):
         """
@@ -616,6 +607,50 @@ class Point(object):
             leg2 -= ptr._pos
             ptr = ptr._pos_par
         return leg1 + leg2
+
+    def _common_pos_par(self,other):
+        """
+        This returns the first common parent between two ReferenceFrames.
+        Takes in another ReferenceFrame, and returns a ReferenceFrame.
+        """
+        assert isinstance(other, point), 'You have to use a \
+                ReferenceFrame'
+        leg1 = [self]
+        ptr = self
+        while ptr._pos_par != None:
+            ptr = ptr._pos_par
+            leg1.append(ptr)
+        leg2 = [other]
+        ptr = other
+        while ptr._pos_par != None:
+            ptr = ptr._pos_par
+            leg2.append(ptr)
+        try:
+            # TODO double check that pop gives the correct frame
+            commonpar = (set(leg1) & set(leg2)).pop()
+        except:
+            raise ValueError('No Common Position Parent')
+        return commonpar
+
+    def set_vel(self, value, frame):
+        """
+        Used to set the velocity of this point in a ReferenceFrame.
+        """
+        assert isinstance(frame, ReferenceFrame), 'Velocity is defined with \
+                respect to a ReferenceFrame'
+        assert isinstance(value, Vector), 'Velocity is a Vector'
+        self._vel_frame = frame
+        self._vel = value
+
+    def vel(self, frame):
+        """
+        Returns a Vector distance between this Point and the other Point.
+        If no other Point is given, the value of this Point's position is
+        returned. 
+        """
+        assert isinstance(frame, ReferenceFrame), 'Velocity is described \
+                in a frame'
+        self._vel_frame.ang_vel(frame)
 
     def _common_pos_par(self,other):
         """
