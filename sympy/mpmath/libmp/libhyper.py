@@ -8,7 +8,7 @@ cases are also provided.
 import operator
 import math
 
-from backend import MPZ_ZERO, MPZ_ONE
+from backend import MPZ_ZERO, MPZ_ONE, BACKEND
 
 from libintmath import gcd
 
@@ -18,7 +18,7 @@ from libmpf import (\
     from_rational,
     fzero, fone, fnone, ftwo, finf, fninf, fnan,
     mpf_sign, mpf_add, mpf_abs, mpf_pos,
-    mpf_cmp, mpf_lt, mpf_le, mpf_gt,
+    mpf_cmp, mpf_lt, mpf_le, mpf_gt, mpf_min_max,
     mpf_perturb, mpf_neg, mpf_shift, mpf_sub, mpf_mul, mpf_div,
     sqrt_fixed, mpf_sqrt, mpf_rdiv_int, mpf_pow_int,
     to_rational,
@@ -127,7 +127,7 @@ def make_hyp_summator(key):
             add("%sINT_%i = coeffs[%i]" % (W, i, i))
         elif flag == 'Q':
             ([arat,brat][i >= p]).append(i)
-            add("%sP_%i, %sQ_%i = coeffs[%i]" % (W, i, W, i, i))
+            add("%sP_%i, %sQ_%i = coeffs[%i]._mpq_" % (W, i, W, i, i))
         elif flag == 'R':
             ([areal,breal][i >= p]).append(i)
             add("xsign, xm, xe, xbc = coeffs[%i]._mpf_" % i)
@@ -283,7 +283,7 @@ def make_hyp_summator(key):
         add("elif SIM:")
         add("    magn = b[2]+b[3]")
         add("else:")
-        add("    magn = -prec")
+        add("    magn = -wp+1")
 
         add("return (a, b), True, magn")
     else:
@@ -292,7 +292,7 @@ def make_hyp_summator(key):
         add("if SRE:")
         add("    magn = a[2]+a[3]")
         add("else:")
-        add("    magn = -prec")
+        add("    magn = -wp+1")
 
         add("return a, False, magn")
 
@@ -306,6 +306,21 @@ def make_hyp_summator(key):
 
     return source, namespace[fname]
 
+
+if BACKEND == 'sage':
+
+    def make_hyp_summator(key):
+        """
+        Returns a function that sums a generalized hypergeometric series,
+        for given parameter types (integer, rational, real, complex).
+        """
+        from sage.libs.mpmath.ext_main import hypsum_internal
+        p, q, param_types, ztype = key
+        def _hypsum(coeffs, z, prec, wp, epsshift, magnitude_check, **kwargs):
+            return hypsum_internal(p, q, param_types, ztype, coeffs, z,
+                prec, wp, epsshift, magnitude_check, kwargs)
+
+        return "(none)", _hypsum
 
 
 #-----------------------------------------------------------------------#
@@ -1043,7 +1058,7 @@ def mpc_agm(a, b, prec, rnd=round_fast):
         a1 = mpc_shift(mpc_add(a, b, wp), -1)
         b1 = mpc_sqrt(mpc_mul(a, b, wp), wp)
         a, b = a1, b1
-        size = sorted([mpc_abs(a,10), mpc_abs(a,10)], cmp=mpf_cmp)[1]
+        size = mpf_min_max([mpc_abs(a,10), mpc_abs(b,10)])[1]
         err = mpc_abs(mpc_sub(a, b, 10), 10)
         if size == fzero or mpf_lt(err, mpf_mul(eps, size)):
             return a

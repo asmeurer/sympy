@@ -3,6 +3,7 @@ Provides functionality for multidimensional usage of scalar-functions.
 
 Read the vectorize docstring for more details.
 """
+from sympy.core.decorators import wraps
 
 def apply_on_element(f, args, kwargs, n):
     """
@@ -53,7 +54,6 @@ def structure_copy(structure):
         return structure.copy()
     return iter_copy(structure)
 
-
 class vectorize:
     """
     Generalizes a function taking scalars to accept multidimensional arguments.
@@ -93,6 +93,7 @@ class vectorize:
         Returns a wrapper for the one-dimensional function that can handle
         multidimensional arguments.
         """
+        @wraps(f)
         def wrapper(*args, **kwargs):
             # Get arguments that should be treated multidimensional
             if self.mdargs:
@@ -125,6 +126,4 @@ class vectorize:
                     result = apply_on_element(wrapper, args, kwargs, n)
                     return result
             return f(*args, **kwargs)
-        wrapper.__doc__ = f.__doc__
-        wrapper.__name__ = f.__name__
         return wrapper

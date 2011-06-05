@@ -1,14 +1,16 @@
-from sympy.utilities.pytest import XFAIL
-from sympy import (symbols, lambdify, sqrt, sin, cos, pi, atan, Rational, Real,
+from sympy.utilities.pytest import XFAIL, raises
+from sympy import (symbols, lambdify, sqrt, sin, cos, pi, atan, Rational, Float,
         Matrix, Lambda, exp, Integral, oo)
+from sympy.printing.lambdarepr import LambdaPrinter
 from sympy import mpmath
+from sympy.utilities.lambdify import implemented_function
 import math, sympy
 
 # high precision output of sin(0.2*pi) is used to detect if precision is lost unwanted
 mpmath.mp.dps = 50
 sin02 = mpmath.mpf("0.19866933079506121545941262711838975037020672954020")
 
-x,y,z = symbols('xyz')
+x,y,z = symbols('x,y,z')
 
 #================== Test different arguments ==============
 def test_no_args():
@@ -74,7 +76,7 @@ def test_sympy_lambda():
     f = lambdify(x, sin(x), "sympy")
     assert f(x) is sin(x)
     prec = 1e-15
-    assert -prec < f(Rational(1,5)).evalf() - Real(str(sin02)) < prec
+    assert -prec < f(Rational(1,5)).evalf() - Float(str(sin02)) < prec
     try:
         # arctan is in numpy module and should not be available
         f = lambdify(x, arctan(x), "sympy")
@@ -115,13 +117,13 @@ def test_number_precision():
 def test_math_transl():
     from sympy.utilities.lambdify import MATH_TRANSLATIONS
     for sym, mat in MATH_TRANSLATIONS.iteritems():
-        assert sym in sympy.functions.__dict__
+        assert sym in sympy.__dict__
         assert mat in math.__dict__
 
 def test_mpmath_transl():
     from sympy.utilities.lambdify import MPMATH_TRANSLATIONS
     for sym, mat in MPMATH_TRANSLATIONS.iteritems():
-        assert sym in sympy.functions.__dict__ or sym == 'Matrix'
+        assert sym in sympy.__dict__ or sym == 'Matrix'
         assert mat in mpmath.__dict__
 
 #================== Test some functions ===================
@@ -222,3 +224,113 @@ def test_integral():
     f = Lambda(x, exp(-x**2))
     l = lambdify(x, Integral(f(x), (x, -oo, oo)), modules="sympy")
     assert l(x) == Integral(exp(-x**2), (x, -oo, oo))
+
+#########Test Symbolic###########
+def test_sym_single_arg():
+    f = lambdify(x, x * y)
+    assert f(z) == z * y
+
+def test_sym_list_args():
+    f = lambdify([x,y], x + y + z)
+    assert f(1,2) == 3 + z
+
+def test_sym_integral():
+    f = Lambda(x, exp(-x**2))
+    l = lambdify(x, Integral(f(x), (x, -oo, oo)), modules="sympy")
+    assert l(y).doit() == sqrt(pi)
+
+def test_namespace_order():
+    # lambdify had a bug, such that module dictionaries or cached module
+    # dictionaries would pull earlier namespaces into themselves.
+    # Because the module dictionaries form the namespace of the
+    # generated lambda, this meant that the behavior of a previously
+    # generated lambda function could change as a result of later calls
+    # to lambdify.
+    n1 = {'f': lambda x:'first f'}
+    n2 = {'f': lambda x:'second f',
+          'g': lambda x:'function g'}
+    f = sympy.Function('f')
+    g = sympy.Function('g')
+    if1 = lambdify(x, f(x), modules=(n1, "sympy"))
+    assert if1(1) == 'first f'
+    if2 = lambdify(x, g(x), modules=(n2, "sympy"))
+    # previously gave 'second f'
+    assert if1(1) == 'first f'
+
+def test_imps():
+    # Here we check if the default returned functions are anonymous - in
+    # the sense that we can have more than one function with the same name
+    f = implemented_function('f', lambda x: 2*x)
+    g = implemented_function('f', lambda x: math.sqrt(x))
+    l1 = lambdify(x, f(x))
+    l2 = lambdify(x, g(x))
+    assert str(f(x)) == str(g(x))
+    assert l1(3) == 6
+    assert l2(3) == math.sqrt(3)
+    # check that we can pass in a Function as input
+    func = sympy.Function('myfunc')
+    assert not hasattr(func, '_imp_')
+    my_f = implemented_function(func, lambda x: 2*x)
+    assert hasattr(func, '_imp_')
+    # Error for functions with same name and different implementation
+    f2 = implemented_function("f", lambda x : x+101)
+    raises(ValueError, 'lambdify(x, f(f2(x)))')
+
+def test_lambdify_imps():
+    # Test lambdify with implemented functions
+    # first test basic (sympy) lambdify
+    f = sympy.cos
+    assert lambdify(x, f(x))(0) == 1
+    assert lambdify(x, 1 + f(x))(0) == 2
+    assert lambdify((x, y), y + f(x))(0, 1) == 2
+    # make an implemented function and test
+    f = implemented_function("f", lambda x : x+100)
+    assert lambdify(x, f(x))(0) == 100
+    assert lambdify(x, 1 + f(x))(0) == 101
+    assert lambdify((x, y), y + f(x))(0, 1) == 101
+    # Can also handle tuples, lists, dicts as expressions
+    lam = lambdify(x, (f(x), x))
+    assert lam(3) == (103, 3)
+    lam = lambdify(x, [f(x), x])
+    assert lam(3) == [103, 3]
+    lam = lambdify(x, [f(x), (f(x), x)])
+    assert lam(3) == [103, (103, 3)]
+    lam = lambdify(x, {f(x): x})
+    assert lam(3) == {103: 3}
+    lam = lambdify(x, {f(x): x})
+    assert lam(3) == {103: 3}
+    lam = lambdify(x, {x: f(x)})
+    assert lam(3) == {3: 103}
+    # Check that imp preferred to other namespaces by default
+    d = {'f': lambda x : x + 99}
+    lam = lambdify(x, f(x), d)
+    assert lam(3) == 103
+    # Unless flag passed
+    lam = lambdify(x, f(x), d, use_imps=False)
+    assert lam(3) == 102
+
+#================== Test special printers ==========================
+def test_special_printers():
+    class IntervalPrinter(LambdaPrinter):
+        """Use ``lambda`` printer but print numbers as ``mpi`` intervals. """
+
+        def _print_Integer(self, expr):
+            return "mpi('%s')" % super(IntervalPrinter, self)._print_Integer(expr)
+
+        def _print_Rational(self, expr):
+            return "mpi('%s')" % super(IntervalPrinter, self)._print_Rational(expr)
+
+    def intervalrepr(expr):
+        return IntervalPrinter().doprint(expr)
+
+    expr = sympy.sqrt(sympy.sqrt(2) + sympy.sqrt(3)) + sympy.S(1)/2
+
+    func0 = lambdify((), expr, modules="mpmath", printer=intervalrepr)
+    func1 = lambdify((), expr, modules="mpmath", printer=IntervalPrinter)
+    func2 = lambdify((), expr, modules="mpmath", printer=IntervalPrinter())
+
+    mpi = type(mpmath.mpi(1, 2))
+
+    assert isinstance(func0(), mpi)
+    assert isinstance(func1(), mpi)
+    assert isinstance(func2(), mpi)

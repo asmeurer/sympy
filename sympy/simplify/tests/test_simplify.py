@@ -1,41 +1,50 @@
-from sympy import Symbol, symbols, together, hypersimp, factorial, binomial, \
-        collect, Function, powsimp, separate, sin, exp, Rational, fraction, \
-        simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate, \
-        solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative, \
-        S, diff, oo, Eq, Integer, gamma, acos, Integral, logcombine, separatevars
+from sympy import (Symbol, symbols, hypersimp, factorial, binomial,
+    collect, Function, powsimp, separate, sin, exp, Rational, fraction,
+    simplify, trigsimp, cos, tan, cot, log, ratsimp, Matrix, pi, integrate,
+    solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative,
+    S, diff, oo, Eq, Integer, gamma, acos, Integral, logcombine, Wild,
+    separatevars, erf, rcollect, count_ops, combsimp)
 from sympy.utilities import all
 from sympy.utilities.pytest import XFAIL
 
+from sympy.abc import x, y, z, t, a, b, c, d, e
+
 def test_ratsimp():
-    x = Symbol("x")
-    y = Symbol("y")
-    e = 1/x+1/y
-    assert e != (x+y)/(x*y)
-    assert ratsimp(e) == (x+y)/(x*y)
+    f, g = 1/x + 1/y, (x + y)/(x*y)
 
-    e = 1/(1+1/x)
-    assert ratsimp(e) == x/(x+1)
-    assert ratsimp(exp(e)) == exp(x/(x+1))
+    assert f != g and ratsimp(f) == g
 
-def test_ratsimp2():
-    x = Symbol("x")
-    e = 1/(1+1/x)
-    assert (x+1)*ratsimp(e)/x == 1
+    f, g = 1/(1 + 1/x), 1 - 1/(x + 1)
 
-@XFAIL
-def test_ratsimp_X1():
-    e = -x-y-(x+y)**(-1)*y**2+(x+y)**(-1)*x**2
-    assert e != -2*y
-    assert ratsimp(e) == -2*y
+    assert f != g and ratsimp(f) == g
 
-@XFAIL
-def test_ratsimp_X2():
-    e = x/(x+y)+y/(x+y)
-    assert e != 1
-    assert ratsimp(e) == 1
+    f, g = x/(x + y) + y/(x + y), 1
+
+    assert f != g and ratsimp(f) == g
+
+    f, g = -x - y - y**2/(x + y) + x**2/(x + y), -2*y
+
+    assert f != g and ratsimp(f) == g
+
+    f = (a*c*x*y + a*c*z - b*d*x*y - b*d*z - b*t*x*y - b*t*x - b*t*z + e*x)/(x*y + z)
+    G = [a*c - b*d - b*t + (-b*t*x + e*x)/(x*y + z),
+         a*c - b*d - b*t - ( b*t*x - e*x)/(x*y + z)]
+
+    assert f != g and ratsimp(f) in G
+
+    A = sqrt(pi)
+
+    B = log(erf(x) - 1)
+    C = log(erf(x) + 1)
+
+    D = 8 - 8*erf(x)
+
+    f = A*B/D - A*C/D + A*C*erf(x)/D - A*B*erf(x)/D + 2*A/D
+
+    assert ratsimp(f) == A*B/8 - A*C/8 - A/(4*erf(x) - 4)
 
 def test_trigsimp1():
-    x, y = symbols('x y')
+    x, y = symbols('x,y')
 
     assert trigsimp(1 - sin(x)**2) == cos(x)**2
     assert trigsimp(1 - cos(x)**2) == sin(x)**2
@@ -62,7 +71,7 @@ def test_trigsimp1():
     assert trigsimp(log(e), deep=True) == log(2)
 
 def test_trigsimp2():
-    x, y = symbols('x y')
+    x, y = symbols('x,y')
     assert trigsimp(cos(x)**2*sin(y)**2 + cos(x)**2*cos(y)**2 + sin(x)**2,
             recursive=True) == 1
     assert trigsimp(sin(x)**2*sin(y)**2 + sin(x)**2*cos(y)**2 + cos(x)**2,
@@ -73,7 +82,7 @@ def test_issue1274():
     assert abs(trigsimp(2.0*sin(x)**2+2.0*cos(x)**2)-2.0) < 1e-10
 
 def test_trigsimp3():
-    x, y = symbols('x y')
+    x, y = symbols('x,y')
     assert trigsimp(sin(x)/cos(x)) == tan(x)
     assert trigsimp(sin(x)**2/cos(x)**2) == tan(x)**2
     assert trigsimp(sin(x)**3/cos(x)**3) == tan(x)**3
@@ -95,7 +104,7 @@ def test_factorial_simplify():
     assert simplify(factorial(factorial(x))) == factorial(factorial(x))
 
 def test_simplify():
-    x, y, z, k, n, m, w, f, s, A = symbols('xyzknmwfsA')
+    x, y, z, k, n, m, w, f, s, A = symbols('x,y,z,k,n,m,w,f,s,A')
 
     assert all(simplify(tmp) == tmp for tmp in [I, E, oo, x, -x, -oo, -E, -I])
 
@@ -122,7 +131,7 @@ def test_simplify():
     assert simplify(e) == 1 + y
 
     e = (2 * (1/n - cos(n * pi)/n))/pi
-    assert simplify(e) == (2 - 2*cos(pi*n))/(pi*n)
+    assert simplify(e) == 2*((1 - 1*cos(pi*n))/(pi*n))
 
     e = integrate(1/(x**3+1), x).diff(x)
     assert simplify(e) == 1/(x**3+1)
@@ -133,9 +142,9 @@ def test_simplify():
     A = Matrix([[2*k-m*w**2, -k], [-k, k-m*w**2]]).inv()
 
     assert simplify((A*Matrix([0,f]))[1]) == \
-        (2*k*f - f*m*w**2)/(k**2 - 3*k*m*w**2 + m**2*w**4)
+        (f*(2*k - m*w**2))/(k**2 - 3*k*m*w**2 + m**2*w**4)
 
-    a, b, c, d, e, f, g, h, i = symbols('abcdefghi')
+    a, b, c, d, e, f, g, h, i = symbols('a,b,c,d,e,f,g,h,i')
 
     f_1 = x*a + y*b + z*c - 1
     f_2 = x*d + y*e + z*f - 1
@@ -146,11 +155,38 @@ def test_simplify():
     assert simplify(solutions[y]) == \
         (a*i+c*d+f*g-a*f-c*g-d*i)/(a*e*i+b*f*g+c*d*h-a*f*h-b*d*i-c*e*g)
 
+    f = -x + y/(z + t) + z*x/(z + t) + z*a/(z + t) + t*x/(z + t)
+
+    assert simplify(f) == (y + a*z)/(z + t)
+
+    A, B = symbols('A,B', commutative=False)
+
+    assert simplify(A*B - B*A) == A*B - B*A
+
+def test_simplify_other():
+    assert simplify(sin(x)**2 + cos(x)**2) == 1
+    assert simplify(gamma(x + 1)/gamma(x)) == x
+    assert simplify(sin(x)**2 + cos(x)**2 + factorial(x)/gamma(x)) == 1 + x
+    assert simplify(Eq(sin(x)**2 + cos(x)**2, factorial(x)/gamma(x))) == Eq(1, x)
+
+def test_simplify_ratio():
+    # roots of x**3-3*x+5
+    roots = ['(5/2 + 21**(1/2)/2)**(1/3)*(1/2 - I*3**(1/2)/2)'
+             ' + 1/((1/2 - I*3**(1/2)/2)*(5/2 + 21**(1/2)/2)**(1/3))',
+             '(5/2 + 21**(1/2)/2)**(1/3)*(1/2 + I*3**(1/2)/2)'
+             ' + 1/((1/2 + I*3**(1/2)/2)*(5/2 + 21**(1/2)/2)**(1/3))',
+             '-1/(5/2 + 21**(1/2)/2)**(1/3) - (5/2 + 21**(1/2)/2)**(1/3)']
+
+    for r in roots:
+        r = S(r)
+        assert count_ops(simplify(r, ratio=1)) <= count_ops(r)
+        # If ratio=oo, simplify() is always applied:
+        assert simplify(r, ratio=oo) is not r
+
 def test_simplify_issue_1308():
     assert simplify(exp(-Rational(1, 2)) + exp(-Rational(3, 2))) == \
         (1 + E)*exp(-Rational(3, 2))
     assert simplify(exp(1)+exp(-exp(1))) == (1 + exp(1 + E))*exp(-E)
-
 
 def test_simplify_fail1():
     x = Symbol('x')
@@ -179,35 +215,8 @@ def test_fraction():
 
     assert fraction(exp(-x), exact=True) == (exp(-x), 1)
 
-def test_together():
-    x, y, z = map(Symbol, 'xyz')
-
-    assert together(1/x) == 1/x
-
-    assert together(1/x + 1) == (x+1)/x
-    assert together(1/x + x) == (x**2+1)/x
-
-    assert together(1/x + Rational(1, 2)) == (x+2)/(2*x)
-
-    assert together(1/x + 2/y) == (2*x+y)/(y*x)
-    assert together(1/(1 + 1/x)) == x/(1+x)
-    assert together(x/(1 + 1/x)) == x**2/(1+x)
-
-    assert together(1/x + 1/y + 1/z) == (x*y + x*z + y*z)/(x*y*z)
-
-    assert together(1/(x*y) + 1/(x*y)**2) == y**(-2)*x**(-2)*(1+x*y)
-    assert together(1/(x*y) + 1/(x*y)**4) == y**(-4)*x**(-4)*(1+x**3*y**3)
-    assert together(1/(x**7*y) + 1/(x*y)**4) == y**(-4)*x**(-7)*(x**3+y**3)
-
-    assert together(sin(1/x+1/y)) == sin(1/x+1/y)
-    assert together(sin(1/x+1/y), deep=True) == sin((x+y)/(x*y))
-
-    assert together(Rational(1, 2) + x/2) == (x+1)/2
-
-    assert together(1/x**y + 1/x**(y-1)) == x**(-y)*(1 + x)
-
 def test_separate():
-    x, y, z = symbols('xyz')
+    x, y, z = symbols('x,y,z')
 
     assert separate((x*y*z)**4) == x**4*y**4*z**4
     assert separate((x*y*z)**x) == x**x*y**x*z**x
@@ -227,7 +236,7 @@ def test_separate_X1():
     assert separate((exp(x)*exp(y))**z) == exp(x*z)*exp(y*z)
 
 def test_powsimp():
-    x, y, z, n = symbols('xyzn')
+    x, y, z, n = symbols('x,y,z,n')
     f = Function('f')
     assert powsimp( 4**x * 2**(-x) * 2**(-x) ) == 1
     assert powsimp( (-4)**x * (-2)**(-x) * 2**(-x) ) == 1
@@ -250,7 +259,7 @@ def test_powsimp():
     assert powsimp((1 + E*exp(E))*exp(-E)) == (1 + E*exp(E))*exp(-E)
     assert powsimp((1 + E*exp(E))*exp(-E), combine='exp') == (1 + E*exp(E))*exp(-E)
     assert powsimp((1 + E*exp(E))*exp(-E), combine='base') == (1 + E*exp(E))*exp(-E)
-    x,y = symbols('xy', nonnegative=True)
+    x,y = symbols('x,y', nonnegative=True)
     n = Symbol('n', real=True)
     assert powsimp( y**n * (y/x)**(-n) ) == x**n
     assert powsimp(x**(x**(x*y)*y**(x*y))*y**(x**(x*y)*y**(x*y)),deep=True) == (x*y)**(x*y)**(x*y)
@@ -264,11 +273,50 @@ def test_powsimp():
     assert powsimp(x*y**(z**x*z**y), deep=True) == x*y**(z**(x + y))
     assert powsimp((z**x*z**y)**x, deep=True) == (z**(x + y))**x
     assert powsimp(x*(z**x*z**y)**x, deep=True) == x*(z**(x + y))**x
+    p = symbols('p', positive=True)
+    assert powsimp((1/x)**log(2)/x) == (1/x)**(1 + log(2))
+    assert powsimp((1/p)**log(2)/p) == p**(-1 - log(2))
 
+    # coefficient of exponent can only be simplified for positive bases
+    assert powsimp(2**(2*x)) == 4**x
+    assert powsimp((-1)**(2*x)) == (-1)**(2*x)
+    i = symbols('i', integer=True)
+    assert powsimp((-1)**(2*i)) == 1
+    assert powsimp((-1)**(-x)) != (-1)**x  # could be 1/((-1)**x), but is not
+    # force=True overrides assumptions
+    assert powsimp((-1)**(2*x), force=True) == 1
+
+def test_powsimp_nc():
+    x, y, z = symbols('x,y,z')
+    A, B, C = symbols('A B C', commutative=False)
+
+    assert powsimp(A**x*A**y, combine='all') == A**(x+y)
+    assert powsimp(A**x*A**y, combine='base') == A**x*A**y
+    assert powsimp(A**x*A**y, combine='exp') == A**(x+y)
+
+    assert powsimp(A**x*B**x, combine='all') == (A*B)**x
+    assert powsimp(A**x*B**x, combine='base') == (A*B)**x
+    assert powsimp(A**x*B**x, combine='exp') == A**x*B**x
+
+    assert powsimp(B**x*A**x, combine='all') == (B*A)**x
+    assert powsimp(B**x*A**x, combine='base') == (B*A)**x
+    assert powsimp(B**x*A**x, combine='exp') == B**x*A**x
+
+    assert powsimp(A**x*A**y*A**z, combine='all') == A**(x+y+z)
+    assert powsimp(A**x*A**y*A**z, combine='base') == A**x*A**y*A**z
+    assert powsimp(A**x*A**y*A**z, combine='exp') == A**(x+y+z)
+
+    assert powsimp(A**x*B**x*C**x, combine='all') == (A*B*C)**x
+    assert powsimp(A**x*B**x*C**x, combine='base') == (A*B*C)**x
+    assert powsimp(A**x*B**x*C**x, combine='exp') == A**x*B**x*C**x
+
+    assert powsimp(B**x*A**x*C**x, combine='all') == (B*A*C)**x
+    assert powsimp(B**x*A**x*C**x, combine='base') == (B*A*C)**x
+    assert powsimp(B**x*A**x*C**x, combine='exp') == B**x*A**x*C**x
 
 def test_collect_1():
     """Collect with respect to a Symbol"""
-    x, y, z, n = symbols('xyzn')
+    x, y, z, n = symbols('x,y,z,n')
     assert collect( x + y*x, x ) == x * (1 + y)
     assert collect( x + x**2, x ) == x + x**2
     assert collect( x**2 + y*x**2, x ) == (x**2)*(1+y)
@@ -282,16 +330,16 @@ def test_collect_1():
 
 def test_collect_2():
     """Collect with respect to a sum"""
-    a, b, x = symbols('abx')
+    a, b, x = symbols('a,b,x')
     assert collect(a*(cos(x)+sin(x)) + b*(cos(x)+sin(x)), sin(x)+cos(x)) == (a + b)*(cos(x) + sin(x))
 
 def test_collect_3():
     """Collect with respect to a product"""
-    a, b, c = symbols('abc')
+    a, b, c = symbols('a,b,c')
     f = Function('f')
-    x, y, z, n = symbols('xyzn')
+    x, y, z, n = symbols('x,y,z,n')
 
-    assert collect(-x/8 + x*y, -x) == -x*(S.One/8 - y)
+    assert collect(-x/8 + x*y, -x) == x*(y - S(1)/8)
 
     assert collect( 1 + x*(y**2), x*y ) == 1 + x*(y**2)
     assert collect( x*y + a*x*y, x*y) == x*y*(1 + a)
@@ -306,14 +354,14 @@ def test_collect_3():
 
 def test_collect_4():
     """Collect with respect to a power"""
-    a, b, c, x = symbols('abcx')
+    a, b, c, x = symbols('a,b,c,x')
 
     assert collect(a*x**c + b*x**c, x**c) == x**c*(a + b)
     assert collect(a*x**(2*c) + b*x**(2*c), x**c) == (x**2)**c*(a + b)
 
 def test_collect_5():
     """Collect with respect to a tuple"""
-    a, x, y, z, n = symbols('axyzn')
+    a, x, y, z, n = symbols('a,x,y,z,n')
     assert collect(x**2*y**4 + z*(x*y**2)**2 + z + a*z, [x*y**2, z]) in [
                 z*(1 + a + x**2*y**4) + x**2*y**4,
                 z*(1 + a) + x**2*y**4*(1 + z) ]
@@ -323,7 +371,7 @@ def test_collect_5():
 def test_collect_D():
     D = Derivative
     f = Function('f')
-    x, a, b = symbols('xab')
+    x, a, b = symbols('x,a,b')
     fx  = D(f(x), x)
     fxx = D(f(x), x, x)
 
@@ -347,15 +395,35 @@ def collect_issues():
 def test_collect_D_0():
     D = Derivative
     f = Function('f')
-    x, a, b = symbols('xab')
+    x, a, b = symbols('x,a,b')
     fxx = D(f(x), x, x)
 
     # collect does not distinguish nested derivatives, so it returns
     #                                           -- (a + b)*D(D(f, x), x)
     assert collect(a*fxx     + b*fxx    , fxx)  == (a + b)*fxx
 
+def test_collect_Wild():
+    """Collect with respect to functions with Wild argument"""
+    a, b, x, y = symbols('a b x y')
+    f = Function('f')
+    w1 = Wild('.1')
+    w2 = Wild('.2')
+    assert collect(f(x) + a*f(x), f(w1)) == (1 + a)*f(x)
+    assert collect(f(x, y) + a*f(x, y), f(w1)) == f(x, y) + a*f(x, y)
+    assert collect(f(x, y) + a*f(x, y), f(w1, w2)) == (1 + a)*f(x, y)
+    assert collect(f(x, y) + a*f(x, y), f(w1, w1)) == f(x, y) + a*f(x, y)
+    assert collect(f(x, x) + a*f(x, x), f(w1, w1)) == (1 + a)*f(x, x)
+    assert collect(a*(x + 1)**y + (x + 1)**y, w1**y) == (1 + a)*(x + 1)**y
+    assert collect(a*(x + 1)**y + (x + 1)**y, w1**b) == a*(x + 1)**y + (x + 1)**y
+    assert collect(a*(x + 1)**y + (x + 1)**y, (x + 1)**w2) == (1 + a)*(x + 1)**y
+    assert collect(a*(x + 1)**y + (x + 1)**y, w1**w2) == (1 + a)*(x + 1)**y
+
+def test_rcollect():
+    assert rcollect((x**2*y + x*y + x + y)/(x + y), y) == (x + y*(1 + x + x**2))/(x + y)
+    assert rcollect(sqrt(-((x + 1)*(y + 1))), z) == sqrt(-((x + 1)*(y + 1)))
+
 def test_separatevars():
-    x,y,z,n = symbols('xyzn')
+    x,y,z,n = symbols('x,y,z,n')
     assert separatevars(2*n*x*z+2*x*y*z) == 2*x*z*(n+y)
     assert separatevars(x*z+x*y*z) == x*z*(1+y)
     assert separatevars(pi*x*z+pi*x*y*z) == pi*x*z*(1+y)
@@ -370,16 +438,15 @@ def test_separatevars():
     assert separatevars(sqrt(y*(p**2 + x*p**2))) == p*sqrt(y)*sqrt(1 + x)
 
 def test_separatevars_advanced_factor():
-    x,y,z = symbols('xyz')
+    x,y,z = symbols('x,y,z')
     assert separatevars(1 + log(x)*log(y) + log(x) + log(y)) == (log(x) + 1)*(log(y) + 1)
-    assert separatevars(1 + x - log(z) - x*log(z) - exp(y)*log(z) - \
-        x*exp(y)*log(z) + x*exp(y) + exp(y)) == \
-        (1 + x)*(1 - log(z))*(1 + exp(y))
-    x, y = symbols('xy', positive=True)
+    assert separatevars(1 + x - log(z) - x*log(z) - exp(y)*log(z) - x*exp(y)*log(z) + x*exp(y) + exp(y)) == \
+        -((x + 1)*(log(z) - 1)*(exp(y) + 1))
+    x, y = symbols('x,y', positive=True)
     assert separatevars(1 + log(x**log(y)) + log(x*y)) == (log(x) + 1)*(log(y) + 1)
 
 def test_hypersimp():
-    n, k = symbols('nk', integer=True)
+    n, k = symbols('n,k', integer=True)
 
     assert hypersimp(factorial(k), k) == k + 1
     assert hypersimp(factorial(k**2), k) is None
@@ -392,21 +459,13 @@ def test_hypersimp():
     assert hypersimp(binomial(n+1, k), k) == (n-k+1)/(k+1)
 
     term = (4*k+1)*factorial(k)/factorial(2*k+1)
-    assert hypersimp(term, k) == (4*k + 5)/(6 + 16*k**2 + 28*k)
+    assert hypersimp(term, k) == (S(1)/2)*((4*k + 5)/(3 + 14*k + 8*k**2))
 
     term = 1/((2*k-1)*factorial(2*k+1))
-    assert hypersimp(term, k) == (2*k-1)/(6 + 22*k + 24*k**2 + 8*k**3)
+    assert hypersimp(term, k) == (2*k - 1)/(3 + 11*k + 12*k**2 + 4*k**3)/2
 
     term = binomial(n, k)*(-1)**k/factorial(k)
     assert hypersimp(term, k) == (k - n)/(k**2+2*k+1)
-
-def test_together2():
-    x, y, z = symbols("xyz")
-    assert together(1/(x*y) + 1/y**2) == 1/x*y**(-2)*(x + y)
-    assert together(1/(1 + 1/x)) == x/(1 + x)
-    x = symbols("x", nonnegative=True)
-    y = symbols("y", real=True)
-    assert together(1/x**y + 1/x**(y-1)) == x**(-y)*(1 + x)
 
 def test_nsimplify():
     x = Symbol("x")
@@ -427,6 +486,10 @@ def test_nsimplify():
     assert nsimplify(0.33333, tolerance=1e-4) == Rational(1, 3)
     assert nsimplify(2.0**(1/3.), tolerance=0.001) == Rational(635, 504)
     assert nsimplify(2.0**(1/3.), tolerance=0.001, full=True) == 2**Rational(1, 3)
+    assert nsimplify(x + .5, rational=True) == Rational(1, 2) + x
+    assert nsimplify(1/.3 + x, rational=True) == Rational(10, 3) + x
+    assert nsimplify(log(3).n(), rational=True) == \
+           sympify('109861228866811/100000000000000')
 
 def test_extract_minus_sign():
     x = Symbol("x")
@@ -452,52 +515,117 @@ def test_diff():
     assert simplify(f(x).diff(x, y)-f(x).diff(y, x)) == 0
 
 def test_logcombine_1():
-    x, y = symbols("xy")
+    x, y = symbols("x,y")
     a = Symbol("a")
-    z, w = symbols("zw", positive=True)
+    z, w = symbols("z,w", positive=True)
     b = Symbol("b", real=True)
     assert logcombine(log(x)+2*log(y)) == log(x) + 2*log(y)
-    assert logcombine(log(x)+2*log(y), assume_pos_real=True) == log(x*y**2)
+    assert logcombine(log(x)+2*log(y), force=True) == log(x*y**2)
     assert logcombine(a*log(w)+log(z)) == a*log(w) + log(z)
     assert logcombine(b*log(z)+b*log(x)) == log(z**b) + b*log(x)
     assert logcombine(b*log(z)-log(w)) == log(z**b/w)
     assert logcombine(log(x)*log(z)) == log(x)*log(z)
     assert logcombine(log(w)*log(x)) == log(w)*log(x)
     assert logcombine(cos(-2*log(z)+b*log(w))) == cos(log(w**b/z**2))
-    assert logcombine(log(log(x)-log(y))-log(z), assume_pos_real=True) == \
+    assert logcombine(log(log(x)-log(y))-log(z), force=True) == \
         log(log((x/y)**(1/z)))
-    assert logcombine((2+I)*log(x), assume_pos_real=True) == I*log(x)+log(x**2)
-    assert logcombine((x**2+log(x)-log(y))/(x*y), assume_pos_real=True) == \
+    assert logcombine((2+I)*log(x), force=True) == I*log(x)+log(x**2)
+    assert logcombine((x**2+log(x)-log(y))/(x*y), force=True) == \
         log(x**(1/(x*y))*y**(-1/(x*y)))+x/y
-    assert logcombine(log(x)*2*log(y)+log(z), assume_pos_real=True) == \
+    assert logcombine(log(x)*2*log(y)+log(z), force=True) == \
         log(z*y**log(x**2))
     assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**Rational(2, 3)*\
-        y**Rational(3, 2)), assume_pos_real=True) == \
+        y**Rational(3, 2)), force=True) == \
         log(x**(1/(pi*x**Rational(2, 3)*y**Rational(3, 2)))*y**(-1/(pi*\
         x**Rational(2, 3)*y**Rational(3, 2)))) + (x**4 + y**4)**Rational(1, 2)/(pi*\
         x**Rational(2, 3)*y**Rational(3, 2)) + x**Rational(1, 3)/(pi*y**Rational(1, 2))
-    assert logcombine(Eq(log(x), -2*log(y)), assume_pos_real=True) == \
+    assert logcombine(Eq(log(x), -2*log(y)), force=True) == \
         Eq(log(x*y**2), Integer(0))
-    assert logcombine(Eq(y, x*acos(-log(x/y))), assume_pos_real=True) == \
+    assert logcombine(Eq(y, x*acos(-log(x/y))), force=True) == \
         Eq(y, x*acos(log(y/x)))
-    assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), assume_pos_real=True) == \
+    assert logcombine(gamma(-log(x/y))*acos(-log(x/y)), force=True) == \
         acos(log(y/x))*gamma(log(y/x))
-    assert logcombine((2+3*I)*log(x), assume_pos_real=True) == \
+    assert logcombine((2+3*I)*log(x), force=True) == \
         log(x**2)+3*I*log(x)
-    assert logcombine(Eq(y, -log(x)), assume_pos_real=True) == Eq(y, log(1/x))
-    assert logcombine(Integral((sin(x**2)+cos(x**3))/x, x), assume_pos_real=True) == \
+    assert logcombine(Eq(y, -log(x)), force=True) == Eq(y, log(1/x))
+    assert logcombine(Integral((sin(x**2)+cos(x**3))/x, x), force=True) == \
         Integral((sin(x**2)+cos(x**3))/x, x)
     assert logcombine(Integral((sin(x**2)+cos(x**3))/x, x)+ (2+3*I)*log(x), \
-        assume_pos_real=True) == log(x**2)+3*I*log(x) + \
+        force=True) == log(x**2)+3*I*log(x) + \
         Integral((sin(x**2)+cos(x**3))/x, x)
 
-@XFAIL
-def test_logcombine_2():
-    # The same as one of the tests above, but with Rational(a, b) replaced with a/b.
-    # This fails because of a bug in matches.  See issue 1274.
-    x, y = symbols("xy")
-    assert logcombine((x*y+sqrt(x**4+y**4)+log(x)-log(y))/(pi*x**(2/3)*y**(3/2)), \
-        assume_pos_real=True) == log(x**(1/(pi*x**(2/3)*y**(3/2)))*y**(-1/\
-        (pi*x**(2/3)*y**(3/2)))) + (x**4 + y**4)**(1/2)/(pi*x**(2/3)*y**(3/2)) + \
-        x**(1/3)/(pi*y**(1/2))
+def test_posify():
+    from sympy import posify, Symbol, log
+    from sympy.abc import x
 
+    assert str(posify(
+        x +
+        Symbol('p', positive=True) +
+        Symbol('n', negative=True))) == '(_x + n + p, {_x: x})'
+
+    # log(1/x).expand() should be log(1/x) but it comes back as -log(x)
+    # when it is corrected, posify will allow the change to be made:
+    eq, rep = posify(1/x)
+    assert log(eq).expand().subs(rep) == -log(x)
+    assert str(posify([x, 1 + x])) == '([_x, _x + 1], {_x: x})'
+
+def test_powdenest():
+    from sympy import powdenest
+    from sympy.abc import x, y, z, a, b
+    p = symbols('p', positive=True)
+    i, j = symbols('i,j', integer=1)
+
+    assert powdenest(x) == x
+    assert powdenest(x + 2*(x**(2*a/3))**(3*x)) == x + 2*(x**(a/3))**(6*x)
+    assert powdenest((exp(2*a/3))**(3*x)) == (exp(a/3))**(6*x)
+    assert powdenest((x**(2*a/3))**(3*x)) == (x**(a/3))**(6*x)
+    assert powdenest(exp(3*x*log(2))) == 2**(3*x)
+    assert powdenest(sqrt(p**2)) == p
+    i, j = symbols('i,j', integer=1)
+    assert powdenest((x**x)**(i + j)) # -X-> (x**x)**i*(x**x)**j == x**(x*(i + j))
+    assert powdenest(exp(3*y*log(x))) == x**(3*y)
+    assert powdenest(exp(y*(log(a) + log(b)))) == (a*b)**y
+    assert powdenest(exp(3*(log(a) + log(b)))) == a**3*b**3
+    assert powdenest(((x**(2*i))**(3*y))**x) == ((x**(2*i))**(3*y))**x
+    assert powdenest(((x**(2*i))**(3*y))**x, force=True) == x**(6*i*x*y)
+    assert powdenest(((x**(2*a/3))**(3*y/i))**x) == ((x**(a/3))**(y/i))**(6*x)
+    assert powdenest((x**(2*i)*y**(4*i))**z, force=True) == (x*y**2)**(2*i*z)
+    e = ((x**2*y**4)**a)**(x*y)
+    assert powdenest(e) == e
+    e = (((x**2*y**4)**a)**(x*y))**3
+    assert powdenest(e) == ((x**2*y**4)**a)**(3*x*y)
+
+@XFAIL
+def test_powdenest_fail_in_polys():
+    from sympy import powdenest
+    from sympy.abc import x, y, z, a, b
+    assert powdenest((((x**2*y**4)**a)**(x*y)), force=True) == (x**2*y**4)**(a*x*y)
+    assert powdenest((((x**2*y**4)**a)**(x*y))**3, force=True) == (x**2*y**4)**(3*a*x*y)
+
+def test_issue_1095():
+    # simplify should call cancel
+    from sympy.abc import x, y
+    f = Function('f')
+    assert simplify((4*x+6*f(y))/(2*x+3*f(y))) == 2
+
+def test_combsimp():
+    from sympy.abc import n, k
+
+    assert combsimp(factorial(n)) == factorial(n)
+    assert combsimp(binomial(n, k)) == binomial(n, k)
+
+    assert combsimp(factorial(n)/factorial(n - 3)) == n*(-1 + n)*(-2 + n)
+    assert combsimp(binomial(n + 1, k + 1)/binomial(n, k)) == (1 + n)/(1 + k)
+
+    assert combsimp(binomial(3*n + 4, n + 1)/binomial(3*n + 1, n)) == \
+        S(3)/2*((3*n + 2)*(3*n + 4)/((n + 1)*(2*n + 3)))
+
+    assert combsimp(factorial(n)**2/factorial(n - 3)) == factorial(n)*n*(-1 + n)*(-2 + n)
+    assert combsimp(factorial(n)*binomial(n+1, k+1)/binomial(n, k)) == factorial(n)*(1 + n)/(1 + k)
+
+    assert combsimp(binomial(n - 1, k)) == -((-n + k)*binomial(n, k))/n
+
+    assert combsimp(binomial(n + 2, k + S(1)/2)) == \
+        4*((n + 1)*(n + 2)*binomial(n, k + S(1)/2))/((2*k - 2*n - 1)*(2*k - 2*n - 3))
+    assert combsimp(binomial(n + 2, k + 2.0)) == \
+        -((1.0*n + 2.0)*binomial(n + 1.0, k + 2.0))/(k - n)

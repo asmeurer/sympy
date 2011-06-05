@@ -15,7 +15,7 @@ TODO:
 from pretty_symbology import hobj, vobj, xsym, pretty_use_unicode
 
 class stringPict(object):
-    """A ASCII picture.
+    """An ASCII picture.
     The pictures are represented as a list of equal length strings.
     """
     #special value for stringPict.below
@@ -78,7 +78,7 @@ class stringPict(object):
         return '\n'.join(result), newBaseline
 
     def right(self, *args):
-        """Put pictures next to this one.
+        r"""Put pictures next to this one.
         Returns string, baseline arguments for stringPict.
         (Multiline) strings are allowed, and are given a baseline of 0.
         >>> from sympy.printing.pretty.stringpict import stringPict
@@ -238,7 +238,7 @@ class stringPict(object):
            break the expression in a form that can be printed
            on the terminal without being broken up.
          """
-        if not kwargs["wrap_line"]:
+        if kwargs["wrap_line"] is False:
             return "\n".join(self.picture)
 
         # Attempt to get a terminal width
@@ -313,6 +313,9 @@ class stringPict(object):
         elif isinstance(o, stringPict):
             return o.picture == self.picture
         return False
+
+    def __hash__(self):
+        return super(stringPict, self).__hash__()
 
     def __str__(self):
         return str.join('\n', self.picture)

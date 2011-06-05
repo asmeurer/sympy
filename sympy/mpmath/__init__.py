@@ -1,17 +1,23 @@
-__version__ = '0.14'
+__version__ = '0.16'
 
 from usertools import monitor, timing
 
 from ctx_fp import FPContext
 from ctx_mp import MPContext
+from ctx_iv import MPIntervalContext
 
 fp = FPContext()
 mp = MPContext()
+iv = MPIntervalContext()
 
 fp._mp = mp
 mp._mp = mp
+iv._mp = mp
 mp._fp = fp
 fp._fp = fp
+mp._iv = iv
+fp._iv = iv
+iv._iv = iv
 
 # XXX: extremely bad pickle hack
 import ctx_mp as _ctx_mp
@@ -25,16 +31,27 @@ extraprec = mp.extraprec
 extradps = mp.extradps
 workprec = mp.workprec
 workdps = mp.workdps
+autoprec = mp.autoprec
+maxcalls = mp.maxcalls
+memoize = mp.memoize
 
 mag = mp.mag
 
 bernfrac = mp.bernfrac
 
-jdn = mp.jdn
-jsn = mp.jsn
-jcn = mp.jcn
+qfrom = mp.qfrom
+mfrom = mp.mfrom
+kfrom = mp.kfrom
+taufrom = mp.taufrom
+qbarfrom = mp.qbarfrom
+ellipfun = mp.ellipfun
 jtheta = mp.jtheta
-calculate_nome = mp.calculate_nome
+kleinj = mp.kleinj
+
+qp = mp.qp
+qhyper = mp.qhyper
+qgamma = mp.qgamma
+qfac = mp.qfac
 
 nint_distance = mp.nint_distance
 
@@ -50,6 +67,7 @@ multiplicity = mp.multiplicity
 
 isinf = mp.isinf
 isnan = mp.isnan
+isnormal = mp.isnormal
 isint = mp.isint
 almosteq = mp.almosteq
 nan = mp.nan
@@ -65,7 +83,8 @@ arange = mp.arange
 
 mpmathify = convert = mp.convert
 mpc = mp.mpc
-mpi = mp.mpi
+
+mpi = iv._mpi
 
 nstr = mp.nstr
 nprint = mp.nprint
@@ -91,8 +110,11 @@ richardson = mp.richardson
 shanks = mp.shanks
 nsum = mp.nsum
 nprod = mp.nprod
+difference = mp.difference
 diff = mp.diff
 diffs = mp.diffs
+diffs_prod = mp.diffs_prod
+diffs_exp = mp.diffs_exp
 diffun = mp.diffun
 differint = mp.differint
 taylor = mp.taylor
@@ -102,6 +124,7 @@ polyroots = mp.polyroots
 fourier = mp.fourier
 fourierval = mp.fourierval
 sumem = mp.sumem
+sumap = mp.sumap
 chebyfit = mp.chebyfit
 limit = mp.limit
 
@@ -203,16 +226,20 @@ cospi = mp.cospi
 sinpi = mp.sinpi
 sinc = mp.sinc
 sincpi = mp.sincpi
+cos_sin = mp.cos_sin
+cospi_sinpi = mp.cospi_sinpi
 fabs = mp.fabs
 re = mp.re
 im = mp.im
 conj = mp.conj
 floor = mp.floor
 ceil = mp.ceil
+nint = mp.nint
+frac = mp.frac
 root = mp.root
 nthroot = mp.nthroot
 hypot = mp.hypot
-modf = mp.modf
+fmod = mp.fmod
 ldexp = mp.ldexp
 frexp = mp.frexp
 sign = mp.sign
@@ -229,6 +256,7 @@ lambertw = mp.lambertw
 zeta = mp.zeta
 altzeta = mp.altzeta
 gamma = mp.gamma
+rgamma = mp.rgamma
 factorial = mp.factorial
 fac = mp.fac
 fac2 = mp.fac2
@@ -274,6 +302,11 @@ hyperu = mp.hyperu
 hypercomb = mp.hypercomb
 meijerg = mp.meijerg
 appellf1 = mp.appellf1
+appellf2 = mp.appellf2
+appellf3 = mp.appellf3
+appellf4 = mp.appellf4
+hyper2d = mp.hyper2d
+bihyper = mp.bihyper
 erf = mp.erf
 erfc = mp.erfc
 erfi = mp.erfi
@@ -292,8 +325,19 @@ fresnels = mp.fresnels
 fresnelc = mp.fresnelc
 airyai = mp.airyai
 airybi = mp.airybi
-ellipe = mp.ellipe
+airyaizero = mp.airyaizero
+airybizero = mp.airybizero
+scorergi = mp.scorergi
+scorerhi = mp.scorerhi
 ellipk = mp.ellipk
+ellipe = mp.ellipe
+ellipf = mp.ellipf
+ellippi = mp.ellippi
+elliprc = mp.elliprc
+elliprj = mp.elliprj
+elliprf = mp.elliprf
+elliprd = mp.elliprd
+elliprg = mp.elliprg
 agm = mp.agm
 jacobi = mp.jacobi
 chebyt = mp.chebyt
@@ -302,6 +346,10 @@ legendre = mp.legendre
 legenp = mp.legenp
 legenq = mp.legenq
 hermite = mp.hermite
+pcfd = mp.pcfd
+pcfu = mp.pcfu
+pcfv = mp.pcfv
+pcfw = mp.pcfw
 gegenbauer = mp.gegenbauer
 laguerre = mp.laguerre
 spherharm = mp.spherharm
@@ -311,10 +359,16 @@ j1 = mp.j1
 besseli = mp.besseli
 bessely = mp.bessely
 besselk = mp.besselk
+besseljzero = mp.besseljzero
+besselyzero = mp.besselyzero
 hankel1 = mp.hankel1
 hankel2 = mp.hankel2
 struveh = mp.struveh
 struvel = mp.struvel
+angerj = mp.angerj
+webere = mp.webere
+lommels1 = mp.lommels1
+lommels2 = mp.lommels2
 whitm = mp.whitm
 whitw = mp.whitw
 ber = mp.ber

@@ -175,4 +175,3 @@ with the appropriate precision back::
     100
 
 See the help for ``sage.libs.mpmath.all`` for further information.
-

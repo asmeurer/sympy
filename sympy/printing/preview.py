@@ -16,13 +16,15 @@ def preview(expr, output='png', viewer=None, euler=True):
 
        By default pretty Euler fonts are used for typesetting (they
        were used to typeset the well known "Concrete Mathematics"
-       book). If you prefer default AMS fonts or your system lacks
-       'eulervm' LaTeX package then unset 'euler' keyword argument.
+       book). For that to work, you need the 'eulervm.sty' LaTeX style (in
+       Debian/Ubuntu, install the texlive-fonts-extra package). If you prefer
+       default AMS fonts or your system lacks 'eulervm' LaTeX package then
+       unset the 'euler' keyword argument.
 
        To use viewer auto-detection, lets say for 'png' output, issue::
 
            >> from sympy import *
-           >> x, y = symbols("xy")
+           >> x, y = symbols("x,y")
 
            >> preview(x + y, output='png')
 
@@ -109,7 +111,7 @@ def preview(expr, output='png', viewer=None, euler=True):
     tmp = tempfile.mktemp()
 
     tex = open(tmp + ".tex", "w")
-    tex.write(format % latex(expr, inline=True))
+    tex.write(format % latex(expr, mode='inline'))
     tex.close()
 
     cwd = os.getcwd()

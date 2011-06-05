@@ -1,8 +1,10 @@
 from sympy import (
     Symbol, Set, Union, Interval, oo, S,
-    Inequality, max_, min_, raises, And, Or
+    Inequality, Max, Min, And, Or, Eq, Le, Lt, Float,
 )
 from sympy.mpmath import mpi
+
+from sympy.utilities.pytest import raises
 
 def test_interval_arguments():
     assert Interval(0, oo) == Interval(0, oo, False, True)
@@ -27,8 +29,8 @@ def test_interval_arguments():
 def test_interval_symbolic_end_points():
     a = Symbol('a', real=True)
 
-    assert Union(Interval(0, a), Interval(0, 3)).sup == max_(a, 3)
-    assert Union(Interval(a, 0), Interval(-3, 0)).inf == min_(-3, a)
+    assert Union(Interval(0, a), Interval(0, 3)).sup == Max(a, 3)
+    assert Union(Interval(a, 0), Interval(-3, 0)).inf == Min(-3, a)
 
     assert Interval(0, a).contains(1) == Inequality(1, a)
 
@@ -183,3 +185,36 @@ def test_union_contains():
 def test_is_number():
     assert Interval(0, 1).is_number is False
     assert Set().is_number is False
+
+def test_Interval_is_point():
+    assert Interval(3, 3).is_point == True
+    assert Interval(3, 4).is_point == False
+
+def test_Interval_is_left_unbounded():
+    assert Interval(3, 4).is_left_unbounded == False
+    assert Interval(-oo, 3).is_left_unbounded == True
+    assert Interval(Float("-inf"), 3).is_left_unbounded == True
+
+def test_Interval_is_right_unbounded():
+    assert Interval(3, 4).is_right_unbounded == False
+    assert Interval(3, oo).is_right_unbounded == True
+    assert Interval(3, Float("+inf")).is_right_unbounded == True
+
+def test_Interval_as_relational():
+    x = Symbol('x')
+
+    assert Interval(3, 3).as_relational(x) == Eq(x, 3)
+
+    assert Interval(-1, 2, False, False).as_relational(x) == And(Le(-1, x), Le(x, 2))
+    assert Interval(-1, 2, True, False).as_relational(x) == And(Lt(-1, x), Le(x, 2))
+    assert Interval(-1, 2, False, True).as_relational(x) == And(Le(-1, x), Lt(x, 2))
+    assert Interval(-1, 2, True, True).as_relational(x) == And(Lt(-1, x), Lt(x, 2))
+
+    assert Interval(-oo, 2, right_open=False).as_relational(x) == Le(x, 2)
+    assert Interval(-oo, 2, right_open=True).as_relational(x) == Lt(x, 2)
+
+    assert Interval(-2, oo, left_open=False).as_relational(x) == Le(-2, x)
+    assert Interval(-2, oo, left_open=True).as_relational(x) == Lt(-2, x)
+
+    assert Interval(-oo, oo).as_relational(x) == True
+

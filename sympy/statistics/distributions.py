@@ -1,6 +1,6 @@
-from sympy.core import sympify, Lambda, Symbol, Integer, Rational, oo, Real, pi
+from sympy.core import sympify, Lambda, Dummy, Integer, Rational, oo, Float, pi
 from sympy.functions import sqrt, exp, erf
-from sympy.printing import _StrPrinter as StrPrinter
+from sympy.printing import sstr
 import random
 
 
@@ -23,7 +23,10 @@ class Sample(tuple):
         return s
 
     def __repr__(self):
-        return StrPrinter.doprint(self)
+        return sstr(self)
+
+    def __str__(self):
+        return sstr(self)
 
 
 class ContinuousProbability(object):
@@ -45,7 +48,10 @@ class ContinuousProbability(object):
             return Sample([s._random() for i in xrange(n)])
 
     def __repr__(self):
-        return StrPrinter.doprint(self)
+        return sstr(self)
+
+    def __str__(self):
+        return sstr(self)
 
 
 class Normal(ContinuousProbability):
@@ -133,7 +139,7 @@ class Normal(ContinuousProbability):
 
         # calculate y = ierf(p) by solving erf(y) - p = 0
         y = erfinv(mpf(p))
-        t = Real(str(mpf(float(s.sigma)) * mpf(2)**0.5 * y))
+        t = Float(str(mpf(float(s.sigma)) * mpf(2)**0.5 * y))
         mu = s.mu.evalf()
         return (mu-t, mu+t)
 
@@ -185,7 +191,7 @@ class Uniform(ContinuousProbability):
         return (x-s.a)/(s.b-s.a)
 
     def _random(s):
-        return Real(random.uniform(float(s.a), float(s.b)))
+        return Float(random.uniform(float(s.a), float(s.b)))
 
     def confidence(s, p):
         """Generate a symmetric (p*100)% confidence interval.
@@ -276,7 +282,7 @@ class PDF(ContinuousProbability):
 
         norm = self.probability(*self.domain)
         if norm != 1:
-            w = Symbol('w', real=True, dummy=True)
+            w = Dummy('w', real=True)
             return self.__class__(self.pdf(w)/norm, (w, self.domain[0], self.domain[1]))
             #self._cdf = Lambda(w, (self.cdf(w) - self.cdf(self.domain[0]))/norm)
             #if self._mean is not None:
@@ -295,7 +301,7 @@ class PDF(ContinuousProbability):
             return self._cdf(x)
         else:
             from sympy import integrate
-            w = Symbol('w', real=True, dummy=True)
+            w = Dummy('w', real=True)
             self._cdf = integrate(self.pdf(w), w)
             self._cdf = Lambda(w, self._cdf - self._cdf.subs(w, self.domain[0]))
             return self._cdf(x)
@@ -305,7 +311,7 @@ class PDF(ContinuousProbability):
             return self._mean
         else:
             from sympy import integrate
-            w = Symbol('w', real=True, dummy=True)
+            w = Dummy('w', real=True)
             self._mean = integrate(self.pdf(w)*w,(w,self.domain[0],self.domain[1]))
             return self._mean
 
@@ -313,8 +319,8 @@ class PDF(ContinuousProbability):
         if self._variance is not None:
             return self._variance
         else:
-            from sympy import integrate, simplify, together
-            w = Symbol('w', real=True, dummy=True)
+            from sympy import integrate, simplify
+            w = Dummy('w', real=True)
             self._variance = integrate(self.pdf(w)*w**2,(w,self.domain[0],self.domain[1])) - self.mean**2
             self._variance = simplify(self._variance)
             return self._variance
@@ -338,7 +344,7 @@ class PDF(ContinuousProbability):
         """Return a probability distribution of random variable func(x)
         currently only some simple injective functions are supported"""
 
-        w = Symbol('w', real=True, dummy=True)
+        w = Dummy('w', real=True)
 
         from sympy import solve
         inverse = solve(func-w, var)

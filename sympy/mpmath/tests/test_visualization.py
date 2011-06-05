@@ -8,16 +8,16 @@ from sympy.mpmath import mp, fp
 
 def test_axes():
     try:
+        import matplotlib
+        version = matplotlib.__version__.split("-")[0]
+        version = version.split(".")[:2]
+        if map(int, version) < [0,99]:
+            raise ImportError
         import pylab
     except ImportError:
-        print "\nSkipping test (pylab not available)\n"
+        print "\nSkipping test (pylab not available or too old version)\n"
         return
-    from Tkinter import TclError
-    try:
-        fig = pylab.figure()
-    except TclError:
-        print "\nSkipping test (Tcl problem)\n"
-        return
+    fig = pylab.figure()
     axes = fig.add_subplot(111)
     for ctx in [mp, fp]:
         ctx.plot(lambda x: x**2, [0, 3], axes=axes)

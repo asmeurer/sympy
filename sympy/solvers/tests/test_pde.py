@@ -1,10 +1,11 @@
 from sympy.solvers.pde import pde_separate_add, pde_separate_mul, _separate
-from sympy import Eq, exp, Function, raises, Symbol, symbols
+from sympy import Eq, exp, Function, Symbol, symbols
 from sympy import Derivative as D
+from sympy.utilities.pytest import raises
 
 def test_pde_separate_add():
-    x, y, z, t = symbols("xyzt")
-    c = Symbol("C", Real=True)
+    x, y, z, t = symbols("x,y,z,t")
+    c = Symbol("C", real=True)
     F, T, X, Y, Z, u = map(Function, 'FTXYZu')
 
     eq = Eq(D(u(x, t), x), D(u(x, t), t)*exp(u(x, t)))
@@ -12,11 +13,11 @@ def test_pde_separate_add():
     assert res == [D(X(x), x)*exp(-X(x)), D(T(t), t)*exp(T(t))]
 
 def test_pde_separate_mul():
-    x, y, z, t = symbols("xyzt")
-    c = Symbol("C", Real=True)
+    x, y, z, t = symbols("x,y,z,t")
+    c = Symbol("C", real=True)
     Phi = Function('Phi')
     F, R, T, X, Y, Z, u = map(Function, 'FRTXYZu')
-    r, theta, z = symbols('r theta z')
+    r, theta, z = symbols('r,theta,z')
 
     # Something simple :)
     eq = Eq(D(F(x, y, z), x) + D(F(x, y, z), y) + D(F(x, y, z), z))

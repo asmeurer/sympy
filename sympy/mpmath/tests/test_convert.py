@@ -35,8 +35,10 @@ def test_pretty():
     mp.pretty = True
     assert repr(mpf(2.5)) == '2.5'
     assert repr(mpc(2.5,3.5)) == '(2.5 + 3.5j)'
-    assert repr(mpi(2.5,3.5)) == '[2.5, 3.5]'
     mp.pretty = False
+    iv.pretty = True
+    assert repr(mpi(2.5,3.5)) == '[2.5, 3.5]'
+    iv.pretty = False
 
 def test_str_whitespace():
     assert mpf('1.26 ') == 1.26
@@ -183,4 +185,3 @@ def test_mpmathify():
     assert mpmathify('(1.0+1.0j)') == mpc(1, 1)
     assert mpmathify('(1.2e-10 - 3.4e5j)') == mpc('1.2e-10', '-3.4e5')
     assert mpmathify('1j') == mpc(1j)
-

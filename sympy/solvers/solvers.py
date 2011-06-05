@@ -14,13 +14,13 @@
 """
 
 from sympy.core.sympify import sympify
-from sympy.core import S, Mul, Add, Pow, Symbol, Wild, Equality
+from sympy.core import S, Mul, Add, Pow, Symbol, Wild, Equality, Dummy
 from sympy.core.numbers import ilcm
 
 from sympy.functions import log, exp, LambertW
 from sympy.simplify import simplify, collect
 from sympy.matrices import Matrix, zeros
-from sympy.polys import roots
+from sympy.polys import roots, cancel
 from sympy.functions.elementary.piecewise import piecewise_fold
 
 from sympy.utilities import any, all
@@ -29,6 +29,7 @@ from sympy.utilities.lambdify import lambdify
 from sympy.mpmath import findroot
 
 from sympy.solvers.polysys import solve_poly_system
+from sympy.solvers.inequalities import reduce_inequalities
 
 from warnings import warn
 
@@ -148,8 +149,11 @@ def solve(f, *symbols, **flags):
     bare_f = not isinstance(f, (list, tuple, set))
     f, symbols = (sympit(w) for w in [f, symbols])
 
+    if any(isinstance(fi, bool) or (fi.is_Relational and not fi.is_Equality) for fi in f):
+        return reduce_inequalities(f, assume=flags.get('assume'))
+
     for i, fi in enumerate(f):
-        if isinstance(fi, Equality):
+        if fi.is_Equality:
             f[i] = fi.lhs - fi.rhs
 
     if not symbols:
@@ -157,7 +161,7 @@ def solve(f, *symbols, **flags):
         #solve(3,x) returns []...though it seems that it should raise some sort of error TODO
         symbols = set([])
         for fi in f:
-            symbols |= fi.atoms(Symbol) or set([Symbol('x',dummy=True)])
+            symbols |= fi.atoms(Symbol) or set([Dummy('x')])
         symbols = list(symbols)
 
     if bare_f:
@@ -185,10 +189,10 @@ def solve(f, *symbols, **flags):
             s_new = s
         elif s.is_Function:
             symbol_swapped = True
-            s_new = Symbol('F%d' % i, dummy=True)
+            s_new = Dummy('F%d' % i)
         elif s.is_Derivative:
             symbol_swapped = True
-            s_new = Symbol('D%d' % i, dummy=True)
+            s_new = Dummy('D%d' % i)
         else:
             raise TypeError('not a Symbol or a Function')
         symbols_new.append(s_new)
@@ -260,7 +264,7 @@ def solve(f, *symbols, **flags):
                     m = reduce(ilcm, exponents_denom)
                 # x -> y**m.
                 # we assume positive for simplification purposes
-                t = Symbol('t', positive=True, dummy=True)
+                t = Dummy('t', positive=True)
                 f_ = f.subs(symbol, t**m)
                 if guess_solve_strategy(f_, t) != GS_POLY:
                     raise NotImplementedError("Could not convert to a polynomial equation: %s" % f_)
@@ -380,18 +384,99 @@ def solve(f, *symbols, **flags):
             else:
                 soln = solve_poly_system(polys)
 
-            # Use swap_dict to ensure we return the same type as what was
-            # passed
+            # Use swap_dict to ensure we return the same type as what was passed
             if symbol_swapped:
                 if isinstance(soln, dict):
                     res = {}
-                    for k in soln.keys():
-                        res.update({swap_back_dict[k]: soln[k]})
+
+                    for k, v in soln.iteritems():
+                        k = k.subs(swap_back_dict)
+                        v = v.subs(swap_back_dict)
+                        res[k] = v
+
                     return res
                 else:
                     return soln
             else:
                 return soln
+
+def solve_linear(lhs, rhs=0, x=[], exclude=[]):
+    """ Return a tuple containing derived from f = lhs - rhs that is either:
+
+        (numerator, denominator) of f; if this comes back as (0, 1) it means
+            that f was actually zero even though it may have had symbols:
+            e.g. y*cos(x)**2 + y*sin(x)**2 - y = y*(0) = 0 If the numerator
+            is not zero then the function is guaranteed not to be zero.
+
+        or
+
+        (symbol, solution) where symbol appears linearly in the numerator of f,
+            is in x (if given) and is not in exclude (if given).
+
+        No simplification is done to f other than and mul=True expansion, so
+        the solution will correspond strictly to a unique solution.
+
+    Examples:
+
+        >>> from sympy.solvers.solvers import solve_linear
+        >>> from sympy.abc import x, y, z
+
+    These are linear in x and 1/x:
+
+        >>> solve_linear(x + y**2)
+        (x, -y**2)
+        >>> solve_linear(1/x - y**2)
+        (x, y**(-2))
+
+    When not linear in x or y then the numerator and denominator are returned.
+
+        >>> solve_linear(x**2/y**2 - 3)
+        (x**2 - 3*y**2, y**2)
+
+    If x is allowed to cancel, then this appears linear, but this sort of
+    cancellation is not done so the solultion will always satisfy the original
+    expression without causing a division by zero error.
+
+        >>> solve_linear(x**2*(1/x - z**2/x))
+        (x**2*(-x*z**2 + x), x**2)
+
+    You can give a list of what you prefer for x candidates:
+
+        >>> solve_linear(x + y + z, x=[y])
+        (y, -x - z)
+
+    You can also indicate what variables you don't want to consider:
+
+        >>> solve_linear(x + y + z, exclude=[x, z])
+        (y, -x - z)
+
+    If only x was excluded then a solution for y or z might be obtained.
+
+    """
+    from sympy import expand_mul, Equality
+    if isinstance(lhs, Equality):
+        rhs += lhs.rhs
+        lhs = lhs.lhs
+    n, d = (lhs - rhs).as_numer_denom()
+    ex = expand_mul(n)
+    if not ex:
+        return ex, d
+
+    exclude = set(exclude)
+    syms = ex.free_symbols
+    if not x:
+        x = syms
+    else:
+        x = syms.intersection(x)
+    x = x.difference(exclude)
+
+    for xi in x:
+        dn = n.diff(xi)
+        # if not dn then this is a pseudo-function of xi
+        if dn and not dn.has(xi):
+            return xi, -(n.subs(xi, 0))/dn
+
+    return n, d
 
 def solve_linear_system(system, *symbols, **flags):
     """Solve system of N linear equations with M variables, which means
@@ -555,6 +640,8 @@ def solve_undetermined_coeffs(equ, coeffs, sym, **flags):
         # terms to the left hand side
         equ = equ.lhs - equ.rhs
 
+    equ = cancel(equ).as_numer_denom()[0]
+
     system = collect(equ.expand(), sym, evaluate=False).values()
 
     if not any([ equ.has(sym) for equ in system ]):
@@ -576,7 +663,7 @@ def solve_linear_system_LU(matrix, syms):
         solutions[syms[i]] = soln[i,0]
     return solutions
 
-x = Symbol('x', dummy=True)
+x = Dummy('x')
 a,b,c,d,e,f,g,h = [Wild(t, exclude=[x]) for t in 'abcdefgh']
 patterns = None
 
@@ -681,7 +768,7 @@ def tsolve(eq, sym):
         # and if it removes all functions - let's call solve.
         #      x    -x                   -1
         # UC: e  + e   = y      ->  t + t   = y
-        t = Symbol('t', dummy=True)
+        t = Dummy('t')
         terms = lhs.args
 
         # find first term which is Function
@@ -710,16 +797,6 @@ def tsolve(eq, sym):
 
 
     raise NotImplementedError("Unable to solve the equation.")
-
-def msolve(*args, **kwargs):
-    """
-    Compatibility wrapper pointing to nsolve().
-
-    msolve() has been renamed to nsolve(), please use nsolve() directly."""
-    warn('msolve() is has been renamed, please use nsolve() instead',
-         DeprecationWarning)
-    args[0], args[1] = args[1], args[0]
-    return nsolve(*args, **kwargs)
 
 # TODO: option for calculating J numerically
 def nsolve(*args, **kwargs):
