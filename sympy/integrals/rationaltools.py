@@ -3,7 +3,7 @@
 from sympy import S, Symbol, symbols, I, log, atan, \
     resultant, roots, collect, solve, RootSum, Lambda, cancel, Dummy
 
-from sympy.polys import Poly, subresultants, resultant, ZZ, groebner
+from sympy.polys import Poly, subresultants, resultant, ZZ, f5
 
 def ratint(f, x, **flags):
     """Performs indefinite integration of rational functions.
@@ -209,7 +209,7 @@ def ratint_logpart(f, g, x, t=None):
 
     a, b = g, f - g.diff()*Poly(t, x)
 
-    basis = groebner([a, b], x, t, order='lex')
+    basis = f5([a, b], x, t, order='lex')
     # We want the basis to be sorted by increasing highest term
     basis.reverse()
     m, H = len(basis), []
