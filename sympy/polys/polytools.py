@@ -37,6 +37,10 @@ from sympy.polys.groebnertools import (
     sdp_from_dict, sdp_div, sdp_groebner,
 )
 
+from sympy.polys.f5 import (
+    f5b,
+)
+
 from sympy.polys.monomialtools import (
     Monomial, monomial_key,
 )
@@ -5103,6 +5107,48 @@ def groebner(F, *gens, **args):
         return [ g.as_expr() for g in G ]
     else:
         return G
+
+def f5(F, *gens, **args):
+    """
+    Computes the reduced Groebner basis for a set of polynomials.
+
+    Use the ``order`` argument to set the monomial ordering that will be
+    used to compute the basis. Allowed orders are ``lex``, ``grlex`` and
+    ``grevlex``. If no order is specified, it defaults to ``lex``.
+
+
+    """
+    options.allowed_flags(args, ['polys'])
+
+    try:
+        polys, opt = parallel_poly_from_expr(F, *gens, **args)
+    except PolificationFailed, exc:
+        raise ComputationFailed('groebner', len(F), exc)
+
+    domain = opt.domain
+
+    if domain.has_assoc_Field:
+        opt.domain = domain.get_field()
+    else:
+        raise DomainError("can't compute a Groebner basis over %s" % K)
+
+    for i, poly in enumerate(polys):
+        poly = poly.set_domain(opt.domain).rep.to_dict()
+        polys[i] = sdp_from_dict(poly, opt.order)
+
+    level = len(gens)-1
+
+    G = f5b(polys, level, opt.order, opt.domain)
+    G = [ Poly._from_dict(dict(g), opt) for g in G ]
+
+    if not domain.has_Field:
+        G = [ g.clear_denoms(convert=True)[1] for g in G ]
+
+    if not opt.polys:
+        return [ g.as_expr() for g in G ]
+    else:
+        return G
+
 
 def poly(expr, *gens, **args):
     """
