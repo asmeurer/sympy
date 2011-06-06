@@ -1,8 +1,12 @@
 """Tests for kinematics.py"""
 
-from sympy.utilities.pytest import raises
-from sympy.physics.classical.kinematics import *
 from sympy import symbols, Symbol, sin, cos
+from sympy.utilities.pytest import raises
+
+from sympy.physics.classical.core import Vector, ReferenceFrame
+from sympy.physics.classical.point import *
+from sympy.physics.classical.dynamicsymbol import *
+from sympy.physics.classical.functions import *
 
 q1, q2, q3, q4, q5 = symbols('q1 q2 q3 q4 q5')
 N = ReferenceFrame('N')
