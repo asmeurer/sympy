@@ -1,6 +1,6 @@
 __all__ = ['ReferenceFrame', 'Vector']
 
-from sympy import Matrix, Symbol, sin, cos, eye, simplify, diff
+from sympy import Matrix, Symbol, sin, cos, eye, simplify, diff, sqrt
 
 class ReferenceFrame(object):
     """
@@ -10,9 +10,7 @@ class ReferenceFrame(object):
     """
 
     def __init__(self, name=''):
-        """
-        Constructor for ReferenceFrame
-        """
+        """init for ReferenceFrame. """
         self.name = name
         self.parent = None
         self._ang_vel = None
@@ -53,8 +51,8 @@ class ReferenceFrame(object):
         """This returns the first common parent between two ReferenceFrames.
         Takes in another ReferenceFrame, and returns a ReferenceFrame.
         """
-        assert isinstance(other, ReferenceFrame), ('You have to use a '
-                                                   'ReferenceFrame')
+        if not isinstance(other, ReferenceFrame):
+            raise TypeError('You have to use a ReferenceFrame')
         leg1 = [self]
         ptr = self
         while ptr.parent != None:
@@ -71,13 +69,30 @@ class ReferenceFrame(object):
                     return v1
         raise ValueError('No Common Frame')
 
-    def ang_vel_in(self, other):
-        """Returns the angular velocity of the current frame relative to
-        the input frame: angular velocity of self in other
-        Takes in ReferenceFrame, returns Vector.
-        Form is A.ang_vel_in(N) is A's angular velocity in N, or N_w_A
+    def ang_vel_in(self, otherframe):
+        """Returns the angular velocity vector of the ReferenceFrame.
+
+
+        Parameters
+        ==========
+        otherframe : ReferenceFrame
+            The ReferenceFrame which the angular velocity is returned in.
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> N = ReferenceFrame('N')
+        >>> A = ReferenceFrame('A')
+        >>> V = 10 * N.x
+        >>> A.set_ang_vel(V, N)
+        >>> A.ang_vel_in(N)
+        (10)*nx>
+
         """
-        commonframe = self._common_frame(other)
+        if otherframe == self._ang_vel_parent:
+            return self._ang_vel
+        commonframe = self._common_frame(otherframe)
         # form DCM from self to first common frame
         leg1 = 0
         ptr = self
@@ -86,19 +101,40 @@ class ReferenceFrame(object):
             ptr = ptr.parent
         # form DCM from other to first common frame
         leg2 = 0
-        ptr = other
+        ptr = otherframe
         while ptr != commonframe:
             leg2 -= ptr._ang_vel
             ptr = ptr.parent
         return leg1 + leg2
 
-    def dcm(self, other):
-        """This will return the direction cosine matrix from self to other;
-        other's basis = DCM * self's basis is the definition.
-        All it takes in is the other frame.
-        nxyz = N.dcm(B) * bxyz
+    def dcm(self, otherframe):
+        """The direction cosine matrix between frames.
+
+        This gives the DCM between this frame and the otherframe.
+        The format is N.xyz = N.dcm(B) * B.xyz
+        A SymPy Matrix is returned.
+
+        Parameters
+        ==========
+        otherframe : ReferenceFrame
+            The otherframe which the DCM is generated to.
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy import symbols
+        >>> q1 = symbols('q1')
+        >>> N = ReferenceFrame('N')
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> N.dcm(A)
+        [1,       0,        0]
+        [0, cos(q1), -sin(q1)]
+        [0, sin(q1),  cos(q1)]
+
         """
-        commonframe = self._common_frame(other)
+
+        commonframe = self._common_frame(otherframe)
         # form DCM from self to first common frame
         leg1 = eye(3)
         ptr = self
@@ -107,13 +143,40 @@ class ReferenceFrame(object):
             ptr = ptr.parent
         # form DCM from other to first common frame
         leg2 = eye(3)
-        ptr = other
+        ptr = otherframe
         while ptr != commonframe:
             leg2 = ptr.parent_orient * leg2
             ptr = ptr.parent
         return leg2 * leg1.T
 
     def orientnew(self, newname, rot_type, amounts, rot_order=''):
+        """Creates a new ReferenceFrame oriented with respect to this Frame.
+
+        See ReferenceFrame.orient() for acceptable rotation types, amounts,
+        and orders. Parent is going to be self.
+
+        Parameters
+        ==========
+        newname : str
+            The name for the new ReferenceFrame
+        rot_type : str
+            The type of orientation matrix that is being created.
+        amounts : list OR value
+            The quantities that the orientation matrix will be defined by.
+        rot_order : str
+            If applicable, the order of a series of rotations.
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy import symbols
+        >>> q1 = symbols('q1')
+        >>> N = ReferenceFrame('N')
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+
+        """
+
         newframe = ReferenceFrame(newname)
         newframe.orient(self, rot_type, amounts, rot_order)
         return newframe
@@ -130,8 +193,8 @@ class ReferenceFrame(object):
             The frame that this ReferenceFrame will have its orientation matrix
             defined in relation to.
         rot_type : str
-            The type of orientation matrix that is being created. 
-        amounts : list
+            The type of orientation matrix that is being created.
+        amounts : list OR value
             The quantities that the orientation matrix will be defined by.
         rot_order : str
             If applicable, the order of a series of rotations.
@@ -139,17 +202,51 @@ class ReferenceFrame(object):
         Examples
         ========
 
-        >>>from sympy.physics.classical.essential import ReferenceFrame, Vector
-        
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy import symbols
+        >>> q1, q2, q3, q4 = symbols('q1 q2 q3 q4')
+        >>> N = ReferenceFrame('N')
+        >>> B = ReferenceFrame('B')
 
+        Now we have a choice of how to implement the orientation.  Simple is
+        shown first. Simple takes in one value and one rotation axis. The
+        axis can be in 123 or XYZ.  
 
-        The format for this needs to be spelled out and made explicit, with
-        example.
-        Simple
-        Body
-        Space
-        Euler - 4 euler params, no order
-        Axis - angle + 3 amounts for unit vector direction, no order
+        >>> B.orient(N, 'Simple', q1, '3')
+        >>> B.orient(N, 'Simple', q1, 'X')
+        >>> B.orient(N, 'Simple', 1, 'Z')
+
+        Next is Body. Body orientation takes this reference frame through
+        three successive simple rotations. Acceptable rotation orders are
+        of length 3, expressed in XYZ or 123, and cannot have a rotation
+        about about an axis twice in a row.
+
+        >>> B.orient(N, 'Body', [q1, q2, q3], '123')
+        >>> B.orient(N, 'Body', [q1, q2, 0], 'ZXZ')
+        >>> B.orient(N, 'Body', [0, 0, 0], 'XYX')
+
+        Next is Space. Space is like Body, but the rotations are applied in the
+        opposite order.
+
+        >>> B.orient(N, 'Space', [q1, q2, q3], '312')
+
+        Next is Euler. This orients the new ReferenceFrame with Euler
+        Parameters, defined as a finite rotation about
+        :math:`\vec{\hat \lambda}`, a unit vector, by some amount
+        :math:`\theta`. This orientation is described by four parameters:
+        q0 = :math:`cos(\frac{\theta}{2})`
+        q1 = :math:`\lambda_x' sin(\frac{\theta}{2})`
+        q2 = :math:`\lambda_y' sin(\frac{\theta}{2})`
+        q3 = :math:`\lambda_z' sin(\frac{\theta}{2})`
+        Euler does not take in a rotation order.
+
+        >>> B.orient(N, 'Euler', [q1, q2, q3, q4])
+
+        Last is Axis. This is a rotation about an arbitrary, non-time-varying
+        axis by some angle. The axis is supplied as a Vector.
+
+        >>> B.orient(N, 'Axis', [q1, N.x + 2 * N.y])
+
         """
 
         def _rot(axis, angle):
@@ -167,8 +264,6 @@ class ReferenceFrame(object):
                     [sin(angle), cos(angle), 0],
                     [0, 0, 1]])
 
-        assert isinstance(parent, ReferenceFrame), ('Parent must be a '
-                                                    'ReferenceFrame')
         approved_orders = ('123', '231', '312', '132', '213', '321', '121',
                            '131', '212', '232', '313', '323', '1', '2',
                            '3', '')
@@ -178,29 +273,30 @@ class ReferenceFrame(object):
         rot_order = [i.replace('Y', '2') for i in rot_order]
         rot_order = [i.replace('Z', '3') for i in rot_order]
         rot_order = ''.join(rot_order)
-        assert rot_order in approved_orders, 'Not approved order'
+        if not isinstance(parent, ReferenceFrame):
+            raise TypeError('A ReferenceFrame must be supplied as a parent')
+        if not rot_order in approved_orders:
+            raise TypeError('The supplied order is not an approved type')
 
         if rot_type == 'AXIS':
-            assert rot_order == '', 'Axis orientation take no rotation order'
-            assert isinstance(amounts, (list, tuple)) & (len(amounts) == 4),\
-                    'Amounts need to be in a list or tuple of length 4'
+            if not rot_order == '':
+                raise TypeError('Axis orientation takes no rotation order')
+            if not (isinstance(amounts, (list, tuple)) & (len(amounts) == 2)):
+                raise TypeError('Amounts are a list or tuple of length 2')
             theta = amounts[0]
-            axis = amounts[1:]
-            assert ((diff(axis[0], Symbol('t')) == 0) &
-                    (diff(axis[1], Symbol('t')) == 0) &
-                    (diff(axis[2], Symbol('t')) == 0)), ('Axis cannot '
-                                                         'be time-varying')
-            axis = Matrix(axis)
-            mag = simplify(simplify((axis.T * axis)[0]))
-            if mag != 1:
-                axis /= mag
+            axis = amounts[1]
+            assert isinstance(axis, Vector), 'A Vector needs to be supplied'
+            assert axis.dt(parent) == 0, 'Axis cannot be time-varying'
+            axis = axis.express(parent).unit
+            axis = axis.args[0][0]
             self.parent_orient = ((eye(3) - axis * axis.T) * cos(theta) +
                     Matrix([[0, -axis[2], axis[1]],[axis[2], 0, -axis[0]],
                         [-axis[1], axis[0], 0]]) * sin(theta) + axis * axis.T)
         elif rot_type == 'EULER':
-            assert isinstance(amounts, (list, tuple)) & len(amounts) == 4, \
-                'Amounts need to be in a list or tuple of length 4'
-            assert rot_order == '', 'Euler orientation take no rotation order'
+            if not rot_order == '':
+                raise TypeError('Euler orientation takes no rotation order')
+            if not (isinstance(amounts, (list, tuple)) & (len(amounts) == 4)):
+                raise TypeError('Amounts are a list or tuple of length 4')
             q0 = amounts[0]
             q1 = amounts[1]
             q2 = amounts[2]
@@ -211,26 +307,25 @@ class ReferenceFrame(object):
                 2 * (q2 * q3 - q0 * q1)], [2 * (q1 * q3 - q0 * q2), 2 * (q0 *
                 q1 + q2 * q3), q0 ** 2 - q1 ** 2 - q2 ** 2 + q3 ** 2]]))
         elif rot_type == 'BODY':
-            assert len(amounts) == 3, 'Body orientation requires 3 values'
-            assert len(rot_order) == 3, 'Body orientation requires 3 orders'
+            if not (len(amounts) == 3 & len(rot_order) == 3):
+                raise TypeError('Body orientation takes 3 values & 3 orders')
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
             self.parent_orient = (_rot(a1, amounts[0]) * _rot(a2, amounts[1])
                     * _rot(a3, amounts[2]))
         elif rot_type == 'SPACE':
-            assert len(amounts) == 3, 'Space orientation requires 3 values'
-            assert len(rot_order) == 3, 'Space orientation requires 3 orders'
+            if not (len(amounts) == 3 & len(rot_order) == 3):
+                raise TypeError('Space orientation takes 3 values & 3 orders')
             a1 = int(rot_order[0])
             a2 = int(rot_order[1])
             a3 = int(rot_order[2])
             self.parent_orient = (_rot(a3, amounts[2]) * _rot(a2, amounts[1])
                     * _rot(a1, amounts[0]))
         elif rot_type == 'SIMPLE':
-            assert not(isinstance(amounts, (list, tuple))), ('Simple takes in '
-                'a single value for amount')
-            assert not(isinstance(rot_order, (list, tuple))), ('Simple takes '
-                'in a single value for rotation order')
+            if ((isinstance(amounts, (list, tuple))) |
+                    (isinstance(rot_order, (list, tuple)))):
+                raise TypeError('Simple takes 1 value for amount and order')
             a = int(rot_order)
             self.parent_orient = _rot(a, amounts)
         else:
@@ -250,18 +345,20 @@ class ReferenceFrame(object):
         Examples
         ========
 
-        >>>from sympy.physics.classical.essential import ReferenceFrame, Vector
-        >>>N = ReferenceFrame('N')
-        >>>A = N.orientnew('B')
-        >>>V = Vector([(Matrix([10, 0, 0]), N)])
-        >>>A.set_ang_vel(V, N)
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> N = ReferenceFrame('N')
+        >>> A = ReferenceFrame('A')
+        >>> V = 10 * N.x
+        >>> A.set_ang_vel(V, N)
 
         """
+
         if value != 0:
-            assert isinstance(value, Vector), ('Angular velocity needs to be '
-                                               'Vector.')
-        assert isinstance(otherframe, ReferenceFrame), ('Need to define the '
-            'angular velocity with respect to another ReferenceFrame.')
+            if not isinstance(value, Vector):
+                raise TypeError('Angular velocity needs to be Vector.')
+        if not isinstance(otherframe, ReferenceFrame):
+            raise TypeError('Need to define the angular velocity with'
+                            'respect to another ReferenceFrame.')
         self._ang_vel = value
         self._ang_vel_parent = otherframe
 
@@ -272,25 +369,13 @@ class ReferenceFrame(object):
 
     @property
     def y(self):
-        """
-        The basis vector for the ReferenceFrame, in the y (or 2, or j)
-        direction.  Immutable.
-        Returns a Vector.
-        """
+        """The basis Vector for the ReferenceFrame, in the y direction. """
         return self._y
 
     @property
     def z(self):
-        """
-        The basis vector for the ReferenceFrame, in the z (or 3, or k)
-        direction.  Immutable.
-        Returns a Vector.
-        """
+        """The basis Vector for the ReferenceFrame, in the z direction. """
         return self._z
-
-    if _name_ == "__main__":
-       import doctest
-       doctest.testmod()
 
 
 class Vector(object):
@@ -310,6 +395,7 @@ class Vector(object):
         which is part of the ReferenceFrame construction.
         It takes in a SymPy matrix and a ReferenceFrame.
         """
+
         self.args = []
         while len(inlist) != 0:
             added = 0
@@ -380,6 +466,8 @@ class Vector(object):
                 return self
         assert isinstance(other, Vector), 'You can only add two Vectors'
         return Vector(self.args + other.args)
+
+    __radd__ = __add__
 
     def __and__(self, other):
         """
@@ -503,10 +591,10 @@ class Vector(object):
         outvec = 0
         for i,v in enumerate(self.args):
             if v[1] == otherframe:
-                outvec += Vector(v[0].diff(wrt), otherframe)
+                outvec += Vector([(v[0].diff(wrt), otherframe)])
             else:
                 diffed = (Vector(v).express(otherframe))[0].diff(wrt)
-                outvec += Vector(diff, otherframe).express(v[1])
+                outvec += Vector([(diff, otherframe)]).express(v[1])
 
     def dt(self, otherframe):
         """
@@ -519,10 +607,10 @@ class Vector(object):
         outvec = 0
         for i,v in enumerate(self.args):
             if v[1] == otherframe:
-                outvec += Vector(v[0].diff(Symbol('t')), otherframe)
+                outvec += Vector([(v[0].diff(Symbol('t')), otherframe)])
             else:
-                outvec += (Vector(v[0].diff(Symbol('t')), otherframe) +
-                    Vector(v[1].ang_vel_in(otherframe), otherframe) ^
+                outvec += (Vector([(v[0].diff(Symbol('t')), otherframe)]) +
+                    Vector([(v[1].ang_vel_in(otherframe), otherframe)]) ^
                     Vector([v]))
         return outvec
 
@@ -551,3 +639,9 @@ class Vector(object):
     def unit(self):
         """Returns this Vector, with unit length. """
         return Vector(self.args + []) / self.mag
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+
