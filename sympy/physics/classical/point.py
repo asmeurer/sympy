@@ -28,10 +28,11 @@ class Point(object):
         Used to set the position of this point with respect to another point.
         """
         if value != 0:
-            assert isinstance(value, Vector), ('Need to supply a Vector for ',
-                                               'the position of this Point')
+            if not isinstance(value, Vector):
+                raise TypeError('Position is a Vector')
         if point != None:
-            assert isinstance(point, Point), 'Need to supply a parent point'
+            if not isinstance(point, Point):
+                raise TypeError('Need to supply a parent point')
         self._pos = value
         self._pos_par = point
 
@@ -81,31 +82,36 @@ class Point(object):
         """
         Used to set the velocity Vector of this Point in a ReferenceFrame.
         """
-        assert isinstance(frame, ReferenceFrame), 'Velocity is defined \
-                in a specific ReferenceFrame'
+        if not isinstance(frame, ReferenceFrame):
+            raise TypeError('Velocity is defined in a ReferenceFrame')
         if value != 0:
-            assert isinstance(value, Vector), 'Velocity is a Vector'
+            if not isinstance(value, Vector):
+                raise TypeError('Velocity is a Vector')
         self._vel_frame = frame
         self._vel = value
 
     def vel(self, frame):
+        """Returns the velocity of this Point in the ReferenceFrame, as a Vector.
+
         """
-        Returns the velocity of this Point in the ReferenceFrame, as a Vector.
-        """
-        assert isinstance(frame, ReferenceFrame), 'Velocity is described \
-                in a frame'
-        assert frame == self._vel_frame, 'Velocity has not been defined in \
-                that ReferenceFrame; redefine it first'
+
+        if not isinstance(frame, ReferenceFrame):
+            raise TypeError('Velocity is described in a frame')
+        if frame != self._vel_frame:
+            raise ValueError('Velocity has not been defined in '
+                             'that ReferenceFrame; redefine it first')
         return self._vel
 
     def set_acc(self, value, frame):
+        """Used to set the acceleration of this Point in a ReferenceFrame.
+
         """
-        Used to set the acceleration of this Point in a ReferenceFrame.
-        """
-        assert isinstance(frame, ReferenceFrame), 'Acceleration is defined \
-                in a specific ReferenceFrame'
+
+        if not isinstance(frame, ReferenceFrame):
+            raise TypeError('Acceleration is defined in a ReferenceFrame')
         if value != 0:
-            assert isinstance(value, Vector), 'Acceleration is a Vector'
+            if not isinstance(value, Vector):
+                raise TypeError('Acceleration is a Vector')
         self._acc_frame = frame
         self._acc = value
 
@@ -114,9 +120,10 @@ class Point(object):
         Returns the acceleration of this Point in a ReferenceFrame, as a
         Vector.
         """
-        assert isinstance(frame, ReferenceFrame), 'Velocity is described \
-                in a frame'
-        assert frame == self._acc_frame, 'Acceleration has not been defined \
-                in that ReferenceFrame; redefine it first'
+        if not isinstance(frame, ReferenceFrame):
+            raise TypeError('Velocity is described in a frame')
+        if frame != self._acc_frame:
+            raise ValueError('Acceleration has not been defined in that '
+                             'ReferenceFrame; redefine it first')
         return self._acc
 
