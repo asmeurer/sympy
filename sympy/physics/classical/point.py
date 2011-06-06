@@ -1,6 +1,6 @@
 __all__ = ['Point']
 
-from sympy.physics.classical.core import Vector, ReferenceFrame
+from sympy.physics.classical.essential import Vector, ReferenceFrame
 
 class Point(object):
     """

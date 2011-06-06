@@ -23,6 +23,6 @@ import point
 from point import *
 __all__.extend(point .__all__)
 
-import core
-from core import *
-__all__.extend(core .__all__)
+import essential
+from essential import *
+__all__.extend(essential.__all__)

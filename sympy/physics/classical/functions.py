@@ -3,7 +3,7 @@ __all__ = ['cross',
            'dynamicsymbols',
            'express']
 
-from sympy.physics.classical.core import Vector
+from sympy.physics.classical.essential import Vector
 
 def cross(vec1, vec2):
     """
