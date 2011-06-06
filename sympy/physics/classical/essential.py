@@ -1,6 +1,6 @@
 __all__ = ['ReferenceFrame', 'Vector']
 
-from sympy import Matrix, Symbol, sin, cos, eye, simplify, diff, sqrt
+from sympy import Matrix, Symbol, sin, cos, eye, simplify, diff, sqrt, sympify
 
 class ReferenceFrame(object):
     """
@@ -46,7 +46,10 @@ class ReferenceFrame(object):
     def _common_frame(self,other):
         """This returns the first common parent between two ReferenceFrames.
         Takes in another ReferenceFrame, and returns a ReferenceFrame.
+        Not used by the user.
+
         """
+
         if not isinstance(other, ReferenceFrame):
             raise TypeError('You have to use a ReferenceFrame')
         leg1 = [self]
@@ -90,6 +93,7 @@ class ReferenceFrame(object):
         (10)*nx>
 
         """
+
         if otherframe == self._ang_vel_parent:
             return self._ang_vel
         commonframe = self._common_frame(otherframe)
@@ -399,7 +403,8 @@ class Vector(object):
         This is the constructor for the Vector class.
         You shouldn't be calling this, it should only be used by other
         functions. You should be treating Vectors like you would with if you
-        were doing the math by hand.
+        were doing the math by hand, and getting the first 3 from the
+        standard basis vectors from a ReferenceFrame.
 
         """
 
@@ -510,11 +515,10 @@ class Vector(object):
         return dotcheck & crosscheck
 
     def __mul__(self, other):
-        """
-        Multiplies the Vector by a scalar.
-        Throws an error if another Vector is entered.
-        """
-        if isinstance(other, Vector):
+        """Multiplies the Vector by a sympifyable expression. """
+        try:
+            sympify(other)
+        except SympifyError:
             raise TypeError('Two Vectors can\'t be multiplied')
         newlist = [v for v in self.args]
         for i, v in enumerate(newlist):
@@ -525,19 +529,36 @@ class Vector(object):
         return self * -1
 
     def __sub__(self, other):
-        """
-        The subraction operator.
-        Reuses add and multiplication operations.
-        """
+        """The subraction operator. """
         return self.__add__(other * -1)
 
     def __xor__(self, other):
+        """The cross product operator for two Vectors.
+
+        Returns a Vector, expressed in the same ReferenceFrames as self.
+
+        Parameters
+        ==========
+        other : Vector
+            The Vector which we are crossing with
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy import symbols
+        >>> q1 = symbols('q1')
+        >>> N = ReferenceFrame('N')
+        >>> N.x ^ N.y
+        nz>
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> A.x ^ N.y
+        (sin(q1))*ay> + (cos(q1))*az>
+        >>> N.y ^ A.x
+        - nz>
+
         """
-        The cross product operator for two Vectors.
-        Takes in two Vectors; order matters.
-        Returns a Vector which is perpendicular to the two input vectors.
-        This Vector is expressed in the frames of self (first vector).
-        """
+
         if isinstance(other, int):
             if other == 0:
                 return self * 0
@@ -573,9 +594,29 @@ class Vector(object):
     cross = __xor__
 
     def diff(self, wrt, otherframe):
-        """Takes in a sympifyable value, which cannot be a Vector.
-        Returns the partial derivative of the self Vector with respect
-        to the input value.
+        """Takes the partial derivative, with respect to a value, in a frame.
+
+        Returns a Vector.
+
+        Parameters
+        ==========
+        wrt : Symbol
+            What the partial derivative is taken with respect to.
+        otherframe : ReferenceFrame
+            The ReferenceFrame that the partial derivative is taken in.
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy.physics.classical.dynamicsymbol import DynamicSymbol
+        >>> from sympy import Symbol
+        >>> t = Symbol('t')
+        >>> q1 = DynamicSymbol('q1')
+        >>> N = ReferenceFrame('N')
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> A.x.diff(t, N)
+        (-cos(q1)**2*q1d - sin(q1)**2*q1d)*az>
 
         """
 
@@ -587,17 +628,34 @@ class Vector(object):
             if v[1] == otherframe:
                 outvec += Vector([(v[0].diff(wrt), otherframe)])
             else:
-                diffed = (Vector(v).express(otherframe))[0].diff(wrt)
-                outvec += Vector([(diff, otherframe)]).express(v[1])
+                diffed = (Vector([v]).express(otherframe)).args[0][0].diff(wrt)
+                outvec += Vector([(diffed, otherframe)]).express(v[1])
+        return outvec
 
     def dt(self, otherframe):
         """Returns the time derivative of the Vector in a ReferenceFrame.
+
+        Returns a Vector which is the time derivative of the self Vector, taken
+        in frame otherframe.
+
+        Parameters
+        ==========
+        otherframe : ReferenceFrame
+            The ReferenceFrame that the partial derivative is taken in.
+
+        Examples
+        ========
+
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy.physics.classical.dynamicsymbol import DynamicSymbol
+        >>> from sympy import Symbol
 
         """
 
         outvec = 0
         if not isinstance(otherframe, ReferenceFrame):
             raise TypeError('Need a ReferenceFrame to take derivative in')
+        # TODO add ability to take dt when only dcm has been defined (no angvel)
         for i,v in enumerate(self.args):
             if v[1] == otherframe:
                 outvec += Vector([(v[0].diff(Symbol('t')), otherframe)])
@@ -608,11 +666,20 @@ class Vector(object):
         return outvec
 
     def express(self, otherframe):
-        """
-        Returns the vector, expressed in the other frame.
-        Uses a DCM from each basis vector triplet's current frame to the other
-        frame.
-        Takes in a frame.
+        """Returns a vector, expressed in the other frame.
+
+        A new Vector is returned, equalivalent to this Vector, but its
+        components are all defined in only the otherframe.
+
+        Parameters
+        ==========
+        otherframe : ReferenceFrame
+            The frame for this Vector to be described in
+
+        Examples
+        ========
+
+        >>> 
 
         """
 

@@ -3,18 +3,19 @@ __all__ = ['Point']
 from sympy.physics.classical.essential import Vector, ReferenceFrame
 
 class Point(object):
-    """
-    This object represents a point in a dynamic system.
+    """This object represents a point in a dynamic system.
     It stores the: position, velocity, and acceleration of a point.
     The position is a vector defined as the vector distance from a parent
     point to this point.
+
     """
 
     def __init__(self, name):
-        """
-        Initialization of a Point object.  Takes in a name, sets
+        """Initialization of a Point object.  Takes in a name, sets
         attributes to zero.
+
         """
+
         self.name = name
         self._pos = None
         self._pos_par = None
@@ -24,9 +25,10 @@ class Point(object):
         self._acc_frame = None
 
     def set_pos(self, value, point = None):
+        """Used to set the position of this point w.r.t. another point.
+
         """
-        Used to set the position of this point with respect to another point.
-        """
+
         if value != 0:
             if not isinstance(value, Vector):
                 raise TypeError('Position is a Vector')
@@ -37,11 +39,13 @@ class Point(object):
         self._pos_par = point
 
     def pos(self, otherpoint = None):
-        """
-        Returns a Vector distance between this Point and the other Point.
+        """Returns a Vector distance between this Point and the other Point.
+
         If no other Point is given, the value of this Point's position is
         returned.
+
         """
+
         if type(otherpoint) == type(None):
             return self._pos
         common_pos_par = self._common_pos_par(otherpoint)
@@ -58,10 +62,7 @@ class Point(object):
         return leg1 + leg2
 
     def _common_pos_par(self,other):
-        """
-        This returns the first common parent between two ReferenceFrames.
-        Takes in another ReferenceFrame, and returns a ReferenceFrame.
-        """
+        """This returns the first common parent between two ReferenceFrames."""
         leg1 = [self]
         ptr = self
         while ptr._pos_par != None:
