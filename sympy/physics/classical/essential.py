@@ -165,7 +165,7 @@ class ReferenceFrame(object):
         [0, sin(q1),  cos(q1)]
 
         """
-        (l1, l2) = self._frame_list(other)
+        (l1, l2) = self._frame_list(otherframe)
         if (len(l1) == 1) & (len(l2) == 1):
             return eye(3)
         elif len(l1) == 1:
@@ -173,7 +173,8 @@ class ReferenceFrame(object):
         elif len(l2) == 1:
             return l1[0].parent_orient.T * l1[1].dcm(l1[-1])
         # TODO double check the mul order of the line below
-        return l2[-1].dcm(l2[0]) * l1[0].dcm(l1[-1])
+        return l1[0].dcm(l1[-1]) * l2[-1].dcm(l2[0])
+        #return l2[-1].dcm(l2[0]) * l1[0].dcm(l1[-1])
 
     def orientnew(self, newname, rot_type, amounts, rot_order=''):
         """Creates a new ReferenceFrame oriented with respect to this Frame.
