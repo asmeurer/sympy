@@ -364,7 +364,7 @@ class Basic(AssumeMeths):
            but faster
         """
 
-        if type(self) is not type(other):
+        if type(self) != type(other):
             try:
                 other = _sympify(other)
             except SympifyError:

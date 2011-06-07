@@ -324,3 +324,11 @@ def test_issue1889_builtins():
 
     exp2 = sympify('C', vars)
     assert exp2 == C # Make sure it did not get mixed up with sympy.C
+
+def test_issue_1612():
+    # This actually ended up being a bug in Basic.__eq__, but manifests itself
+    # with sympify, so I've added the test here.
+    f = Function('f')
+    x = Symbol('x')
+    assert f(x) == sympify('f(x)')
+    assert x(x) == Function('x')(x)
