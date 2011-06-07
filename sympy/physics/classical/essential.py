@@ -141,7 +141,6 @@ class ReferenceFrame(object):
             w3 = angvelmat[3]
             return Vector([(Matrix([w1, w2, w3]), self)])
 
-
     def dcm(self, otherframe):
         """The direction cosine matrix between frames.
 
