@@ -91,6 +91,26 @@ class ReferenceFrame(object):
                     return v1
         raise ValueError('No Common Parent Frame')
 
+    def _frame_list(self, other):
+        """The list of frames from self to other. """
+        leg1 = [self]
+        ptr = self
+        while ptr.parent != None:
+            ptr = ptr.parent
+            leg1.append(ptr)
+        leg2 = [other]
+        ptr = other
+        while ptr.parent != None:
+            ptr = ptr.parent
+            leg2.append(ptr)
+        for i1, v1 in enumerate(leg2):
+            for i2, v2 in enumerate(leg1):
+                if v1 == v2:
+                    leg2 = leg2[:i + 1]
+                    leg2.reverse()
+                    return leg1[0:i2] + leg2
+        raise ValueError('No Common Parent Frame')
+
     def ang_vel_in(self, otherframe):
         """Returns the angular velocity vector of the ReferenceFrame.
 
