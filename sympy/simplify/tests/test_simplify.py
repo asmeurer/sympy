@@ -166,6 +166,9 @@ def test_simplify():
 def test_simplify_other():
     assert simplify(sin(x)**2 + cos(x)**2) == 1
     assert simplify(gamma(x + 1)/gamma(x)) == x
+    print
+    print simplify(sin(x)**2 + cos(x)**2 + factorial(x)/gamma(x))
+    print simplify(sin(x)**2 + cos(x)**2 + factorial(x)/gamma(x))
     assert simplify(sin(x)**2 + cos(x)**2 + factorial(x)/gamma(x)) == 1 + x
     assert simplify(Eq(sin(x)**2 + cos(x)**2, factorial(x)/gamma(x))) == Eq(1, x)
 
