@@ -622,7 +622,7 @@ class Vector(object):
         >>> t = Symbol('t')
         >>> q1 = DynamicSymbol('q1')
         >>> N = ReferenceFrame('N')
-        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> A = N.orientnew('A', 'Simple', q1, 2)
         >>> A.x.diff(t, N)
         (-cos(q1)**2*q1d - sin(q1)**2*q1d)*az>
 
@@ -700,7 +700,7 @@ class Vector(object):
         >>> from sympy.physics.classical.dynamicsymbol import DynamicSymbol
         >>> q1 = DynamicSymbol('q1')
         >>> N = ReferenceFrame('N')
-        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> A = N.orientnew('A', 'Simple', q1, 2)
         >>> A.x.express(N)
         (cos(q1))*nx> + (-sin(q1))*nz>
 
