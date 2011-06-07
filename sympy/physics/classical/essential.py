@@ -3,8 +3,16 @@ __all__ = ['ReferenceFrame', 'Vector']
 from sympy import Matrix, Symbol, sin, cos, eye, simplify, diff, sqrt, sympify
 
 class ReferenceFrame(object):
-    """
-    ReferenceFrame is a reference frame.
+    """A reference frame in classical mechanics.
+
+    ReferenceFrame is a class used to represent a reference frame in classical
+    mechanics. It has a standard basis of three unit vectors in the frame's
+    x, y, and z directions.
+    It also can have a rotation relative to a parent
+    frame; this rotation is defined by a direction cosine matrix relating this
+    frame's basis vectors to the parent frame's basis vectors.
+    It can also have an angular velocity vector, defined in another frame.
+
     """
 
     def __init__(self, name=''):
@@ -44,12 +52,7 @@ class ReferenceFrame(object):
             raise StopIteration
 
     def _common_frame(self,other):
-        """This returns the first common parent between two ReferenceFrames.
-        Takes in another ReferenceFrame, and returns a ReferenceFrame.
-        Not used by the user.
-
-        """
-
+        """Returns the first common parent between two ReferenceFrames. """
         if not isinstance(other, ReferenceFrame):
             raise TypeError('You have to use a ReferenceFrame')
         leg1 = [self]
@@ -389,11 +392,18 @@ class ReferenceFrame(object):
 
 
 class Vector(object):
-    """
-    This is the class used to define vectors.  It along with reference
-    frame are the building blocks of pydy.
-    Class attributes include:
-    subscript_indices - a 3 character string used for printing
+    """The class used to define vectors.
+
+    It along with ReferenceFrame are the building blocks of describing a
+    classical mechanics system in PyDy.
+
+    Attributes
+    ==========
+    subscript_indices : str
+        A 3 character string used for printing the basis vectors
+        This needs to be changed as Vector.subscript_indices = "123", and not
+        as SomeVectorInstance.subscript_indices = "xyz"
+
     """
 
     subscript_indices = "xyz"
@@ -431,11 +441,7 @@ class Vector(object):
             i += 1
 
     def __str__(self):
-        """Printing method.  Uses Vector Attribute subscript_indices to choose
-        how to show basis vector indices.
-
-        """
-
+        """Printing method. """
         ar = self.args # just to shorten things
         ol = [] # output list, to be concatenated to a string
         for i, v in enumerate(ar):
@@ -464,7 +470,6 @@ class Vector(object):
 
     def __add__(self, other):
         """The add operator for Vector. """
-
         if isinstance(other, int):
             if other == 0:
                 return self
@@ -474,7 +479,6 @@ class Vector(object):
 
     def __and__(self, other):
         """Dot product of two vectors. """
-
         if not isinstance(other, Vector):
             raise TypeError('Dot product is between two vectors')
         out = 0
@@ -495,7 +499,7 @@ class Vector(object):
         return self.__mul__(1 / other)
 
     def __eq__(self, other):
-        """Tests for equality.  
+        """Tests for equality.
         If other is 0, and self is empty, returns True.
         If other is 0 and self is not empty, returns False.
         If none of the above, only accepts other as a Vector.
@@ -564,12 +568,16 @@ class Vector(object):
                 return self * 0
         if not isinstance(other, Vector):
             raise TypeError('Cross products are between Vectors')
+
         def _det(mat):
             """
             This is needed as a little method for to find the determinant of a
             list in python; needs to work for a 3x3 list.
             SymPy's Matrix won't take in Vector, so need a custom function.
+            You shouldn't be calling this.
+
             """
+
             return (mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1])
                     + mat[0][1] * (mat[1][2] * mat[2][0] - mat[1][0] *
                     mat[2][2]) + mat[0][2] * (mat[1][0] * mat[2][1] -
@@ -649,6 +657,16 @@ class Vector(object):
         >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
         >>> from sympy.physics.classical.dynamicsymbol import DynamicSymbol
         >>> from sympy import Symbol
+        >>> q1 = Symbol('q1')
+        >>> u1 = DynamicSymbol('u1')
+        >>> N = ReferenceFrame('N')
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> v = u1 * N.x
+        >>> A.set_ang_vel(10*A.x, N)
+        >>> A.x.dt(N) == 0
+        True
+        >>> v.dt(N)
+        (u1d)*nx>
 
         """
 
@@ -661,8 +679,7 @@ class Vector(object):
                 outvec += Vector([(v[0].diff(Symbol('t')), otherframe)])
             else:
                 outvec += (Vector([(v[0].diff(Symbol('t')), otherframe)]) +
-                    Vector([(v[1].ang_vel_in(otherframe), otherframe)]) ^
-                    Vector([v]))
+                    v[1].ang_vel_in(otherframe) ^ Vector([v]))
         return outvec
 
     def express(self, otherframe):
@@ -679,7 +696,13 @@ class Vector(object):
         Examples
         ========
 
-        >>> 
+        >>> from sympy.physics.classical.essential import ReferenceFrame, Vector
+        >>> from sympy.physics.classical.dynamicsymbol import DynamicSymbol
+        >>> q1 = DynamicSymbol('q1')
+        >>> N = ReferenceFrame('N')
+        >>> A = N.orientnew('A', 'Simple', q1, 1)
+        >>> A.x.express(N)
+        (cos(q1))*nx> + (-sin(q1))*nz>
 
         """
 
