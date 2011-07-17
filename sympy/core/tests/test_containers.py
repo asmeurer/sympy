@@ -1,7 +1,7 @@
 from sympy import Matrix, Tuple, symbols
 from sympy.core.containers import tuple_wrapper
 from sympy.utilities.pytest import raises
-from sympy.core.compatibility import all, ordered_iter, iterable
+from sympy.core.compatibility import ordered_iter, iterable
 
 def test_Tuple():
     t = (1, 2, 3, 4)
