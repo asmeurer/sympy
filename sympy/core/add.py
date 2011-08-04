@@ -258,6 +258,9 @@ class Add(AssocOp):
         return self.args[0], self._new_rawargs(*self.args[1:])
 
     def as_numer_denom(self):
+        return self.as_numer_denom_orig()
+
+    def as_numer_denom_orig(self):
         numers, denoms = [],[]
         for n,d in [f.as_numer_denom() for f in self.args]:
             numers.append(n)
@@ -265,6 +268,47 @@ class Add(AssocOp):
         r = xrange(len(numers))
         return Add(*[Mul(*(denoms[:i]+[numers[i]]+denoms[i+1:]))
                      for i in r]), Mul(*denoms)
+
+    def as_numer_denom1(self):
+        """
+        Combine pairwise.
+        """
+        numers, denoms = zip(*[f.as_numer_denom() for f in self.args])
+        num = [numers[0]]
+        dom = denoms[0]
+        for n, d in zip(numers[1:], denoms[1:]):
+            for i in xrange(len(num)):
+                num[i] *= d
+            num.append(n*dom)
+            dom *= d
+        return Add(*num), dom
+
+    def as_numer_denom2(self):
+        """
+        Combine pariwise; don't Mul until the end.
+        """
+        numers, denoms = zip(*[f.as_numer_denom() for f in self.args])
+        num = [[numers[0]]]
+        dom = [denoms[0]]
+        for n, d in zip(numers[1:], denoms[1:]):
+            for i in xrange(len(num)):
+                num[i].append(d)
+            num.append([n] + dom)
+            dom.append(d)
+        return Add(*(Mul(*n) for n in num)), Mul(*dom)
+
+    def as_numer_denom3(self):
+        """
+        Combine pairwise; don't distribute the denominator.
+        """
+        numers, denoms = zip(*[f.as_numer_denom() for f in self.args])
+        num = numers[0]
+        dom = denoms[0]
+        for n, d in zip(numers[1:], denoms[1:]):
+            num *= d
+            num += n*dom
+            dom *= d
+        return num, dom
 
     def _eval_is_polynomial(self, syms):
         return all(term._eval_is_polynomial(syms) for term in self.args)
