@@ -303,12 +303,21 @@ class Add(AssocOp):
         """
         numers, denoms = zip(*[f.as_numer_denom() for f in self.args])
         num = numers[0]
-        dom = denoms[0]
+        den = denoms[0]
         for n, d in zip(numers[1:], denoms[1:]):
             num *= d
-            num += n*dom
-            dom *= d
-        return num, dom
+            num += n*den
+            den *= d
+        return num, den
+
+    def as_numer_denom4(self):
+        """
+        Cancel (divide out) terms.
+        """
+        numers, denoms = zip(*[f.as_numer_denom() for f in self.args])
+        den = Mul(*denoms)
+        nums = [den*n/d for n, d in zip(numers, denoms)]
+        return Add(*nums), den
 
     def _eval_is_polynomial(self, syms):
         return all(term._eval_is_polynomial(syms) for term in self.args)
