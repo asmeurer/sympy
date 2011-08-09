@@ -2,44 +2,8 @@ from sympy.core import Basic, S, Function, diff, Number, sympify
 from sympy.core.relational import Equality, Relational
 from sympy.logic.boolalg import Boolean
 from sympy.core.sets import Set
+from sympy.core.containers import Tuple
 
-class ExprCondPair(Function):
-    """Represents an expression, condition pair."""
-
-    def __new__(cls, *args, **assumptions):
-        if isinstance(args[0], cls):
-            expr = args[0].expr
-            cond = args[0].cond
-        elif len(args) == 2:
-            expr = sympify(args[0])
-            cond = sympify(args[1])
-        else:
-            raise TypeError("args must be a (expr, cond) pair")
-        return Basic.__new__(cls, expr, cond, **assumptions)
-
-    @property
-    def expr(self):
-        return self.args[0]
-
-    @property
-    def cond(self):
-        return self.args[1]
-
-    @property
-    def is_commutative(self):
-        return self.expr.is_commutative
-
-    @property
-    def free_symbols(self):
-        # Overload Basic.free_symbols because self.args[1] may contain non-Basic
-        result = self.expr.free_symbols
-        if hasattr(self.cond, 'free_symbols'):
-            result |= self.cond.free_symbols
-        return result
-
-    def __iter__(self):
-        yield self.expr
-        yield self.cond
 
 class Piecewise(Function):
     """
@@ -77,14 +41,16 @@ class Piecewise(Function):
         # (Try to) sympify args first
         newargs = []
         for ec in args:
-            pair = ExprCondPair(*ec)
-            cond_type = type(pair.cond)
+            pair = Tuple(*ec)
+            if len(pair) != 2:
+                raise TypeError("Piecewise args must be (expr, cond) pairs.")
+            cond_type = type(pair[1])
             if not (cond_type is bool or issubclass(cond_type, Relational) or \
                     issubclass(cond_type, Number) or \
                     issubclass(cond_type, Set) or issubclass(cond_type, Boolean)):
                 raise TypeError(
                     "Cond %s is of type %s, but must be a bool," \
-                    " Relational, Number or Set" % (pair.cond, cond_type))
+                    " Relational, Number, or Set" % (pair[1], cond_type))
             newargs.append(pair)
 
         if options.pop('evaluate', True):
@@ -96,13 +62,6 @@ class Piecewise(Function):
             return Basic.__new__(cls, *newargs, **options)
         else:
             return r
-
-    def __getnewargs__(self):
-        # Convert ExprCondPair objects to tuples.
-        args = []
-        for expr, condition in self.args:
-            args.append((expr, condition))
-        return tuple(args)
 
     @classmethod
     def eval(cls, *args):
@@ -141,6 +100,20 @@ class Piecewise(Function):
             return Piecewise(*non_false_ecpairs)
 
         return None
+
+    @property
+    def free_symbols(self):
+        # Overload Basic.free_symbols because self.args[...][1] may contain non-Basic
+        result = set()
+        for expr, cond in self.args:
+            result |= expr.free_symbols
+            if hasattr(cond, 'free_symbols'):
+                result |= cond.free_symbols
+        return result
+
+    @property
+    def is_commutative(self):
+        return all(expr.is_commutative for expr, cond in self.args)
 
     def doit(self, **hints):
         newargs = []
@@ -251,7 +224,7 @@ class Piecewise(Function):
         return Piecewise( *new_args )
 
     def _eval_nseries(self, x, n, logx):
-        args = map(lambda ec: (ec.expr._eval_nseries(x, n, logx), ec.cond), \
+        args = map(lambda ec: (ec[0]._eval_nseries(x, n, logx), ec[1]), \
                    self.args)
         return self.func(*args)
 
@@ -282,8 +255,8 @@ def piecewise_fold(expr):
     if not isinstance(expr, Basic) or not expr.has(Piecewise):
         return expr
     new_args = map(piecewise_fold, expr.args)
-    if expr.func is ExprCondPair:
-        return ExprCondPair(*new_args)
+    if expr.func is Tuple:
+        return Tuple(*new_args)
     piecewise_args = []
     for n, arg in enumerate(new_args):
         if arg.func is Piecewise:

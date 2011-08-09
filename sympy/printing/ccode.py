@@ -161,12 +161,12 @@ class CCodePrinter(CodePrinter):
         ecpairs = ["(%s) {\n%s\n}\n" % (self._print(c), self._print(e)) \
                        for e, c in expr.args[:-1]]
         last_line = ""
-        if expr.args[-1].cond == True:
-            last_line = "else {\n%s\n}" % self._print(expr.args[-1].expr)
+        if expr.args[-1][1] == True:
+            last_line = "else {\n%s\n}" % self._print(expr.args[-1][0])
         else:
             ecpairs.append("(%s) {\n%s\n" % \
-                           (self._print(expr.args[-1].cond),
-                            self._print(expr.args[-1].expr)))
+                           (self._print(expr.args[-1][1]),
+                            self._print(expr.args[-1][0])))
         code = "if %s" + last_line
         return code % "else if ".join(ecpairs)
 

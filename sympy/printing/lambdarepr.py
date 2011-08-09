@@ -21,8 +21,8 @@ class LambdaPrinter(StrPrinter):
         result = []
         i = 0
         for arg in expr.args:
-            e = arg.expr
-            c = arg.cond
+            e = arg[0]
+            c = arg[1]
             result.append('((')
             result.append(self._print(e))
             result.append(') if (')

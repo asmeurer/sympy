@@ -515,11 +515,11 @@ class PrettyPrinter(Printer):
 
         P = {}
         for n, ec in enumerate(pexpr.args):
-            P[n,0] = self._print(ec.expr)
-            if ec.cond == True:
+            P[n,0] = self._print(ec[0])
+            if ec[1] == True:
                 P[n,1] = prettyForm('otherwise')
             else:
-                P[n,1] = prettyForm(*prettyForm('for ').right(self._print(ec.cond)))
+                P[n,1] = prettyForm(*prettyForm('for ').right(self._print(ec[1])))
         hsep = 2
         vsep = 1
         len_args = len(pexpr.args)

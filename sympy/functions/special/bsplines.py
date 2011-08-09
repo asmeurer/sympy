@@ -1,6 +1,5 @@
 from sympy.core import S, sympify, expand
 from sympy.functions import Piecewise, piecewise_fold
-from sympy.functions.elementary.piecewise import ExprCondPair
 from sympy.core.sets import Interval
 
 
@@ -13,13 +12,13 @@ def _add_splines(c, b1, d, b2):
     new_args = []
     n_intervals = len(b1.args)
     assert(n_intervals==len(b2.args))
-    new_args.append((expand(c*b1.args[0].expr), b1.args[0].cond))
+    new_args.append((expand(c*b1.args[0][0]), b1.args[0][1]))
     for i in range(1, n_intervals-1):
         new_args.append((
-            expand(c*b1.args[i].expr+d*b2.args[i-1].expr),
-            b1.args[i].cond
+            expand(c*b1.args[i][0]+d*b2.args[i-1][0]),
+            b1.args[i][1]
         ))
-    new_args.append((expand(d*b2.args[-2].expr), b2.args[-2].cond))
+    new_args.append((expand(d*b2.args[-2][0]), b2.args[-2][1]))
     new_args.append(b2.args[-1])
     return Piecewise(*new_args)
 
@@ -98,10 +97,10 @@ def bspline_basis(d, knots, n, x, close=True):
         raise ValueError('degree must be non-negative: %r' % n)
     if close:
         final_ec_pair = result.args[-2]
-        final_cond = final_ec_pair.cond
-        final_expr = final_ec_pair.expr
+        final_cond = final_ec_pair[1]
+        final_expr = final_ec_pair[0]
         new_args = final_cond.args[:3] + (False,)
-        new_ec_pair = ExprCondPair(final_expr, Interval(*new_args))
+        new_ec_pair = (final_expr, Interval(*new_args))
         new_args = result.args[:-2] + (new_ec_pair, result.args[-1])
         result = Piecewise(*new_args)
     return result

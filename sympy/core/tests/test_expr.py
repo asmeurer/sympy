@@ -848,7 +848,9 @@ def test_integrate():
     assert x.integrate(x) == x**2/2
     assert x.integrate((x, 0, 1)) == S(1)/2
 
+@XFAIL
 def test_contains():
+    # Some of these actually should fail.  See issue 2389.
     f = (x*y + 3/y)**(3 + 2)
     g = Function('g')
     h = Function('h')

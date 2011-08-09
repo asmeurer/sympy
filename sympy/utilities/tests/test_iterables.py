@@ -7,7 +7,7 @@ from sympy.utilities.iterables import (postorder_traversal, preorder_traversal,
     unrestricted_necklace, generate_oriented_forest)
 
 from sympy.core.singleton import S
-from sympy.functions.elementary.piecewise import Piecewise, ExprCondPair
+from sympy.functions.elementary.piecewise import Piecewise
 from sympy.utilities.pytest import raises
 
 w,x,y,z= symbols('w,x,y,z')
@@ -21,8 +21,8 @@ def test_postorder_traversal():
 
     expr = Piecewise((x,x<1),(x**2,True))
     assert list(postorder_traversal(expr)) == [
-        x, x, 1, x < 1, ExprCondPair(x, x < 1), x, 2, x**2, True,
-        ExprCondPair(x**2, True), Piecewise((x, x < 1), (x**2, True))
+        x, x, 1, x < 1, Tuple(x, x < 1), x, 2, x**2, True,
+        Tuple(x**2, True), Piecewise((x, x < 1), (x**2, True))
     ]
     assert list(preorder_traversal(Integral(x**2, (x, 0, 1)))) == [
         Integral(x**2, (x, 0, 1)), x**2, x, 2, Tuple(x, 0, 1), x, 0, 1
@@ -41,8 +41,8 @@ def test_preorder_traversal():
 
     expr = Piecewise((x,x<1),(x**2,True))
     assert list(preorder_traversal(expr)) == [
-        Piecewise((x, x < 1), (x**2, True)), ExprCondPair(x, x < 1), x, x < 1,
-        x, 1, ExprCondPair(x**2, True), x**2, x, 2, True
+        Piecewise((x, x < 1), (x**2, True)), Tuple(x, x < 1), x, x < 1,
+        x, 1, Tuple(x**2, True), x**2, x, 2, True
     ]
     assert list(postorder_traversal(Integral(x**2, (x, 0, 1)))) == [
         x, 2, x**2, x, 0, 1, Tuple(x, 0, 1),
