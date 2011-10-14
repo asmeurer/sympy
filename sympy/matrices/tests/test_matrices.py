@@ -1,6 +1,6 @@
 from sympy import (symbols, Matrix, SparseMatrix, eye, I, Symbol, Rational,
     Float, wronskian, cos, sin, exp, hessian, sqrt, zeros, ones, randMatrix,
-    Poly, S, pi, E, I, oo, trigsimp, Integer, block_diag, N, zeros, sympify,
+    Poly, S, pi, E, oo, trigsimp, Integer, N, sympify,
     Pow, simplify, Min, Max, Abs, PurePoly)
 from sympy.matrices.matrices import (ShapeError, MatrixError,
     matrix_multiply_elementwise, diag,

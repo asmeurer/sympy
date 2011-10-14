@@ -2223,7 +2223,33 @@ class Matrix(object):
         return tuple(minors)
 
     def berkowitz_charpoly(self, x=Dummy('lambda'), simplify=sympy_simplify):
-        """Computes characteristic polynomial minors using Berkowitz method."""
+        """Computes characteristic polynomial minors using Berkowitz method.
+
+        A PurePoly is returned so using different variables for ``x`` does
+        not affect the comparison or the polynomials:
+
+        >>> from sympy import Matrix
+        >>> from sympy.abc import x, y
+        >>> A = Matrix([[1, 3], [2, 0]])
+        >>> A.berkowitz_charpoly(x) == A.berkowitz_charpoly(y)
+        True
+
+        Specifying ``x`` is optional; a Dummy with name ``lambda`` is used by
+        default (which looks good when pretty-printed in unicode):
+
+        >>> A.berkowitz_charpoly().as_expr()
+        _lambda**2 - _lambda - 6
+
+        No test is done to see that ``x`` doesn't clash with an existing
+        symbol, so using the default (``lambda``) or your own Dummy symbol is
+        the safest option:
+
+        >>> A = Matrix([[1, 2], [x, 0]])
+        >>> A.charpoly().as_expr()
+        _lambda**2 - _lambda - 2*x
+        >>> A.charpoly(x).as_expr()
+        x**2 - 3*x
+        """
         return PurePoly(map(simplify, self.berkowitz()[-1]), x)
 
     charpoly = berkowitz_charpoly
