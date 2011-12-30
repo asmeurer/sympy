@@ -444,4 +444,4 @@ def test_empty_printer():
     assert str_printer.emptyPrinter(32) == "32"
 
 def test_settings():
-    raises(TypeError, 'sstr(S(4), method="garbage")')
+    raises(TypeError, lambda: sstr(S(4), method="garbage"))

@@ -15,12 +15,15 @@ try:
 except ImportError:
     USE_PYTEST = False
 
-def raises(ExpectedException, code):
+def raises(expectedException, code):
     """
-    Tests that ``code`` raises the exception ``ExpectedException``.
+    Tests that ``code`` raises the exception ``expectedException``.
 
-    Does nothing if the right exception is raised, otherwise raises an
-    AssertionError.
+    ``code`` may be a callable, such as a lambda expression or function name.
+    Alternatively, ``code`` may be a string, which is compiled.
+
+    raises does nothing if the callable raises the right exception is raised,
+    otherwise it raises an AssertionError.
 
     Examples
     ========
@@ -31,17 +34,29 @@ def raises(ExpectedException, code):
     Traceback (most recent call last):
     ...
     AssertionError: DID NOT RAISE
+    >>> raises(ZeroDivisionError, lambda: 1/0)
+    >>> raises(ZeroDivisionError, lambda: 1/2)
+    Traceback (most recent call last):
+    ...
+    AssertionError: DID NOT RAISE
 
     """
-    if not isinstance(code, str):
-        raise TypeError('raises() expects a code string for the 2nd argument.')
-    frame = sys._getframe(1)
-    loc = frame.f_locals.copy()
-    try:
-        exec code in frame.f_globals, loc
-    except ExpectedException:
-        return
-    raise AssertionError("DID NOT RAISE")
+    if callable(code):
+        try:
+            code()
+        except expectedException:
+            return
+        raise AssertionError("DID NOT RAISE")
+    elif isinstance(code, str):
+        frame = sys._getframe(1)
+        loc = frame.f_locals.copy()
+        try:
+            exec code in frame.f_globals, loc
+        except expectedException:
+            return
+        raise AssertionError("DID NOT RAISE")
+    else:
+        raise TypeError('raises() expects a callable or a code string for the 2nd argument.')
 
 if not USE_PYTEST:
     class XFail(Exception):

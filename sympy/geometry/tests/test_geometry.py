@@ -44,8 +44,8 @@ def test_curve():
     assert c.arbitrary_point(z) == Point(2*z, z**2)
     assert c.arbitrary_point(c.parameter) == Point(2*s, s**2)
 
-    raises(ValueError, 'Curve((s, s + t), (s, 1, 2)).arbitrary_point()')
-    raises(ValueError, 'Curve((s, s + t), (t, 1, 2)).arbitrary_point(s)')
+    raises(ValueError, lambda: Curve((s, s + t), (s, 1, 2)).arbitrary_point())
+    raises(ValueError, lambda: Curve((s, s + t), (t, 1, 2)).arbitrary_point(s))
 
 def test_point():
     p1 = Point(x1, x2)
@@ -113,7 +113,7 @@ def test_line():
     assert Line((1, 1), slope=1) == Line((1, 1), (2, 2))
     assert Line((1, 1), slope=oo) == Line((1, 1), (1, 2))
     assert Line((1, 1), slope=-oo) == Line((1, 1), (1, 2))
-    raises(ValueError, 'Line((1, 1), 1)')
+    raises(ValueError, lambda: Line((1, 1), 1))
     assert Line(p1, p2) == Line(p2, p1)
     assert l1 == l2
     assert l1 != l3
@@ -189,7 +189,7 @@ def test_line():
     # XXX don't know why this fails without str
     assert str(Ray((1, 1), angle=4.2*pi)) == str(Ray(Point(1, 1), Point(2, 1 + C.tan(0.2*pi))))
     assert Ray((1, 1), angle=5) == Ray((1, 1), (2, 1 + C.tan(5)))
-    raises(ValueError, 'Ray((1, 1), 1)')
+    raises(ValueError, lambda: Ray((1, 1), 1))
 
     r1 = Ray(p1, Point(-1, 5))
     r2 = Ray(p1, Point(-1, 1))
@@ -214,7 +214,7 @@ def test_line():
     s = Segment((a, 0), (b, 0))
     assert Point((a + b)/2, 0) in s
 
-    raises(Undecidable, "Point(2*a, 0) in s")
+    raises(Undecidable, lambda: Point(2*a, 0) in s)
 
     # Testing distance from a Segment to an object
     s1 = Segment(Point(0, 0), Point(1, 1))
@@ -276,7 +276,7 @@ def test_ellipse():
     # Test creation with three points
     cen, rad = Point(3*half, 2), 5*half
     assert Circle(Point(0,0), Point(3,0), Point(0,4)) == Circle(cen, rad)
-    raises(GeometryError, "Circle(Point(0,0), Point(1,1), Point(2,2))")
+    raises(GeometryError, lambda: Circle(Point(0,0), Point(1,1), Point(2,2)))
 
     # Basic Stuff
     assert e1 == c1
@@ -595,7 +595,7 @@ def test_polygon_to_polygon():
     # p1.distance(p2) emits a warning
     # First, test the warning
     warnings.filterwarnings("error", "Polygons may intersect producing erroneous output")
-    raises(UserWarning, "p1.distance(p2)")
+    raises(UserWarning, lambda: p1.distance(p2))
     # now test the actual output
     warnings.filterwarnings("ignore", "Polygons may intersect producing erroneous output")
     assert p1.distance(p2) == half/2

@@ -390,7 +390,9 @@ def test_other_symbol():
     assert x.is_integer == True
     assert x.is_nonpositive == True
 
-    raises(AttributeError, "x.is_real = False")
+    def f():
+        x.is_real = False
+    raises(AttributeError, f)
 
 
 def test_other_symbol_fail1():

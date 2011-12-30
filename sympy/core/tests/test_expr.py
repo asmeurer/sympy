@@ -166,12 +166,15 @@ def test_relational_noncommutative():
 
 def test_basic_nostr():
     for obj in basic_objs:
-        for op in ['+','-','*','/','**']:
-            if obj == 2 and op == '*':
-                if hasattr(int, '__index__'): # Python 2.5+ (PEP 357)
-                    assert obj * '1' == '11'
-            else:
-                raises(TypeError, "obj %s '1'" % op)
+        raises(TypeError, lambda: obj + '1')
+        raises(TypeError, lambda: obj - '1')
+        if obj == 2:
+            if hasattr(int, '__index__'): # Python 2.5+ (PEP 357)
+                assert obj * '1' == '11'
+        else:
+            raises(TypeError, lambda: obj * '1')
+        raises(TypeError, lambda: obj / '1')
+        raises(TypeError, lambda: obj ** '1')
 
 def test_leadterm():
     assert (3+2*x**(log(3)/log(2)-1)).leadterm(x) == (3,0)
@@ -319,7 +322,7 @@ def test_SAGE1():
     e = Rational(2)*m
     assert e == 10
 
-    raises(TypeError, "Rational(2)*MyInt")
+    raises(TypeError, lambda: Rational(2)*MyInt)
 
 def test_SAGE2():
     class MyInt(object):
@@ -329,7 +332,7 @@ def test_SAGE2():
     e = Rational(2)*MyInt()
     assert e == 10
 
-    raises(TypeError, "Rational(2)*MyInt")
+    raises(TypeError, lambda: Rational(2)*MyInt)
 
 def test_SAGE3():
     class MySymbol:
@@ -358,9 +361,9 @@ def test_doit():
     assert (2*Integral(x, x)).doit() == x**2
 
 def test_attribute_error():
-    raises(AttributeError, "x.cos()")
-    raises(AttributeError, "x.sin()")
-    raises(AttributeError, "x.exp()")
+    raises(AttributeError, lambda: x.cos())
+    raises(AttributeError, lambda: x.sin())
+    raises(AttributeError, lambda: x.exp())
 
 def test_args():
     assert (x*y).args in ((x, y), (y, x))
@@ -504,8 +507,8 @@ def test_call():
     # Unlike what used to be the case, the following should NOT work.
     # See issue 1927.
 
-    raises(TypeError, "sin(x)({ x : 1, sin(x) : 2})")
-    raises(TypeError, "sin(x)(1)")
+    raises(TypeError, lambda: sin(x)({ x : 1, sin(x) : 2}))
+    raises(TypeError, lambda: sin(x)(1))
 
 def test_replace():
     f = log(sin(x)) + tan(sin(x**2))
@@ -1148,7 +1151,7 @@ def test_issue_1100():
     # difference gives S.NaN
     a = x - y
     assert a._eval_interval(x, 1, oo)._eval_interval(y, oo, 1) is S.NaN
-    raises(ValueError, 'x._eval_interval(x, None, None)')
+    raises(ValueError, lambda: x._eval_interval(x, None, None))
 
 def test_primitive():
     assert (3*(x + 1)**2).primitive() == (3, (x + 1)**2)
