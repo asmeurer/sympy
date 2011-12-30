@@ -24,5 +24,5 @@ def test_not_okay_if_wrong_exception():
 # Now we can use raises() instead of try/catch
 # to test that a specific exception class is raised
 
-def test_second_argument_should_be_callable():
-    raises(TypeError, lambda: raises("irrelevant", "Should be callable"))
+def test_second_argument_should_be_callable_or_string():
+    raises(TypeError, lambda: raises("irrelevant", 42))
