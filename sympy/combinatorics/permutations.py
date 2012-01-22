@@ -15,14 +15,18 @@ def perm_af_parity(pi):
     number of inversions in the permutation, i.e., the
     number of pairs of x and y such that x > y but p[x] < p[y].
 
-
     Examples
     ========
+
     >>> from sympy.combinatorics.permutations import perm_af_parity
     >>> perm_af_parity([0,1,2,3])
     0
     >>> perm_af_parity([3,2,0,1])
     1
+
+    See Also
+    ========
+    Permutation
     """
     n = len(pi)
     a = [0] * n
@@ -43,9 +47,14 @@ def perm_af_mul(a, b):
 
     Examples
     ========
+
     >>> from sympy.combinatorics.permutations import perm_af_mul
     >>> perm_af_mul([1,2,3,0], [3,2,0,1])
     [0, 3, 1, 2]
+
+    See Also
+    ========
+    Permutation
     """
     if len(a) != len(b):
         raise ValueError("The number of elements in the permutations \
@@ -85,8 +94,8 @@ class Permutation(Basic):
     (1) Skiena, S. 'Permutations.' 1.1 in Implementing Discrete Mathematics
         Combinatorics and Graph Theory with Mathematica.
         Reading, MA: Addison-Wesley, pp. 3-16, 1990.
-    (2) Knuth, D. E. The Art of Computer Programming, Vol. 4: Combinatorial Algorithms,
-        1st ed. Reading, MA: Addison-Wesley, 2011.
+    (2) Knuth, D. E. The Art of Computer Programming, Vol. 4: Combinatorial
+        Algorithms, 1st ed. Reading, MA: Addison-Wesley, 2011.
     (3) Wendy Myrvold and Frank Ruskey. 2001. Ranking and unranking
         permutations in linear time. Inf. Process. Lett. 79, 6 (September 2001),
         281-284. DOI=10.1016/S0020-0190(01)00141-7
@@ -114,6 +123,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([[2,0],[3,1]])
         >>> p.array_form
@@ -122,6 +132,10 @@ class Permutation(Basic):
         [3, 2, 0, 1]
         >>> Permutation([2,0,3,1]).array_form
         [2, 0, 3, 1]
+
+        See Also
+        ========
+        cyclic_form
         """
         if self._array_form is not None:
             return self._array_form
@@ -148,10 +162,15 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,3,1,2])
         >>> p.cyclic_form
         [[1, 3, 2], [0]]
+
+        See Also
+        ========
+        array_form
         """
         if self._cyclic_form is not None:
             return self._cyclic_form
@@ -183,6 +202,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([[3, 2], [0, 1]]).size
         4
@@ -195,6 +215,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2])
         >>> p
@@ -235,6 +256,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> q = Permutation([2,1,3,0])
@@ -263,6 +285,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> q = Permutation([2,1,3,0])
@@ -283,6 +306,7 @@ class Permutation(Basic):
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([1,2,3,0])
         >>> q = Permutation([3,2,0,1])
@@ -312,6 +336,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> a = Permutation([1,4,3,0,2,5])
         >>> b = Permutation([0,1,2,3,4,5])
@@ -338,6 +363,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([2,0,3,1])
         >>> p**4
@@ -376,6 +402,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([[1,2,3],[0,4,5,6,7]])
         >>> p.transpositions()
@@ -402,6 +429,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([[2,0],[3,1]])
         >>> ~p
@@ -422,6 +450,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([[2,0],[3,1]])
         >>> p(3)
@@ -435,7 +464,9 @@ don\'t match.")
         """
         Returns all the elements of a permutation
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0, 1, 2, 3, 4, 5]).atoms()
         set([0, 1, 2, 3, 4, 5])
@@ -454,12 +485,17 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([2, 3, 1, 0])
         >>> p = Permutation([2, 3, 1, 0]); p.rank()
         17
         >>> p = p.next_lex(); p.rank()
         18
+
+        See Also
+        ========
+        rank, unrank_lex
         """
         perm = self.array_form[:]
         n = len(perm)
@@ -489,12 +525,16 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> Permutation.unrank_nonlex(4, 5)
         Permutation([2, 0, 3, 1])
         >>> Permutation.unrank_nonlex(4, -1)
         Permutation([0, 1, 2, 3])
 
+        See Also
+        ========
+        next_nonlex, rank_nonlex
         """
         def _unrank1(n, r, a):
             if n > 0:
@@ -515,10 +555,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.rank_nonlex()
         23
+
+        See Also
+        ========
+        next_nonlex, unrank_nonlex
         """
         def _rank1(n, perm, inv_perm):
             if n == 1:
@@ -544,6 +589,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([2, 0, 3, 1]); p.rank_nonlex()
         5
@@ -551,6 +597,10 @@ don\'t match.")
         Permutation([3, 0, 1, 2])
         >>> p.rank_nonlex()
         6
+
+        See Also
+        ========
+        rank_nonlex, unrank_nonlex
         """
         r = self.rank_nonlex()
         if r == ifac(self.size) - 1:
@@ -563,6 +613,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.rank()
@@ -570,6 +621,10 @@ don\'t match.")
         >>> p = Permutation([3,2,1,0])
         >>> p.rank()
         23
+
+        See Also
+        ========
+        next_lex, unrank_lex
         """
         rank = 0
         rho = self.array_form[:]
@@ -592,6 +647,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.cardinality
@@ -609,6 +665,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.parity()
@@ -616,6 +673,10 @@ don\'t match.")
         >>> p = Permutation([3,2,0,1])
         >>> p.parity()
         1
+
+        See Also
+        ========
+        perm_af_parity
         """
         if self._cyclic_form is not None:
             return (self.size - len(self._cyclic_form)) % 2
@@ -629,6 +690,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.is_even
@@ -636,6 +698,10 @@ don\'t match.")
         >>> p = Permutation([3,2,1,0])
         >>> p.is_even
         True
+
+        See Also
+        ========
+        is_odd
         """
         return S(self.parity()).is_even
     @property
@@ -645,6 +711,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.is_odd
@@ -652,6 +719,10 @@ don\'t match.")
         >>> p = Permutation([3,2,0,1])
         >>> p.is_odd
         True
+
+        See Also
+        ========
+        is_even
         """
         return S(self.parity()).is_odd
 
@@ -661,12 +732,18 @@ don\'t match.")
         Checks to see if the permutation contains only one number
         Therefore there is only one possible permutation of this set of numbers
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0]).is_Singleton
         True
         >>> Permutation([0, 1]).is_Singleton
         False
+
+        See Also
+        ========
+        is_Empty
         """
         return self.size == 1
 
@@ -675,31 +752,42 @@ don\'t match.")
         """
         Checks to see if the permutation is a set with zero elements
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([]).is_Empty
         True
         >>> Permutation([0]).is_Empty
         False
+
+        See Also
+        ========
+        is_Singleton
         """
         return self.size == 0
 
     @property
     def is_Identity(self):
         """
-        Examples::
+        Returns True if the Permutation is an identity permutation.
 
-            >>> from sympy.combinatorics.permutations import Permutation
-            >>> p = Permutation([[0],[1],[2]])
-            >>> p.is_Identity
-            True
-            >>> p = Permutation([0,1,2])
-            >>> p.is_Identity
-            True
-            >>> p = Permutation([0,2,1])
-            >>> p.is_Identity
-            False
+        Examples
+        ========
+        >>> from sympy.combinatorics.permutations import Permutation
+        >>> p = Permutation([[0],[1],[2]])
+        >>> p.is_Identity
+        True
+        >>> p = Permutation([0,1,2])
+        >>> p.is_Identity
+        True
+        >>> p = Permutation([0,2,1])
+        >>> p.is_Identity
+        False
 
+        See Also
+        ========
+        order
         """
         if self._cyclic_form:
             return self.size == len(self._cyclic_form)
@@ -713,10 +801,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([4,0,1,3,2])
         >>> p.ascents()
         [1, 2]
+
+        See Also
+        ========
+        descents, inversions, min, max
         """
         a = self.array_form
         pos = [i for i in xrange(len(a)-1) if a[i] < a[i+1]]
@@ -729,10 +822,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([4,0,1,3,2])
         >>> p.descents()
         [0, 3]
+
+        See Also
+        ========
+        ascents, inversions, min, max
         """
         a = self.array_form
         pos = [i for i in xrange(len(a)-1) if a[i] > a[i+1]]
@@ -744,10 +842,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([1,0,2,3,4])
         >>> p.max()
         1
+
+        See Also
+        ========
+        min, descents, ascents, inversions
         """
         max = 0
         a = self.array_form
@@ -762,10 +865,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,4,3,2])
         >>> p.min()
         2
+
+        See Also
+        ========
+        max, descents, ascents, inversions
         """
         a = self.array_form
         min = len(a)
@@ -782,11 +890,15 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3,4,5])
         >>> p.inversions()
         0
 
+        See Also
+        ========
+        descents, ascents, min, max
         """
         inversions = 0
         a = self.array_form
@@ -804,6 +916,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> a = Permutation([0,2,1,3])
         >>> b = Permutation([0,2,3,1])
@@ -833,6 +946,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2])
         >>> p.signature()
@@ -840,6 +954,10 @@ don\'t match.")
         >>> q = Permutation([0,2,1])
         >>> q.signature()
         -1
+
+        See Also
+        ========
+        inversions
         """
         return (-1)**self.inversions()
 
@@ -850,15 +968,19 @@ don\'t match.")
         When the permutation is raised to the power of its
         order it equals the identity permutation.
 
-
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([3,1,5,2,4,0])
         >>> p.order()
         4
         >>> (p**(p.order()))
         Permutation([0, 1, 2, 3, 4, 5])
+
+        See Also
+        ========
+        identity
         """
         return reduce(lcm,[1]+[len(cycle) for cycle in self.cyclic_form])
 
@@ -866,12 +988,18 @@ don\'t match.")
         """
         Returns the number of integers moved by a permutation.
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0, 3, 2, 1]).length()
         2
         >>> Permutation([[0, 1], [2, 3]]).length()
         4
+
+        See Also
+        ========
+        min, max
         """
         length = 0
         a = self.array_form
@@ -885,10 +1013,16 @@ don\'t match.")
         """
         Checks if the permutation is positive
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0, 1, 2]).is_Positive
         True
+
+        See Also
+        ========
+        is_Negative
         """
         return self.signature() > 0
 
@@ -897,10 +1031,16 @@ don\'t match.")
         """
         Checks if the permutation is negative
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0, 1, 2]).is_Negative
         False
+
+        See Also
+        ========
+        is_Positive
         """
         return self.signature() < 0
 
@@ -910,7 +1050,9 @@ don\'t match.")
         Returns the number of cycles that the permutation
         has been decomposed into.
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.combinatorics import Permutation
         >>> Permutation([0, 1, 2]).cycles
         3
@@ -929,6 +1071,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([3, 0, 2, 1, 4])
         >>> p.index()
@@ -947,6 +1090,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([2,5,7,3,6,0,1,4,8])
         >>> p.runs()
@@ -999,6 +1143,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([4,8,0,7,1,5,3,6,2])
         >>> p.inversion_vector()
@@ -1026,6 +1171,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0,1,2,3])
         >>> p.rank_trotterjohnson()
@@ -1034,6 +1180,9 @@ don\'t match.")
         >>> p.rank_trotterjohnson()
         7
 
+        See Also
+        ========
+        unrank_trotterjohnson, next_trotterjohnson
         """
         if self.array_form == [] or self.is_Identity:
             return 0
@@ -1043,17 +1192,17 @@ don\'t match.")
         n = self.size
         rank = 0
         for j in range(1, n):
-           k = 1
-           i = 0
-           while perm[i] != j:
-               if perm[i] < j:
-                   k += 1
-               i += 1
-           j1 = j + 1
-           if rank % 2 == 0:
-               rank = j1*rank + j1 - k
-           else:
-               rank = j1*rank + k - 1
+            k = 1
+            i = 0
+            while perm[i] != j:
+                if perm[i] < j:
+                    k += 1
+                i += 1
+            j1 = j + 1
+            if rank % 2 == 0:
+                rank = j1*rank + j1 - k
+            else:
+                rank = j1*rank + k - 1
         return rank
 
     @classmethod
@@ -1063,9 +1212,14 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> Permutation.unrank_trotterjohnson(5,10)
         Permutation([0, 3, 1, 2, 4])
+
+        See Also
+        ========
+        rank_trotterjohnson, next_trotterjohnson
         """
         perm = [0]*size
         r2 = 0
@@ -1094,6 +1248,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([3, 0, 2, 1])
         >>> p.rank_trotterjohnson()
@@ -1102,6 +1257,10 @@ don\'t match.")
         Permutation([0, 3, 2, 1])
         >>> p.rank_trotterjohnson()
         5
+
+        See Also
+        ========
+        rank_trotterjohnson, unrank_trotterjohnson
         """
         pi = self.array_form[:]
         n = len(pi)
@@ -1121,12 +1280,12 @@ don\'t match.")
                     pi[st+d], pi[st+d+1] = pi[st+d+1], pi[st+d]
                     done = True
             else:
-               if d == 0:
-                   m -= 1
-                   st += 1
-               else:
-                   pi[st+d], pi[st+d-1] = pi[st+d-1], pi[st+d]
-                   done = True
+                if d == 0:
+                    m -= 1
+                    st += 1
+                else:
+                    pi[st+d], pi[st+d-1] = pi[st+d-1], pi[st+d]
+                    done = True
         if m == 0:
             return None
         return _new_from_array_form(pi)
@@ -1138,6 +1297,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation.josephus(3,6,1)
         >>> p
@@ -1149,6 +1309,10 @@ don\'t match.")
         [1, 1, 0, 0, 1, 0]
         [1, 0, 0, 0, 0, 0]
         [1, 1, 0, 1, 1, 0]
+
+        See Also
+        ========
+        get_precedence_distance, get_adjacency_matrix, get_adjacency_distance
         """
         m = zeros(self.size)
         perm = self.array_form
@@ -1167,6 +1331,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([2, 0, 4, 3, 1])
         >>> q = Permutation([3, 1, 2, 4, 0])
@@ -1174,6 +1339,10 @@ don\'t match.")
         7
         >>> q.get_precedence_distance(p)
         7
+
+        See Also
+        ========
+        get_precedence_matrix, get_adjacency_matrix, get_adjacency_distance
         """
         if self.size != other.size:
             raise ValueError("The permutations must be of the same size.")
@@ -1199,6 +1368,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation.josephus(3,6,1)
         >>> p.get_adjacency_matrix()
@@ -1215,6 +1385,10 @@ don\'t match.")
         [0, 0, 1, 0]
         [0, 0, 0, 1]
         [0, 0, 0, 0]
+
+        See Also
+        ========
+        get_precedence_matrix, get_precedence_distance, get_adjacency_distance
         """
         m = zeros(self.size)
         perm = self.array_form
@@ -1236,6 +1410,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0, 3, 1, 2, 4])
         >>> q = Permutation.josephus(4, 5, 2)
@@ -1244,6 +1419,10 @@ don\'t match.")
         >>> r = Permutation([0, 2, 1, 4, 3])
         >>> p.get_adjacency_distance(r)
         4
+
+        See Also
+        ========
+        get_precedence_matrix, get_precedence_distance, get_adjacency_matrix
         """
         if self.size != other.size:
             raise ValueError("The permutations must be of the same size.")
@@ -1265,6 +1444,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> p = Permutation([0, 3, 1, 2, 4])
         >>> q = Permutation.josephus(4, 5, 2)
@@ -1273,6 +1453,10 @@ don\'t match.")
         12
         >>> p.get_positional_distance(r)
         12
+
+        See Also
+        ========
+        get_precedence_distance, get_adjacency_distance
         """
         a = self.array_form
         b = other.array_form
@@ -1301,6 +1485,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> Permutation.josephus(3, 40, 1)
         Permutation([2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, \
@@ -1328,6 +1513,7 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> Permutation.from_inversion_vector([3,2,1,0,0])
         Permutation([3, 2, 1, 0, 4, 5])
@@ -1356,10 +1542,12 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> a = Permutation.random_permutation(5)
         >>> (a*(~a)).is_Identity
         True
+
         """
         perm_array = range(n)
         random.shuffle(perm_array)
@@ -1372,12 +1560,17 @@ don\'t match.")
 
         Examples
         ========
+
         >>> from sympy.combinatorics.permutations import Permutation
         >>> a = Permutation.unrank_lex(5,10)
         >>> a.rank()
         10
         >>> a
         Permutation([0, 2, 4, 1, 3])
+
+        See Also
+        ========
+        rank, next_lex
         """
         perm_array = [0] * size
         psize = 1

@@ -149,8 +149,7 @@ def test_simplify():
     A = Matrix([[2*k-m*w**2, -k], [-k, k-m*w**2]]).inv()
 
     assert simplify((A*Matrix([0,f]))[1]) == \
-        f/(-k**2/(2*k - m*w**2) + k - m*w**2)
-
+        f*(2*k - m*w**2)/(k**2 - 3*k*m*w**2 + m**2*w**4)
     a, b, c, d, e, f, g, h, i = symbols('a,b,c,d,e,f,g,h,i')
 
     f_1 = x*a + y*b + z*c - 1
@@ -172,6 +171,8 @@ def test_simplify():
 
     assert simplify(log(2) + log(3)) == log(6)
     assert simplify(log(2*x) - log(2)) == log(x)
+
+    assert simplify(hyper([], [], x)) == exp(x)
 
 def test_simplify_other():
     assert simplify(sin(x)**2 + cos(x)**2) == 1
@@ -730,6 +731,14 @@ def test_powdenest():
     assert powdenest((4**x)**y) == 2**(2*x*y)
     assert powdenest(4**x*y) == 2**(2*x)*y
 
+def test_powdenest_polar():
+    from sympy import powdenest
+    x, y, z = symbols('x y z', polar=True)
+    a, b, c = symbols('a b c')
+    assert powdenest((x*y*z)**a) == x**a*y**a*z**a
+    assert powdenest((x**a*y**b)**c) == x**(a*c)*y**(b*c)
+    assert powdenest(((x**a)**b*y**c)**c) == x**(a*b*c)*y**(c**2)
+
 @XFAIL
 def test_issue_2706():
     assert (((gamma(x)*hyper((),(),x))*pi)**2).is_positive is None
@@ -739,6 +748,13 @@ def test_issue_1095():
     from sympy.abc import x, y
     f = Function('f')
     assert simplify((4*x+6*f(y))/(2*x+3*f(y))) == 2
+
+@XFAIL
+def test_simplify_float_vs_integer():
+    # Test for issue 1374:
+    # http://code.google.com/p/sympy/issues/detail?id=1374
+    assert simplify(x**2.0-x**2) == 0
+    assert simplify(x**2-x**2.0) == 0
 
 def test_combsimp():
     from sympy.abc import n, k
@@ -935,6 +951,9 @@ def test_combsimp_gamma():
            == 1
     assert combsimp(gamma(S(-1)/4)*gamma(S(-3)/4)) == 16*sqrt(2)*pi/3
 
+    assert simplify(combsimp(gamma(2*x)/gamma(x))) == \
+           2**(2*x - 1)*gamma(x + S(1)/2)/sqrt(pi)
+
 def test_unpolarify():
     from sympy import (exp_polar, polar_lift, exp, unpolarify, sin,
                        principal_branch)
@@ -943,6 +962,7 @@ def test_unpolarify():
     p = exp_polar(7*I) + 1
     u = exp(7*I) + 1
 
+    assert unpolarify(1) == 1
     assert unpolarify(p) == u
     assert unpolarify(p**2) == u**2
     assert unpolarify(p**x) == p**x

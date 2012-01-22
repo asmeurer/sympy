@@ -68,7 +68,8 @@ def buchberger(f, u, O, K, gens='', verbose=False):
     variable at a time, provided that the ideal is zero-dimensional
     (finite number of solutions).
 
-    **References**
+    References
+    ==========
 
     1. [Bose03]_
     2. [Giovini91]_
@@ -178,7 +179,7 @@ def buchberger(f, u, O, K, gens='', verbose=False):
         G_new.add(ih)
 
         return G_new, B_new
-      # end of update ################################
+        # end of update ################################
 
     if not f:
         return []
@@ -826,7 +827,9 @@ def matrix_fglm(F, u, O_from, O_to, K):
     ideal w.r.t. ``O_from`` to a reduced Groebner basis
     w.r.t. ``O_to``.
 
-    **References**
+    References
+    ==========
+
     J.C. Faugere, P. Gianni, D. Lazard, T. Mora (1994). Efficient
     Computation of Zero-dimensional Groebner Bases by Change of
     Ordering

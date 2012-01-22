@@ -442,17 +442,20 @@ class LatexPrinter(Printer):
                 if func in accepted_latex_functions:
                     name = r"\%s^{%s}" % (func,exp)
                 else:
-                    name = r"\operatorname{%s}^{%s}" % (func, exp)
+                    # If the generic function name contains an underscore, handle it
+                    name = r"\operatorname{%s}^{%s}" % (func.replace("_", r"\_"), exp)
             else:
                 if func in accepted_latex_functions:
                     name = r"\%s" % func
                 else:
-                    name = r"\operatorname{%s}" % func
+                    # If the generic function name contains an underscore, handle it
+                    name = r"\operatorname{%s}" % func.replace("_", r"\_")
 
             if can_fold_brackets:
                 if func in accepted_latex_functions:
-                    name += r" {%s}" # Wrap argument safely to avoid parse-time conflicts
-                                     # with the function name itself
+                    # Wrap argument safely to avoid parse-time conflicts
+                    # with the function name itself
+                    name += r" {%s}"
                 else:
                     name += r"%s"
             else:
@@ -475,6 +478,14 @@ class LatexPrinter(Printer):
         tex = r"\Lambda {\left (%s \right )}" % ", ".join(args)
 
         return tex
+
+    def _print_Min(self, expr, exp=None):
+        texargs = [r"%s" % self._print(symbol) for symbol in expr.args]
+        return r"\min\left(%s\right)" % ", ".join(texargs)
+
+    def _print_Max(self, expr, exp=None):
+        texargs = [r"%s" % self._print(symbol) for symbol in expr.args]
+        return r"\max\left(%s\right)" % ", ".join(texargs)
 
     def _print_floor(self, expr, exp=None):
         tex = r"\lfloor{%s}\rfloor" % self._print(expr.args[0])
@@ -595,6 +606,15 @@ class LatexPrinter(Printer):
         else:
             return r"\gamma%s" % tex
 
+    def _print_expint(self, expr, exp=None):
+        tex = r"\left(%s\right)" % self._print(expr.args[1])
+        nu = self._print(expr.args[0])
+
+        if exp is not None:
+            return r"\operatorname{E}_{%s}^{%s}%s" % (nu, exp, tex)
+        else:
+            return r"\operatorname{E}_{%s}%s" % (nu, tex)
+
     def _print_factorial(self, expr, exp=None):
         x = expr.args[0]
         if self._needs_brackets(x):
@@ -620,8 +640,8 @@ class LatexPrinter(Printer):
             return tex
 
     def _print_binomial(self, expr, exp=None):
-        tex = r"{{%s}\choose{%s}}" % (self._print(expr[0]),
-                                      self._print(expr[1]))
+        tex = r"{\binom{%s}{%s}}" % (self._print(expr.args[0]),
+                                     self._print(expr.args[1]))
 
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)
@@ -630,13 +650,13 @@ class LatexPrinter(Printer):
 
     def _print_RisingFactorial(self, expr, exp=None):
         tex = r"{\left(%s\right)}^{\left(%s\right)}" % \
-            (self._print(expr[0]), self._print(expr[1]))
+            (self._print(expr.args[0]), self._print(expr.args[1]))
 
         return self._do_exponent(tex, exp)
 
     def _print_FallingFactorial(self, expr, exp=None):
         tex = r"{\left(%s\right)}_{\left(%s\right)}" % \
-            (self._print(expr[0]), self._print(expr[1]))
+            (self._print(expr.args[0]), self._print(expr.args[1]))
 
         return self._do_exponent(tex, exp)
 
@@ -713,6 +733,34 @@ class LatexPrinter(Printer):
         if exp is not None:
             tex = r"{%s}^{%s}" % (tex, self._print(exp))
         return tex
+
+    def _print_dirichlet_eta(self, expr, exp=None):
+        tex = r"\left(%s\right)" % self._print(expr.args[0])
+        if exp is not None:
+            return r"\eta^{%s}%s" % (self._print(exp), tex)
+        return r"\eta%s" % tex
+
+    def _print_zeta(self, expr, exp=None):
+        if len(expr.args) == 2:
+            tex = r"\left(%s, %s\right)" % tuple(map(self._print, expr.args))
+        else:
+            tex = r"\left(%s\right)" % self._print(expr.args[0])
+        if exp is not None:
+            return r"\zeta^{%s}%s" % (self._print(exp), tex)
+        return r"\zeta%s" % tex
+
+    def _print_lerchphi(self, expr, exp=None):
+        tex = r"\left(%s, %s, %s\right)" % tuple(map(self._print, expr.args))
+        if exp is None:
+            return r"\Phi%s" % tex
+        return r"\Phi^{%s}%s" % (self._print(exp), tex)
+
+    def _print_polylog(self, expr, exp=None):
+        s, z = map(self._print, expr.args)
+        tex = r"\left(%s\right)" % z
+        if exp is None:
+            return r"\operatorname{Li}_{%s}%s" % (s, tex)
+        return r"\operatorname{Li}_{%s}^{%s}%s" % (s, self._print(exp), tex)
 
     def _print_Rational(self, expr):
         if expr.q != 1:
@@ -793,13 +841,17 @@ class LatexPrinter(Printer):
 
     def _print_Relational(self, expr):
         if self._settings['itex']:
+            gt = r"\gt"
             lt = r"\lt"
         else:
+            gt = ">"
             lt = "<"
 
         charmap = {
             "==" : "=",
+            ">"  : gt,
             "<"  : lt,
+            ">=" : r"\geq",
             "<=" : r"\leq",
             "!=" : r"\neq",
         }

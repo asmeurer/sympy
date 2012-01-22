@@ -165,33 +165,33 @@ class Expr(Basic, EvalfMixin):
         re, im = result.as_real_imag()
         return complex(float(re), float(im))
 
-    @_sympifyit('other', False) # sympy >  other
-    def __lt__(self, other):
+    @_sympifyit('other', False)  # sympy >  other
+    def __ge__(self, other):
         dif = self - other
-        if dif.is_negative != dif.is_nonnegative:
-            return dif.is_negative
-        return C.StrictInequality(self, other)
-
-    @_sympifyit('other', True)  # sympy >  other
-    def __gt__(self, other):
-        dif = self - other
-        if dif.is_positive !=  dif.is_nonpositive:
-            return dif.is_positive
-        return C.StrictInequality(other, self)
+        if dif.is_nonnegative != dif.is_negative:
+            return dif.is_nonnegative
+        return C.GreaterThan(self, other)
 
     @_sympifyit('other', False) # sympy >  other
     def __le__(self, other):
         dif = self - other
         if dif.is_nonpositive != dif.is_positive:
             return dif.is_nonpositive
-        return C.Inequality(self, other)
+        return C.LessThan(self, other)
 
-    @_sympifyit('other', True)  # sympy >  other
-    def __ge__(self, other):
+    @_sympifyit('other', False)  # sympy >  other
+    def __gt__(self, other):
         dif = self - other
-        if dif.is_nonnegative != dif.is_negative:
-            return dif.is_nonnegative
-        return C.Inequality(other, self)
+        if dif.is_positive !=  dif.is_nonpositive:
+            return dif.is_positive
+        return C.StrictGreaterThan(self, other)
+
+    @_sympifyit('other', False) # sympy >  other
+    def __lt__(self, other):
+        dif = self - other
+        if dif.is_negative != dif.is_nonnegative:
+            return dif.is_negative
+        return C.StrictLessThan(self, other)
 
     @staticmethod
     def _from_mpmath(x, prec):
@@ -440,7 +440,8 @@ class Expr(Basic, EvalfMixin):
         """
         Transform an expression to an ordered list of factors.
 
-        **Examples**
+        Examples
+        ========
 
         >>> from sympy import sin, cos
         >>> from sympy.abc import x, y
@@ -458,7 +459,8 @@ class Expr(Basic, EvalfMixin):
         """
         Transform an expression to an ordered list of terms.
 
-        **Examples**
+        Examples
+        ========
 
         >>> from sympy import sin, cos
         >>> from sympy.abc import x, y
@@ -601,11 +603,14 @@ class Expr(Basic, EvalfMixin):
         from sympy import count_ops
         return count_ops(self, visual)
 
-    def args_cnc(self, clist=False):
-        """Treat self as a Mul and return the commutative and noncommutative
-        arguments in a tuple as (set, list); if ``clist`` is True the set
-        will contain the commutative arguments in the same order as they
-        appeared in self.
+    def args_cnc(self, cset=False, warn=True):
+        """Return [commutative factors, non-commutative factors] of self.
+
+        self is treated as a Mul and the ordering of the factors is maintained.
+        If ``cset`` is True the commutative factors will be returned in a set.
+        If there were repeated factors (as may happen with an unevaluated Mul)
+        then an error will be raised unless it is explicitly supressed by
+        setting ``warn`` to False.
 
         Note: -1 is always separated from a Rational.
 
@@ -613,16 +618,16 @@ class Expr(Basic, EvalfMixin):
         >>> A, B = symbols('A B', commutative=0)
         >>> x, y = symbols('x y')
         >>> (-2*x*y).args_cnc()
-        [set([-1, 2, x, y]), []]
-        >>> (-2*x*y).args_cnc(clist=True)
         [[-1, 2, x, y], []]
         >>> (-2*x*A*B*y).args_cnc()
-        [set([-1, 2, x, y]), [A, B]]
+        [[-1, 2, x, y], [A, B]]
+        >>> (-2*x*y).args_cnc(cset=True)
+        [set([-1, 2, x, y]), []]
 
         The arg is always treated as a Mul:
 
         >>> (-2 + x + A).args_cnc()
-        [set(), [x - 2 + A]]
+        [[], [x - 2 + A]]
         """
 
         if self.is_Mul:
@@ -641,9 +646,13 @@ class Expr(Basic, EvalfMixin):
         if c and c[0].is_Rational and c[0].is_negative and c[0] != S.NegativeOne:
             c[:1] = [S.NegativeOne, -c[0]]
 
-        if clist:
-            return [c, nc]
-        return [set(c), nc]
+        if cset:
+            clen = len(c)
+            c = set(c)
+            if clen and warn and len(c) != clen:
+                raise ValueError('repeated commutative arguments: %s' %
+                                 [ci for ci in c if list(self.args).count(ci) > 1])
+        return [c, nc]
 
     def coeff(self, x, right=False):
         """
@@ -818,7 +827,7 @@ class Expr(Basic, EvalfMixin):
         elif x_c:
             xargs = set(arglist(x))
             for a in args:
-                margs, nc = a.args_cnc()
+                margs, nc = a.args_cnc(cset=True)
                 if len(xargs) > len(margs):
                     continue
                 resid = margs.difference(xargs)
@@ -829,10 +838,10 @@ class Expr(Basic, EvalfMixin):
             elif co:
                 return Add(*co)
         else: # both nc
-            xargs, nx = x.args_cnc()
+            xargs, nx = x.args_cnc(cset=True)
             # find the parts that pass the commutative terms
             for a in args:
-                margs, nc = a.args_cnc()
+                margs, nc = a.args_cnc(cset=True)
                 if len(xargs) > len(margs):
                     continue
                 resid = margs.difference(xargs)
@@ -893,7 +902,8 @@ class Expr(Basic, EvalfMixin):
         """
         Convert a polynomial to a SymPy expression.
 
-        **Examples**
+        Examples
+        ========
 
         >>> from sympy import sin
         >>> from sympy.abc import x, y
@@ -917,6 +927,7 @@ class Expr(Basic, EvalfMixin):
 
         Examples
         ========
+
         >>> from sympy import E, pi, sin, I, symbols
         >>> from sympy.abc import x, y
 
@@ -1144,6 +1155,12 @@ class Expr(Basic, EvalfMixin):
         return (C.re(self), C.im(self))
 
     def as_powers_dict(self):
+        """Return self as a dictionary of factors with each factor being
+        treated as a power. The keys are the bases of the factors and the
+        values, the corresponding exponents. The resulting dictionary should
+        be used with caution if the expression is a Mul and contains non-
+        commutative factors since the order that they appeared will be lost in
+        the dictionary."""
         d = defaultdict(int)
         d.update(dict([self.as_base_exp()]))
         return d
@@ -1154,7 +1171,9 @@ class Expr(Basic, EvalfMixin):
         were not present will return a coefficient of 0. If an expression is
         not an Add it is considered to have a single term.
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.abc import a, x
         >>> (3*x + a*x + 4).as_coefficients_dict()
         {1: 4, x: 3, a*x: 1}
@@ -1271,7 +1290,9 @@ class Expr(Basic, EvalfMixin):
         like the as_coeff_Mul() method but primitive always extracts a positive
         Rational (never a negative or a Float).
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy.abc import x
         >>> (3*(x + 1)**2).primitive()
         (3, (x + 1)**2)
@@ -1291,14 +1312,16 @@ class Expr(Basic, EvalfMixin):
         return c, r
 
     def as_content_primitive(self, radical=False):
-        """This method should recursively remove a Rational from all arguments
+        r"""This method should recursively remove a Rational from all arguments
         and return that (content) and the new self (primitive). The content
         should always be positive and Mul(*foo.as_content_primitive()) == foo.
         The primitive need no be in canonical form and should try to preserve
         the underlying structure if possible (i.e. expand_mul should not be
         applied to self).
 
-        **Examples**
+        Examples
+        ========
+
         >>> from sympy import sqrt
         >>> from sympy.abc import x, y, z
 
@@ -1584,7 +1607,7 @@ class Expr(Basic, EvalfMixin):
             # As a last resort, we choose the one with greater value of .sort_key()
             return self.sort_key() < negative_self.sort_key()
 
-    def extract_branch_factor(self):
+    def extract_branch_factor(self, allow_half=False):
         """
         Try to write self as exp_polar(2*pi*I*n)*z in a nice way.
         Return (z, n).
@@ -1603,14 +1626,22 @@ class Expr(Basic, EvalfMixin):
         (y*exp_polar(2*pi*x), -1)
         >>> exp_polar(-I*pi/2).extract_branch_factor()
         (exp_polar(-I*pi/2), 0)
+
+        If allow_half is True, also extract exp_polar(I*pi):
+
+        >>> exp_polar(I*pi).extract_branch_factor(allow_half=True)
+        (1, 1/2)
+        >>> exp_polar(2*I*pi).extract_branch_factor(allow_half=True)
+        (1, 1)
+        >>> exp_polar(3*I*pi).extract_branch_factor(allow_half=True)
+        (1, 3/2)
+        >>> exp_polar(-I*pi).extract_branch_factor(allow_half=True)
+        (1, -1/2)
         """
         from sympy import exp_polar, pi, I, ceiling, Add
         n = S(0)
         res = S(1)
-        if self.is_Mul:
-            args = self.args
-        else:
-            args = [self]
+        args = Mul.make_args(self)
         exps = []
         for arg in args:
             if arg.func is exp_polar:
@@ -1631,9 +1662,16 @@ class Expr(Basic, EvalfMixin):
                     continue
             extras += [exp]
         coeff, tail = piimult.as_coeff_add()
-        branchfact = ceiling(coeff/2-S(1)/2)*2
+        # round down to nearest multiple of 2
+        branchfact = ceiling(coeff/2 - S(1)/2)*2
         n += branchfact/2
-        newexp = pi*I*Add(*((coeff - branchfact, ) + tail)) + Add(*extras)
+        c = coeff - branchfact
+        if allow_half:
+            nc = c.extract_additively(1)
+            if nc is not None:
+                n += S(1)/2
+                c = nc
+        newexp = pi*I*Add(*((c, ) + tail)) + Add(*extras)
         if newexp != 0:
             res *= exp_polar(newexp)
         return res, n
@@ -1658,7 +1696,8 @@ class Expr(Basic, EvalfMixin):
         This is not part of the assumptions system.  You cannot do
         Symbol('z', polynomial=True).
 
-        **Examples**
+        Examples
+        ========
 
         >>> from sympy import Symbol
         >>> x = Symbol('x')
@@ -2374,6 +2413,7 @@ class AtomicExpr(Atom, Expr):
 
     Examples
     ========
+
     Symbol, Number, Rational, Integer, ...
     But not: Add, Mul, Pow, ...
     """

@@ -72,7 +72,7 @@ class PrettyPrinter(Printer):
         except KeyError:
             return self.emptyPrinter(e)
 
-    # Infinity inherits from Rational, so we have to override _print_XXX order
+    # Infinity inherits from Number, so we have to override _print_XXX order
     _print_Infinity         = _print_Atom
     _print_NegativeInfinity = _print_Atom
     _print_EmptySet         = _print_Atom
@@ -361,29 +361,45 @@ class PrettyPrinter(Printer):
 
         func_height = pretty_func.height()
 
-        width = (func_height + 2) * 5 // 3 - 2
-        sign_lines = []
-        sign_lines.append(corner_chr+(horizontal_chr*width)+corner_chr)
-        for i in range(func_height+1):
-            sign_lines.append(vertical_chr+(' '*width)+vertical_chr)
+        first = True
+        max_upper = 0
+        sign_height = 0
 
-        pretty_sign = stringPict('')
-        pretty_sign = prettyForm(*pretty_sign.stack(*sign_lines))
+        for lim in expr.limits:
+            width = (func_height + 2) * 5 // 3 - 2
+            sign_lines = []
+            sign_lines.append(corner_chr+(horizontal_chr*width)+corner_chr)
+            for i in range(func_height+1):
+                sign_lines.append(vertical_chr+(' '*width)+vertical_chr)
 
-        pretty_upper = self._print(expr.upper)
-        pretty_lower = self._print(C.Equality(expr.index, expr.lower))
+            pretty_sign = stringPict('')
+            pretty_sign = prettyForm(*pretty_sign.stack(*sign_lines))
 
-        pretty_sign = prettyForm(*pretty_sign.above(pretty_upper))
-        pretty_sign = prettyForm(*pretty_sign.below(pretty_lower))
+            pretty_upper = self._print(lim[2])
+            pretty_lower = self._print(C.Equality(lim[0], lim[1]))
 
-        height = pretty_sign.height()
-        padding = stringPict('')
-        padding = prettyForm(*padding.stack(*[' ']*(height-1)))
-        pretty_sign = prettyForm(*pretty_sign.right(padding))
+            max_upper = max(max_upper, pretty_upper.height())
 
-        pretty_func.baseline = 0
+            if first:
+                sign_height = pretty_sign.height()
 
-        pretty_func = prettyForm(*pretty_sign.right(pretty_func))
+            pretty_sign = prettyForm(*pretty_sign.above(pretty_upper))
+            pretty_sign = prettyForm(*pretty_sign.below(pretty_lower))
+
+            if first:
+                pretty_func.baseline = 0
+                first = False
+
+            height = pretty_sign.height()
+            padding = stringPict('')
+            padding = prettyForm(*padding.stack(*[' ']*(height-1)))
+            pretty_sign = prettyForm(*pretty_sign.right(padding))
+
+            pretty_func = prettyForm(*pretty_sign.right(pretty_func))
+
+        #pretty_func.baseline = 0
+
+        pretty_func.baseline = max_upper + sign_height//2
         return pretty_func
 
     def _print_Sum(self, expr):
@@ -413,11 +429,11 @@ class PrettyPrinter(Printer):
                 lines.append("_"*(w) + ' ')
                 lines.append("\%s`" % (' '*(w - 1)))
                 for i in range(1, d):
-                  lines.append('%s\\%s' % (' '*i, ' '*(w - i)))
+                    lines.append('%s\\%s' % (' '*i, ' '*(w - i)))
                 if more:
-                  lines.append('%s)%s' % (' '*(d), ' '*(w - d)))
+                    lines.append('%s)%s' % (' '*(d), ' '*(w - d)))
                 for i in reversed(range(1, d)):
-                  lines.append('%s/%s' % (' '*i, ' '*(w - i)))
+                    lines.append('%s/%s' % (' '*i, ' '*(w - i)))
                 lines.append("/" + "_"*(w - 1) + ',')
                 return d, h + more, lines, 0
             else:
@@ -848,6 +864,10 @@ class PrettyPrinter(Printer):
 
         return pform
 
+    def _print_GeometryEntity(self, expr):
+        # GeometryEntity is special -- it's base is tuple
+        return self.emptyPrinter(expr)
+
     def _print_Lambda(self, e):
         symbols, expr = e.args
 
@@ -903,6 +923,26 @@ class PrettyPrinter(Printer):
             return pform
         else:
             return self._print_Function(e)
+
+    def _print_expint(self, e):
+        from sympy import Function
+        if e.args[0].is_Integer and self._use_unicode:
+            return self._print_Function(Function('E_%s' % e.args[0])(e.args[1]))
+        return self._print_Function(e)
+
+    def _print_Chi(self, e):
+        # This needs a special case since otherwise it comes out as greek
+        # letter chi...
+        prettyFunc = prettyForm("Chi")
+        prettyArgs = prettyForm(*self._print_seq(e.args).parens())
+
+        pform = prettyForm(binding=prettyForm.FUNC, *stringPict.next(prettyFunc, prettyArgs))
+
+        # store pform parts so it can be reassembled e.g. when powered
+        pform.prettyFunc = prettyFunc
+        pform.prettyArgs = prettyArgs
+
+        return pform
 
     def _print_Add(self, expr, order=None):
         if self.order == 'none':
@@ -1367,6 +1407,7 @@ def pretty_print(expr, **settings):
 
     Parameters
     ==========
+
     expr : expression
         the expression to print
     wrap_line : bool, optional

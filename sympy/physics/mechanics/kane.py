@@ -2,9 +2,9 @@ __all__ = ['Kane']
 
 from sympy import Symbol, zeros, Matrix, diff, solve_linear_system_LU, eye
 from sympy.physics.mechanics.essential import ReferenceFrame, dynamicsymbols
+from sympy.physics.mechanics.particle import Particle
 from sympy.physics.mechanics.point import Point
 from sympy.physics.mechanics.rigidbody import RigidBody
-from sympy.physics.mechanics.particle import Particle
 
 class Kane(object):
     """Kane's method object.
@@ -13,11 +13,11 @@ class Kane(object):
     equations of motion in the way Kane presents in:
     Kane, T., Levinson, D. Dynamics Theory and Applications. 1985 McGraw-Hill
 
-    The attributes are for equations in the form [M] udot = forcing
-
+    The attributes are for equations in the form [M] udot = forcing.
 
     Attributes
     ==========
+
     auxiliary : Matrix
         If applicable, the set of auxiliary Kane's
         equations used to solve for non-contributing
@@ -230,6 +230,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         qind : list
             A list of independent generalized coords
         qdep : list
@@ -262,6 +263,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         uind : list
             A list of independent generalized speeds
         udep : list
@@ -347,6 +349,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         kdeqs : list (of Expr)
             The listof kinematic differential equations
 
@@ -382,6 +385,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         fl : list
             Takes in a list of (Point, Vector) or (ReferenceFrame, Vector)
             tuples which represent the force at a point or torque on a frame.
@@ -391,7 +395,6 @@ class Kane(object):
         if not isinstance(fl, (list, tuple)):
             raise TypeError('Forces must be supplied in a list of: lists or '
                             'tuples.')
-        t = dynamicsymbols._t
         N = self._inertial
         self._forcelist = fl[:]
         u = self._u
@@ -431,6 +434,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         bl : list
             A list of all RigidBody's and Particle's in the system.
 
@@ -448,7 +452,6 @@ class Kane(object):
         o = len(u)
         p = o - len(udep)
         udot = self._udot
-        udots = []
         udotzero = dict(zip(udot, [0] * len(udot)))
         uaux = self._uaux
         uauxdot = [diff(i, t) for i in uaux]
@@ -613,6 +616,7 @@ class Kane(object):
 
         Parameters
         ==========
+
         FL : list
             Takes in a list of (Point, Vector) or (ReferenceFrame, Vector)
             tuples which represent the force at a point or torque on a frame.

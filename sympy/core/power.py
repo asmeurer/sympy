@@ -177,8 +177,6 @@ class Pow(Expr):
         if b.is_Number and e.is_Number:
             # int**nonneg or rat**?
             check = Pow(*self.args)
-            if self == check:
-                return False
             return check.is_Integer
 
     def _eval_is_real(self):
@@ -875,7 +873,8 @@ class Pow(Expr):
         """Return the tuple (R, self/R) where R is the positive Rational
         extracted from self.
 
-        **Examples**
+        Examples
+        ========
 
         >>> from sympy import sqrt
         >>> sqrt(4 + 4*sqrt(2)).as_content_primitive()

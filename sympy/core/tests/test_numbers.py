@@ -2,6 +2,7 @@ from sympy import (Rational, Symbol, Float, I, sqrt, oo, nan, pi, E, Integer,
                    S, factorial, Catalan, EulerGamma, GoldenRatio, cos, exp,
                    Number, zoo, log, Mul, Pow, Tuple)
 from sympy.core.power import integer_nthroot
+from sympy.utilities.pytest import XFAIL
 
 from sympy.core.numbers import igcd, ilcm, igcdex, seterr, _intcache
 from sympy.utilities.pytest import raises
@@ -789,8 +790,7 @@ def test_Rational_factors():
     assert str(F(12,1, visual=True)) == '2**2*3**1'
     assert str(F(1,1, visual=True)) == '1'
     assert str(F(25, 14, visual=True)) == '5**2/(2*7)'
-    assert str(F(-25, 14*9, visual=True)) == '-5**2/(2*9*7)' # XXX fix str to not evaluate 3**2
-    assert Rational(-25, 14*9).factors()[3] == -2 # XXX delete this when the str issue is fixed
+    assert str(F(-25, 14*9, visual=True)) == '-5**2/(2*3**2*7)'
 
 def test_issue1008():
     assert pi*(E + 10) + pi*(-E - 10)         != 0
@@ -1025,3 +1025,16 @@ def test_as_content_primitive():
     assert (-S.Half).as_content_primitive() == (S.Half, -1)
     assert S(3).as_content_primitive() == (3, 1)
     assert S(3.1).as_content_primitive() == (1, 3.1)
+
+@XFAIL
+def test_hashing_sympy_integers():
+    # Test for issue #1973
+    # http://code.google.com/p/sympy/issues/detail?id=1973
+    assert hash(S(4)) == 4
+    assert hash(S(4)) == hash(int(4))
+
+@XFAIL
+def test_issue_1073():
+    assert int(round(E**100)) == 26881171418161354484126255515800135873611119
+    assert int(round(pi**100)) == 51878483143196131920862615246303013562686760680406
+    assert int(round(Rational(1)/EulerGamma**100)) == 734833795660954410469466

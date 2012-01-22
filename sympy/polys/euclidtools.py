@@ -1206,7 +1206,8 @@ def dup_zz_heu_gcd(f, g, K):
     >>> dup_zz_heu_gcd(f, g, ZZ)
     ([1, -1], [1, 1], [1, -2])
 
-    **References**
+    References
+    ==========
 
     1. [Liao95]_
 
@@ -1333,7 +1334,8 @@ def dmp_zz_heu_gcd(f, g, u, K):
     >>> dmp_zz_heu_gcd(f, g, 1, ZZ)
     ([[1], [1, 0]], [[1], [1, 0]], [[1], []])
 
-    **References**
+    References
+    ==========
 
     1. [Liao95]_
 
@@ -1552,7 +1554,7 @@ def _dmp_inner_gcd(f, g, u, K):
     else:
         if K.is_ZZ and query('USE_HEU_GCD'):
             try:
-                 return dmp_zz_heu_gcd(f, g, u, K)
+                return dmp_zz_heu_gcd(f, g, u, K)
             except HeuristicGCDFailed:
                 pass
 

@@ -380,7 +380,8 @@ def gcd_terms(terms, isprimitive=False):
     Compute the GCD of ``terms`` and put them together. If ``isprimitive`` is
     True the _gcd_terms will not run the primitive method on the terms.
 
-    **Examples**
+    Examples
+    ========
 
     >>> from sympy.core import gcd_terms
     >>> from sympy.abc import x, y
@@ -422,6 +423,7 @@ def factor_terms(expr, radical=False):
 
     Examples
     ========
+
     >>> from sympy import factor_terms, Symbol
     >>> from sympy.abc import x, y
     >>> factor_terms(x + x*(2 + 4*y)**3)
@@ -433,24 +435,28 @@ def factor_terms(expr, radical=False):
     """
 
     expr = sympify(expr)
-
-    if iterable(expr):
-        return type(expr)([factor_terms(i, radical=radical) for i in expr])
+    is_iterable = iterable(expr)
 
     if not isinstance(expr, Basic) or expr.is_Atom:
+        if is_iterable:
+            return type(expr)([factor_terms(i, radical=radical) for i in expr])
         return expr
 
-    if expr.is_Function:
-        return expr.func(*[factor_terms(i, radical=radical) for i in expr.args])
+    if expr.is_Function or is_iterable or not hasattr(expr, 'args_cnc'):
+        args = expr.args
+        newargs = tuple([factor_terms(i, radical=radical) for i in args])
+        if newargs == args:
+            return expr
+        return expr.func(*newargs)
 
     cont, p = expr.as_content_primitive(radical=radical)
-    list_args, nc = zip(*[ai.args_cnc(clist=True) for ai in Add.make_args(p)])
+    list_args, nc = zip(*[ai.args_cnc() for ai in Add.make_args(p)])
     list_args = list(list_args)
     nc = [((Dummy(), Mul._from_args(i)) if i else None) for i in nc]
     ncreps = dict([i for i in nc if i is not None])
     for i, a in enumerate(list_args):
         if nc[i] is not None:
-           a.append(nc[i][0])
+            a.append(nc[i][0])
         a = Mul._from_args(a) # gcd_terms will fix up ordering
         list_args[i] = gcd_terms(a, isprimitive=True)
         # cancel terms that may not have cancelled

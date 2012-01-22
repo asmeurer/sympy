@@ -324,6 +324,21 @@ def sub_func_doit(eq, func, new):
     To keep subs from having to look through all derivatives, we
     mask them off with dummy variables, do the func sub, and then
     replace masked off derivatives with their doit values.
+
+    Examples
+    ========
+
+    >>> from sympy import Derivative
+    >>> from sympy.abc import x, y, z
+    >>> from sympy.solvers.ode import sub_func_doit
+
+    >>> sub_func_doit(3*Derivative(y(x), x) - 1, y(x), x)
+    2
+
+    >>> sub_func_doit(x*Derivative(y(x), x) - y(x)**2 + y(x), y(x),
+    ... 1/(x*(z + 1/x)))
+    x*(-1/(x**2*(z + 1/x)) + 1/(x**3*(z + 1/x)**2)) + 1/(x*(z + 1/x))
+    ...- 1/(x**2*(z + 1/x)**2)
     """
     reps = {}
     repu = {}
@@ -450,6 +465,7 @@ def dsolve(eq, func=None, hint="default", simplify=True, prep=True, **kwargs):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, Eq, Derivative, sin, cos
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -660,6 +676,7 @@ def classify_ode(eq, func=None, dict=False, prep=True):
 
     Examples
     ========
+
     >>> from sympy import Function, classify_ode, Eq
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -911,6 +928,7 @@ def odesimp(eq, func, order, hint):
 
     Examples
     ========
+
     >>> from sympy import sin, symbols, dsolve, pprint, Function
     >>> from sympy.solvers.ode import odesimp
     >>> x , u2, C1= symbols('x,u2,C1')
@@ -1079,6 +1097,7 @@ def checkodesol(ode, sol, func=None, order='auto', solve_for_func=True):
 
     Examples
     ========
+
     >>> from sympy import Eq, Function, checkodesol, symbols
     >>> x, C1 = symbols('x,C1')
     >>> f = Function('f')
@@ -1414,6 +1433,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
 
     Examples
     ========
+
     >>> from sympy import symbols
     >>> from sympy.solvers.ode import constantsimp
     >>> C1, C2, C3, x, y = symbols('C1,C2,C3,x,y')
@@ -1459,7 +1479,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
     else:
         # ================ pre-processing ================
         # collect terms to get constants together
-        def take(i):
+        def _take(i):
             t = sorted([s for s in i.atoms(Symbol) if s in constantsymbols])
             if not t:
                 return i
@@ -1469,12 +1489,12 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
             return constantsymbols[0]
         if expr.is_Mul:
             i, d = expr.as_independent(x, strict=True)
-            newi = take(i)
+            newi = _take(i)
             if newi != i:
                 expr = newi*d
         elif expr.is_Add:
             i, d = expr.as_independent(x, strict=True)
-            expr = take(i) + d
+            expr = _take(i) + d
             if expr.is_Add:
                 terms = {}
                 for ai in expr.args:
@@ -1491,7 +1511,7 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
             for p in pows:
                 b, e = p.as_base_exp()
                 ei, ed = e.as_independent(x, strict=True)
-                e = take(ei)
+                e = _take(ei)
                 if e != ei or e in constantsymbols:
                     reps.append((p, e*b**ed))
             expr = expr.subs(reps)
@@ -1503,9 +1523,9 @@ def constantsimp(expr, independentsymbol, endnumber, startnumber=1,
                 reps = []
                 for m in muls:
                     i, d = m.as_independent(x, strict=True)
-                    newi = take(i)
+                    newi = _take(i)
                     if newi != i:
-                        reps.append((m, take(i)*d))
+                        reps.append((m, _take(i)*d))
                 expr = expr.subs(reps)
         # ================ end of pre-processing ================
         newargs = []
@@ -1573,6 +1593,7 @@ def constant_renumber(expr, symbolname, startnumber, endnumber):
 
     Examples
     ========
+
     >>> from sympy import symbols, Eq, pprint
     >>> from sympy.solvers.ode import constant_renumber
     >>> x, C0, C1, C2, C3, C4 = symbols('x,C:5')
@@ -1691,6 +1712,7 @@ def ode_order(expr, func):
 
     Examples
     ========
+
     >>> from sympy import Function, ode_order
     >>> from sympy.abc import x
     >>> f, g = map(Function, ['f', 'g'])
@@ -1760,6 +1782,7 @@ def ode_1st_exact(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, cos, sin
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -1769,6 +1792,7 @@ def ode_1st_exact(eq, func, order, match):
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Exact_differential_equation
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 73
@@ -1805,6 +1829,7 @@ def ode_1st_homogeneous_coeff_best(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, pprint
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -1818,7 +1843,9 @@ def ode_1st_homogeneous_coeff_best(eq, func, order, match):
     log|----| + -------------- = 0
        \ C1 /         3
 
-    **References**
+    References
+    ==========
+
         - http://en.wikipedia.org/wiki/Homogeneous_differential_equation
         - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
           Dover 1963, pp. 59
@@ -1890,6 +1917,7 @@ def ode_1st_homogeneous_coeff_subs_dep_div_indep(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -1905,6 +1933,7 @@ def ode_1st_homogeneous_coeff_subs_dep_div_indep(eq, func, order, match):
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Homogeneous_differential_equation
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 59
@@ -1974,6 +2003,7 @@ def ode_1st_homogeneous_coeff_subs_indep_div_dep(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, pprint
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -1988,6 +2018,7 @@ def ode_1st_homogeneous_coeff_subs_indep_div_dep(eq, func, order, match):
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Homogeneous_differential_equation
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 59
@@ -2031,6 +2062,7 @@ def homogeneous_order(eq, *symbols):
 
     Examples
     ========
+
     >>> from sympy import Function, homogeneous_order, sqrt
     >>> from sympy.abc import x, y
     >>> f = Function('f')
@@ -2123,6 +2155,7 @@ def ode_1st_linear(eq, func, order, match):
 
     Examples
     ========
+
     >>> f = Function('f')
     >>> pprint(dsolve(Eq(x*diff(f(x), x) - f(x), x**2*sin(x)),
     ... f(x), '1st_linear'))
@@ -2130,6 +2163,7 @@ def ode_1st_linear(eq, func, order, match):
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Linear_differential_equation#First_order_equation
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 92
@@ -2195,6 +2229,7 @@ def ode_Bernoulli(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, Eq, pprint, log
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2209,6 +2244,7 @@ def ode_Bernoulli(eq, func, order, match):
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Bernoulli_differential_equation
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 95
@@ -2254,6 +2290,7 @@ def ode_Riccati_special_minus2(eq, func, order, match):
 
     References
     ==========
+
     1. http://www.maplesoft.com/support/help/Maple/view.aspx?path=odeadvisor/Riccati
     2. http://eqworld.ipmnet.ru/en/solutions/ode/ode0106.pdf -
        http://eqworld.ipmnet.ru/en/solutions/ode/ode0123.pdf
@@ -2300,6 +2337,7 @@ def ode_Liouville(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, Eq, pprint
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2310,6 +2348,7 @@ def ode_Liouville(eq, func, order, match):
 
     References
     ==========
+
     - Goldstein and Braun, "Advanced Methods for the Solution of
       Differential Equations", pp. 98
     - http://www.maplesoft.com/support/help/Maple/view.aspx?path=odeadvisor/Liouville
@@ -2346,6 +2385,7 @@ def _nth_linear_match(eq, func, order):
 
     Examples
     ========
+
     >>> from sympy import Function, cos, sin
     >>> from sympy.abc import x
     >>> from sympy.solvers.ode import _nth_linear_match
@@ -2429,6 +2469,7 @@ def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='s
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, pprint
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2440,6 +2481,7 @@ def ode_nth_linear_constant_coeff_homogeneous(eq, func, order, match, returns='s
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Linear_differential_equation
         section: Nonhomogeneous_equation_with_constant_coefficients
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
@@ -2542,6 +2584,7 @@ def ode_nth_linear_constant_coeff_undetermined_coefficients(eq, func, order, mat
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, pprint, exp, cos
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2555,6 +2598,7 @@ def ode_nth_linear_constant_coeff_undetermined_coefficients(eq, func, order, mat
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Method_of_undetermined_coefficients
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 221
@@ -2686,6 +2730,7 @@ def _undetermined_coefficients_match(expr, x):
 
     Examples
     ========
+
     >>> from sympy import log, exp
     >>> from sympy.solvers.ode import _undetermined_coefficients_match
     >>> from sympy.abc import x
@@ -2847,6 +2892,7 @@ def ode_nth_linear_constant_coeff_variation_of_parameters(eq, func, order, match
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, pprint, exp, log
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2859,6 +2905,7 @@ def ode_nth_linear_constant_coeff_variation_of_parameters(eq, func, order, match
 
     References
     ==========
+
     - http://en.wikipedia.org/wiki/Variation_of_parameters
     - http://planetmath.org/encyclopedia/VariationOfParameters.html
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
@@ -2899,7 +2946,7 @@ def _solve_variation_of_parameters(eq, func, order, match):
 
     if r.get('simplify', True):
         wr = simplify(wr) # We need much better simplification for some ODEs.
-                          # See issue 1563, for example.
+        #                   See issue 1563, for example.
 
         # To reduce commonly occuring sin(x)**2 + cos(x)**2 to 1  	
         wr = trigsimp(wr, deep=True, recursive=True)
@@ -2958,6 +3005,7 @@ def ode_separable(eq, func, order, match):
 
     Examples
     ========
+
     >>> from sympy import Function, dsolve, Eq
     >>> from sympy.abc import x
     >>> f = Function('f')
@@ -2970,6 +3018,7 @@ def ode_separable(eq, func, order, match):
 
     References
     ==========
+
     - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
       Dover 1963, pp. 52
 

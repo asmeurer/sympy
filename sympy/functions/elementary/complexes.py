@@ -31,6 +31,10 @@ class re(Function):
        >>> re(im(x) + x*I + 2)
        2
 
+       See Also
+       ========
+
+       im
     """
     nargs = 1
 
@@ -110,6 +114,10 @@ class im(Function):
     >>> im(re(x) + y)
     im(y)
 
+    See Also
+    ========
+
+    re
     """
 
     nargs = 1
@@ -191,6 +199,10 @@ class sign(Function):
     >>> sign(0)
     0
 
+    See Also
+    ========
+
+    Abs, conjugate
     """
 
     nargs = 1
@@ -264,12 +276,17 @@ class Abs(Function):
 
     Abs will always return a sympy object.
 
+    See Also
+    ========
+
+    sign, conjugate
     """
 
     nargs = 1
 
     is_real = True
     is_negative = False
+    unbranched = True
 
     def fdiff(self, argindex=1):
         """
@@ -380,6 +397,10 @@ class conjugate(Function):
     >>> conjugate(1 + I)
     1 - I
 
+    See Also
+    ========
+
+    sign, Abs
     """
 
     nargs = 1
@@ -421,6 +442,12 @@ class polar_lift(Function):
     4*polar_lift(x)
     >>> polar_lift(4*p)
     4*p
+
+    See Also
+    ========
+
+    sympy.functions.elementary.exponential.exp_polar
+    periodic_argument
     """
 
     nargs = 1
@@ -435,7 +462,7 @@ class polar_lift(Function):
             ar = argument(arg)
             #if not ar.has(argument) and not ar.has(atan):
             if ar in (0, pi/2, -pi/2, pi):
-               return exp_polar(I*ar)*abs(arg)
+                return exp_polar(I*ar)*abs(arg)
 
         if arg.is_Mul:
             args = arg.args
@@ -481,54 +508,67 @@ class periodic_argument(Function):
     -pi
     >>> periodic_argument(exp_polar(5*I*pi), pi)
     0
+
+    See Also
+    ========
+
+    sympy.functions.elementary.exponential.exp_polar
+    polar_lift : Lift argument to the riemann surface of the logarithm
+    principal_branch
     """
 
     nargs = 2
 
     @classmethod
     def _getunbranched(cls, ar):
-       from sympy import exp_polar, log
-       if ar.is_Mul:
-           args = ar.args
-       else:
-           args = [ar]
-       unbranched = 0
-       for a in args:
-           if not a.is_polar:
-               unbranched += arg(a)
-           elif a.func is exp_polar:
-               unbranched += a.args[0].as_real_imag()[1]
-           elif a.is_Pow:
-               re, im = a.exp.as_real_imag()
-               unbranched += re*unbranched_argument(a.base) + im*log(abs(a.base))
-           else:
-               return None
-       return unbranched
+        from sympy import exp_polar, log, polar_lift
+        if ar.is_Mul:
+            args = ar.args
+        else:
+            args = [ar]
+        unbranched = 0
+        for a in args:
+            if not a.is_polar:
+                unbranched += arg(a)
+            elif a.func is exp_polar:
+                unbranched += a.args[0].as_real_imag()[1]
+            elif a.is_Pow:
+                re, im = a.exp.as_real_imag()
+                unbranched += re*unbranched_argument(a.base) + im*log(abs(a.base))
+            elif a.func is polar_lift:
+                unbranched += arg(a.args[0])
+            else:
+                return None
+        return unbranched
 
     @classmethod
     def eval(cls, ar, period):
-       # Our strategy is to evaluate the argument on the riemann surface of the
-       # logarithm, and then reduce.
-       # NOTE evidently this means it is a rather bad idea to use this with
-       # period != 2*pi and non-polar numbers.
-       from sympy import ceiling, oo, atan2, atan, polar_lift, pi
-       if not period.is_positive:
-           return None
-       if period == oo and isinstance(ar, principal_branch):
-           return periodic_argument(*ar.args)
-       if ar.func is polar_lift and period >= 2*pi:
-           return periodic_argument(ar.args[0], period)
-       unbranched = cls._getunbranched(ar)
-       if unbranched is None:
-           return None
-       if unbranched.has(periodic_argument, atan2, arg, atan):
-           return None
-       if period == oo:
-           return unbranched
-       if period != oo:
-            n = ceiling(unbranched/period - S(1)/2)*period
-            if not n.has(ceiling):
-                return unbranched - n
+        # Our strategy is to evaluate the argument on the riemann surface of the
+        # logarithm, and then reduce.
+        # NOTE evidently this means it is a rather bad idea to use this with
+        # period != 2*pi and non-polar numbers.
+        from sympy import ceiling, oo, atan2, atan, polar_lift, pi, Mul
+        if not period.is_positive:
+            return None
+        if period == oo and isinstance(ar, principal_branch):
+            return periodic_argument(*ar.args)
+        if ar.func is polar_lift and period >= 2*pi:
+            return periodic_argument(ar.args[0], period)
+        if ar.is_Mul:
+            newargs = [x for x in ar.args if not x.is_positive]
+            if len(newargs) != len(ar.args):
+                return periodic_argument(Mul(*newargs), period)
+        unbranched = cls._getunbranched(ar)
+        if unbranched is None:
+            return None
+        if unbranched.has(periodic_argument, atan2, arg, atan):
+            return None
+        if period == oo:
+            return unbranched
+        if period != oo:
+             n = ceiling(unbranched/period - S(1)/2)*period
+             if not n.has(ceiling):
+                 return unbranched - n
 
     def _eval_evalf(self, prec):
         from sympy import ceiling, oo
@@ -562,6 +602,13 @@ class principal_branch(Function):
     3*exp_polar(0)
     >>> principal_branch(exp_polar(2*pi*I)*3*z, 2*pi)
     3*principal_branch(z, 2*pi)
+
+    See Also
+    ========
+
+    sympy.functions.elementary.exponential.exp_polar
+    polar_lift : Lift argument to the riemann surface of the logarithm
+    periodic_argument
     """
 
     nargs = 2
@@ -592,9 +639,9 @@ class principal_branch(Function):
                 return res
 
         if not x.free_symbols:
-           c, m = x, ()
+            c, m = x, ()
         else:
-           c, m = x.as_coeff_mul(*x.free_symbols)
+            c, m = x.as_coeff_mul(*x.free_symbols)
         others = []
         for y in m:
             if y.is_positive:

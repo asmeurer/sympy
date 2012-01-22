@@ -11,14 +11,14 @@ There are two types of functions:
    no name but has body with dummy variables. Examples of anonymous function
    creation:
        f = Lambda(x, exp(x)*x)
-       f = Lambda(exp(x)*x)  # free symbols in the expression define the number of arguments
+       f = Lambda(exp(x)*x) # free symbols of expr define the number of args
        f = exp * Lambda(x,x)
 4) isn't implemented yet: composition of functions, like (sin+cos)(x), this
    works in sympy core, but needs to be ported back to SymPy.
 
-
     Examples
     ========
+
     >>> import sympy
     >>> f = sympy.Function("f")
     >>> from sympy.abc import x
@@ -372,7 +372,7 @@ functions are not supported.')
             a = [t.compute_leading_term(x, logx=logx) for t in args]
             a0 = [t.limit(x, 0) for t in a]
             if any ([t.has(oo, -oo, zoo, nan) for t in a0]):
-               return self._eval_aseries(n, args0, x, logx)._eval_nseries(x, n, logx)
+                return self._eval_aseries(n, args0, x, logx)._eval_nseries(x, n, logx)
             # Careful: the argument goes to oo, but only logarithmically so. We
             # are supposed to do a power series expansion "around the
             # logarithmic term". e.g.
@@ -1366,7 +1366,8 @@ def diff(f, *symbols, **kwargs):
     that if there are 0 symbols (such as diff(f(x), x, 0), then the result will
     be the function (the zeroth derivative), even if evaluate=False.
 
-    **Examples**
+    Examples
+    ========
 
     >>> from sympy import sin, cos, Function, diff
     >>> from sympy.abc import x, y
@@ -1687,6 +1688,23 @@ def expand_complex(expr, deep=True):
     return sympify(expr).expand(deep=deep, complex=True, basic=False,\
     log=False, mul=False, power_exp=False, power_base=False, multinomial=False)
 
+def expand_power_base(expr, deep=True):
+    """
+    Wrapper around expand that only uses the power_base hint.
+
+    See the expand docstring for more information.
+
+    Examples
+    ========
+
+    >>> from sympy import expand_power_base
+    >>> from sympy.abc import x, y
+    >>> expand_power_base((3*x)**y)
+    3**y*x**y
+    """
+    return sympify(expr).expand(deep=deep, complex=False, basic=False,\
+    log=False, mul=False, power_exp=False, power_base=True, multinomial=False)
+
 def count_ops(expr, visual=False):
     """
     Return a representation (integer or expression) of the operations in expr.
@@ -1829,9 +1847,8 @@ def count_ops(expr, visual=False):
 
                 o = C.Symbol(a.func.__name__.upper())
                 # count the args
-                if (a.is_Mul or
-                    isinstance(a, C.LatticeOp)):
-                   ops.append(o*(len(a.args) - 1))
+                if (a.is_Mul or isinstance(a, C.LatticeOp)):
+                    ops.append(o*(len(a.args) - 1))
                 else:
                     ops.append(o)
             args.extend(a.args)

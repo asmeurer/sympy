@@ -98,6 +98,12 @@ class besselj(BesselBase):
     >>> b.argument
     z
 
+    See Also
+    ========
+
+    bessely, besseli, besselk
+
+
     References
     ==========
 
@@ -177,7 +183,9 @@ class bessely(BesselBase):
 
     See Also
     ========
-    besselj
+
+    besselj, besseli, besselk
+
     """
 
     _a = S.One
@@ -224,7 +232,8 @@ class besseli(BesselBase):
 
     See Also
     ========
-    besselj
+
+    besselj, bessely, besselk
 
     """
 
@@ -281,7 +290,8 @@ class besselk(BesselBase):
 
     See Also
     ========
-    besselj
+
+    besselj, besseli, bessely
 
     """
 
@@ -312,7 +322,8 @@ class hankel1(BesselBase):
 
     See Also
     ========
-    besselj
+
+    hankel2, besselj, bessely
 
     """
 
@@ -344,7 +355,8 @@ class hankel2(BesselBase):
 
     See Also
     ========
-    besselj
+
+    hankel1, besselj, bessely
 
     """
 
@@ -427,7 +439,8 @@ class jn(SphericalBesselBase):
 
     See Also
     ========
-    besselj
+
+    besselj, bessely, besselk, yn
 
     """
 
@@ -470,7 +483,8 @@ class yn(SphericalBesselBase):
 
     See Also
     ========
-    besselj, bessely, jn
+
+    besselj, bessely, besselk, jn
 
     """
 
@@ -508,6 +522,10 @@ def jn_zeros(n, k, method="sympy", dps=15):
     >>> jn_zeros(2, 4, dps=5)
     [5.7635, 9.095, 12.323, 15.515]
 
+    See Also
+    ========
+
+    jn, yn, besselj, besselk, bessely
     """
     from math import pi
 

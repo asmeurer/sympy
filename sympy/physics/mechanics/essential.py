@@ -74,6 +74,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         other : Dyadic or Vector
             The other Dyadic or Vector to take the inner product with
 
@@ -132,6 +133,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         other : Sympafiable
             The scalar to multiply this Dyadic with
 
@@ -251,6 +253,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         other : Vector
             The vector we are dotting with
 
@@ -284,6 +287,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector that we are crossing this Dyadic with
 
@@ -349,6 +353,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector that we are crossing this Dyadic with
 
@@ -406,6 +411,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         frame1 : ReferenceFrame
             The frame to express the left side of the Dyadic in
         frame2 : ReferenceFrame
@@ -438,6 +444,7 @@ class Dyadic(object):
 
         Parameters
         ==========
+
         frame : ReferenceFrame
             The frame to take the time derivative in
 
@@ -509,6 +516,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         indices : list (of strings)
             If custom indices are desired for console, pretty, and LaTeX
             printing, supply three as a list. The basis vectors can then be
@@ -671,6 +679,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             The ReferenceFrame which the angular acceleration is returned in.
 
@@ -703,6 +712,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             The ReferenceFrame which the angular velocity is returned in.
 
@@ -735,6 +745,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             The otherframe which the DCM is generated to.
 
@@ -768,6 +779,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         parent : ReferenceFrame
             The frame that this ReferenceFrame will have its orientation matrix
             defined in relation to.
@@ -942,6 +954,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         newname : str
             The name for the new ReferenceFrame
         rot_type : str
@@ -983,6 +996,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             A ReferenceFrame to define the angular acceleration in
         value : Vector
@@ -1016,6 +1030,7 @@ class ReferenceFrame(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             A ReferenceFrame to define the angular velocity in
         value : Vector
@@ -1063,6 +1078,7 @@ class Vector(object):
 
     Attributes
     ==========
+
     simp : Boolean
         Let certain methods use trigsimp on their outputs
 
@@ -1118,6 +1134,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector which we are dotting with
 
@@ -1179,7 +1196,7 @@ class Vector(object):
                     return True
                 else:
                     return False
-        check = True
+
         frame = self.args[0][1]
         for v in frame:
             if expand((self - other) & v) != 0:
@@ -1191,6 +1208,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         other : Sympifyable
             The scalar to multiply this Vector with
 
@@ -1225,6 +1243,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector to take the outer product with
 
@@ -1340,6 +1359,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector to take the outer product with
 
@@ -1356,6 +1376,8 @@ class Vector(object):
         if isinstance(other, (int, type(Zero()))):
             if (other == 0):
                 return 0
+
+        ol = 0
         for i, v in enumerate(other.args):
             for i2, v2 in enumerate(self.args):
                 # it looks this way because if we are in the same frame and
@@ -1419,6 +1441,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         other : Vector
             The Vector which we are crossing with
 
@@ -1508,6 +1531,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         wrt : Symbol
             What the partial derivative is taken with respect to.
         otherframe : ReferenceFrame
@@ -1551,6 +1575,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             The ReferenceFrame that the partial derivative is taken in.
 
@@ -1590,6 +1615,7 @@ class Vector(object):
 
         Parameters
         ==========
+
         otherframe : ReferenceFrame
             The frame for this Vector to be described in
 
@@ -1908,6 +1934,7 @@ def dynamicsymbols(names, level=0):
 
     Parameters
     ==========
+
     names : str
         Names of the dynamic symbols you want to create; works the same way as
         inputs to symbols

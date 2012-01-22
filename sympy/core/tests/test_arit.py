@@ -1,7 +1,7 @@
 from __future__ import division
 
 from sympy import Symbol, sin, cos, exp, O, sqrt, Rational, Float, re, pi, \
-        sympify, Add, Mul, Pow, Mod, I, log, S
+        sympify, Add, Mul, Pow, Mod, I, log, S, Max, Or
 from sympy.utilities.pytest import XFAIL
 
 x = Symbol('x')
@@ -220,7 +220,6 @@ def test_expand():
         W = W * (x-i)
     W = W.expand()
     assert W.has(-1672280820*x**15)
-
 
 def test_power_expand():
     """Test for Pow.expand()"""
@@ -1219,6 +1218,21 @@ def test_Mod():
     assert x % 5 == Mod(x, 5)
     assert x % y == Mod(x, y)
     assert (x % y).subs({x: 5, y: 3}) == 2
+    assert (x + 3) % 1 == Mod(x, 1)
+    assert (x + 3.0) % 1 == Mod(x, 1)
+    assert (x - S(33)/10) % 1 == Mod(x + S(7)/10, 1)
+    assert (x - 3.3) % 1 == Mod(x + 0.7, 1)
+    assert Mod(-3.3, 1) == Mod(0.7, 1) == Float(0.7)
+    e = Mod(1.3, 1)
+    assert e == .3 and e.is_Float
+    e = Mod(1.3, .7)
+    assert e == .6 and e.is_Float
+    e = Mod(1.3, Rational(7, 10))
+    assert e == .6 and e.is_Float
+    e = Mod(Rational(13, 10), 0.7)
+    assert e == .6 and e.is_Float
+    e = Mod(Rational(13, 10), Rational(7, 10))
+    assert e == .6 and e.is_Rational
 
 def test_issue_2902():
     A = Symbol("A", commutative=False)
@@ -1245,3 +1259,25 @@ def test_polar():
     assert (p*q)**2 == p**2 * q**2
     assert (2*q)**2 == 4 * q**2
     assert ((p*q)**x).expand() == p**x * q**x
+
+def test_issue_2941():
+    a, b = Pow(1, 2, evaluate=False), S.One
+    assert a != b
+    assert b != a
+    assert not (a == b)
+    assert not (b == a)
+
+def test_issue_2983():
+    assert Max(x, 1) * Max(x, 2) == Max(x, 1) * Max(x, 2)
+    assert Or(x, z) * Or(x, z) == Or(x, z) * Or(x, z)
+
+def test_issue_2978():
+    assert x**2.0/x == x**1.0
+    assert x/x**2.0 == x**-1.0
+    assert x*x**2.0 == x**3.0
+    assert x**1.5*x**2.5 == x**4.0
+
+    assert 2**(2.0*x)/2**x == 2**(1.0*x)
+    assert 2**x/2**(2.0*x) == 2**(-1.0*x)
+    assert 2**x*2**(2.0*x) == 2**(3.0*x)
+    assert 2**(1.5*x)*2**(2.5*x) == 2**(4.0*x)

@@ -34,6 +34,7 @@ class Sieve:
 
         Examples
         ========
+
         >>> from sympy.ntheory import sieve
         >>> sieve.extend(30)
         >>> sieve[10] == 29
@@ -67,6 +68,7 @@ class Sieve:
 
         Examples
         ========
+
         >>> from sympy import sieve
         >>> sieve.extend_to_no(9)
         >>> sieve[10] == 29
@@ -80,6 +82,7 @@ class Sieve:
 
         Examples
         ========
+
         >>> from sympy import sieve
         >>> print [i for i in sieve.primerange(7, 18)]
         [7, 11, 13, 17]
@@ -105,6 +108,7 @@ class Sieve:
 
         Examples
         ========
+
         >>> from sympy import sieve
         >>> sieve.search(25)
         (9, 10)
@@ -141,10 +145,12 @@ def prime(n):
 
         References
         ==========
+
         - http://primes.utm.edu/glossary/xpage/BertrandsPostulate.html
 
         Examples
         ========
+
         >>> from sympy import prime
         >>> prime(10)
         29
@@ -153,7 +159,10 @@ def prime(n):
 
         See Also
         ========
-        sympy.ntheory.primetest.isprime, primerange, primepi
+
+        sympy.ntheory.primetest.isprime : Test if n is prime
+        primerange : Generate all primes in a given range
+        primepi : Return the number of primes less than or equal to n
     """
 
     assert n > 0
@@ -166,13 +175,17 @@ def primepi(n):
 
         Examples
         ========
+
         >>> from sympy import primepi
         >>> primepi(25)
         9
 
         See Also
         ========
-        sympy.ntheory.primetest.isprime, primerange, prime
+
+        sympy.ntheory.primetest.isprime : Test if n is prime
+        primerange : Generate all primes in a given range
+        prime : Return the nth prime
     """
 
     if n < 2:
@@ -194,7 +207,10 @@ def nextprime(n, i=1):
 
         See Also
         ========
-        prevprime, primerange
+
+        prevprime : Return the largest prime smaller than n
+        primerange : Generate all primes in a given range
+
     """
 
     if i > 1:
@@ -244,7 +260,9 @@ def prevprime(n):
 
         See Also
         ========
-        nextprime, primerange
+
+        nextprime : Return the ith prime greater than n
+        primerange : Generates all primes in a given range
     """
 
     n = int(n)
@@ -291,18 +309,24 @@ def primerange(a, b):
 
         References
         ==========
+
         1. http://en.wikipedia.org/wiki/Prime_number
         2. http://primes.utm.edu/notes/gaps.html
 
         Examples
         ========
+
         >>> from sympy import primerange
         >>> print [i for i in primerange(1, 30)]
         [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 
         See Also
         ========
-        nextprime, prevprime, randprime, primorial
+
+        nextprime : Return the ith prime greater than n
+        prevprime : Return the largest prime smaller than n
+        randprime : Returns a random prime in a given range
+        primorial : Returns the product of primes based on condition
     """
     assert a <= b
     a -= 1
@@ -321,10 +345,12 @@ def randprime(a, b):
 
         References
         ==========
+
         - http://en.wikipedia.org/wiki/Bertrand's_postulate
 
         Examples
         ========
+
         >>> from sympy import randprime, isprime
         >>> randprime(1, 30) #doctest: +SKIP
         13
@@ -333,7 +359,9 @@ def randprime(a, b):
 
         See Also
         ========
-        primerange
+
+        primerange : Generate all primes in a given range
+
     """
 
     n = random.randint(a-1, b)
@@ -376,7 +404,9 @@ def primorial(n, nth=True):
 
     See Also
     ========
-    primerange
+
+    primerange : Generate all primes in a given range
+
     """
 
     if n < 1:

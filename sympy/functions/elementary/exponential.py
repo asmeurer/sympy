@@ -36,6 +36,7 @@ class ExpBase(Function):
 
         Examples
         ========
+
         >>> from sympy.functions import exp
         >>> from sympy.abc import x
         >>> exp(-x).as_numer_denom()
@@ -108,7 +109,13 @@ class exp_polar(ExpBase):
     >>> exp_polar(2)*exp_polar(3)
     exp_polar(5)
 
-    **See also:** :class:`polar_lift`, :func:`powsimp`.
+    See also
+    ========
+
+    sympy.simplify.simplify.powsimp
+    sympy.functions.elementary.complexes.polar_lift
+    sympy.functions.elementary.complexes.periodic_argument
+    sympy.fucntions.elementary.complexes.principal_branch
     """
 
     is_polar = True
@@ -132,6 +139,11 @@ class exp_polar(ExpBase):
 class exp(ExpBase):
     """
     The exponential function, :math:`e^x`.
+
+    See Also
+    ========
+
+    log
     """
 
     def fdiff(self, argindex=1):
@@ -250,6 +262,7 @@ class exp(ExpBase):
 
         Examples
         ========
+
         >>> from sympy import I
         >>> from sympy.abc import x
         >>> from sympy.functions import exp
@@ -262,6 +275,11 @@ class exp(ExpBase):
         >>> exp(1+I).as_real_imag()
         (E*cos(1), E*sin(1))
 
+        See Also
+        ========
+
+        sympy.functions.elementary.complexes.re
+        sympy.functions.elementary.complexes.im
         """
         re, im = self.args[0].as_real_imag()
         if deep:
@@ -380,6 +398,11 @@ class exp(ExpBase):
 class log(Function):
     """
     The logarithmic function :math:`ln(x)` or :math:`log(x)`.
+
+    See Also
+    ========
+
+    exp
     """
 
     nargs = (1,2)
@@ -403,6 +426,7 @@ class log(Function):
 
     @classmethod
     def eval(cls, arg, base=None):
+        from sympy import unpolarify
         if base is not None:
             base = sympify(base)
 
@@ -445,6 +469,8 @@ class log(Function):
             return S.One
         elif arg.func is exp and arg.args[0].is_real:
             return arg.args[0]
+        elif arg.func is exp_polar:
+            return unpolarify(arg.args[0])
         #don't autoexpand Pow or Mul (see the issue 252):
         elif not arg.is_Add:
             coeff = arg.as_coefficient(S.ImaginaryUnit)
@@ -483,6 +509,7 @@ class log(Function):
         return (1-2*(n%2)) * x**(n+1)/(n+1)
 
     def _eval_expand_log(self, deep=True, **hints):
+        from sympy import unpolarify
         force = hints.get('force', False)
         if deep:
             arg = self.args[0].expand(deep=deep, **hints)
@@ -494,20 +521,21 @@ class log(Function):
             for x in arg.args:
                 if deep:
                     x = x.expand(deep=deep, **hints)
-                if force or x.is_positive:
+                if force or x.is_positive or x.is_polar:
                     expr.append(self.func(x)._eval_expand_log(deep=deep, **hints))
                 else:
                     nonpos.append(x)
             return Add(*expr) + log(Mul(*nonpos))
         elif arg.is_Pow:
-            if force or arg.exp.is_real and arg.base.is_positive:
+            if force or (arg.exp.is_real and arg.base.is_positive) or \
+                        arg.base.is_polar:
                 if deep:
                     b = arg.base.expand(deep=deep, **hints)
                     e = arg.exp.expand(deep=deep, **hints)
                 else:
                     b = arg.base
                     e = arg.exp
-                return e * self.func(b)._eval_expand_log(deep=deep,\
+                return unpolarify(e) * self.func(b)._eval_expand_log(deep=deep,\
                 **hints)
 
         return self.func(arg)
@@ -518,6 +546,7 @@ class log(Function):
 
         Examples
         ========
+
         >>> from sympy import I
         >>> from sympy.abc import x
         >>> from sympy.functions import log

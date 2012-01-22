@@ -11,6 +11,7 @@ class AssumptionsContext(set):
 
     Examples
     ========
+
         >>> from sympy import global_assumptions, AppliedPredicate, Q
         >>> global_assumptions
         AssumptionsContext()
@@ -57,6 +58,7 @@ class AppliedPredicate(Boolean):
 
         Examples
         ========
+
             >>> from sympy import Q, Symbol
             >>> x = Symbol('x')
             >>> a = Q.integer(x + 1)
@@ -90,7 +92,7 @@ class Predicate(Boolean):
 
     Predicates merely wrap their argument and remain unevaluated:
 
-        >>> from sympy import Q, ask, Symbol
+        >>> from sympy import Q, ask, Symbol, S
         >>> x = Symbol('x')
         >>> Q.prime(7)
         Q.prime(7)
@@ -104,6 +106,8 @@ class Predicate(Boolean):
     The tautological predicate `Q.is_true` can be used to wrap other objects:
 
         >>> Q.is_true(x > 1)
+        Q.is_true(x > 1)
+        >>> Q.is_true(S(1) < x)
         Q.is_true(1 < x)
 
     """

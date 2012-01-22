@@ -45,6 +45,12 @@ MPMATH_TRANSLATIONS = {
     "LambertW":"lambertw",
     "Matrix":"matrix",
     "conjugate":"conj",
+    "dirichlet_eta":"altzeta",
+    "Ei":"ei",
+    "Shi":"shi",
+    "Chi":"chi",
+    "Si":"si",
+    "Ci":"ci",
 }
 
 NUMPY_TRANSLATIONS = {
@@ -157,6 +163,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True):
 
     Examples
     ========
+
     (1) Use one of the provided modules:
 
         >> f = lambdify(x, sin(x), "math")

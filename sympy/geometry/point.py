@@ -1,7 +1,7 @@
 """Geometrical Points.
 
 Contains
---------
+========
 Point
 
 """
@@ -18,7 +18,8 @@ class Point(GeometryEntity):
     """A point in a 2-dimensional Euclidean space.
 
     Parameters
-    ----------
+    ==========
+
     coords : sequence of 2 coordinate values.
 
     Attributes
@@ -28,7 +29,8 @@ class Point(GeometryEntity):
         self[1] is the second coordinate value.
 
     Raises
-    ------
+    ======
+
     NotImplementedError
         When trying to create a point with more than two dimensions.
         When `intersection` is called with object other than a Point.
@@ -39,8 +41,14 @@ class Point(GeometryEntity):
     ----
     Currently only 2-dimensional points are supported.
 
+    See Also
+    ========
+
+    sympy.geometry.line.Segment : Connects two Points
+
     Examples
-    --------
+    ========
+
     >>> from sympy.geometry import Point
     >>> from sympy.abc import x
     >>> Point(1, 2)
@@ -65,15 +73,33 @@ class Point(GeometryEntity):
 
     @property
     def x(self):
+        """
+        Returns the X coordinate of the Point.
+
+        Examples
+        ========
+
+        >>> from sympy import Point
+        >>> p = Point(0, 1)
+        >>> p.x
+        0
+        """
         return self[0]
 
     @property
     def y(self):
-        return self[1]
+        """
+        Returns the Y coordinate of the Point.
 
-    @property
-    def free_symbols(self):
-        return self.x.free_symbols.union(self.y.free_symbols)
+        Examples
+        ========
+
+        >>> from sympy import Point
+        >>> p = Point(0, 1)
+        >>> p.y
+        1
+        """
+        return self[1]
 
     def is_collinear(*points):
         """Is a sequence of points collinear?
@@ -82,15 +108,18 @@ class Point(GeometryEntity):
         the set of points are collinear, or False otherwise.
 
         Parameters
-        ----------
+        ==========
+
         points : sequence of Point
 
         Returns
-        -------
+        =======
+
         is_collinear : boolean
 
         Notes
-        -----
+        =====
+
         Slope is preserved everywhere on a line, so the slope between
         any two points on the line should be the same. Take the first
         two points, p1 and p2, and create a translated point v1
@@ -109,8 +138,14 @@ class Point(GeometryEntity):
         then the points are not collinear. We do this test for every
         point in the list, and if all pass then they are collinear.
 
+        See Also
+        ========
+
+        sympy.geometry.line.Line
+
         Examples
-        --------
+        ========
+
         >>> from sympy import Point
         >>> from sympy.abc import x
         >>> p1, p2 = Point(0, 0), Point(1, 1)
@@ -148,16 +183,24 @@ class Point(GeometryEntity):
         on a circle).
 
         Parameters
-        ----------
+        ==========
+
         points : sequence of Points
 
         Returns
-        -------
+        =======
+
         is_concyclic : boolean
             True if points are concyclic, False otherwise.
 
+        See Also
+        ========
+
+        sympy.geometry.ellipse.Circle
+
         Notes
-        -----
+        =====
+
         No points are not considered to be concyclic. One or two points
         are definitely concyclic and three points are conyclic iff they
         are not collinear.
@@ -169,7 +212,8 @@ class Point(GeometryEntity):
         in the circle.
 
         Examples
-        --------
+        ========
+
         >>> from sympy.geometry import Point
         >>> p1, p2 = Point(-1, 0), Point(1, 0)
         >>> p3, p4 = Point(0, 1), Point(-1, 2)
@@ -226,15 +270,23 @@ class Point(GeometryEntity):
         """The Euclidean distance from self to point p.
 
         Parameters
-        ----------
+        ==========
+
         p : Point
 
         Returns
-        -------
+        =======
+
         distance : number or symbolic expression.
 
+        See Also
+        ========
+
+        sympy.geometry.line.Segment.length
+
         Examples
-        --------
+        ========
+
         >>> from sympy.geometry import Point
         >>> p1, p2 = Point(1, 1), Point(4, 5)
         >>> p1.distance(p2)
@@ -252,15 +304,23 @@ class Point(GeometryEntity):
         """The midpoint between self and point p.
 
         Parameters
-        ----------
+        ==========
+
         p : Point
 
         Returns
-        -------
+        =======
+
         midpoint : Point
 
+        See Also
+        ========
+
+        sympy.geometry.line.Segment.midpoint
+
         Examples
-        --------
+        ========
+
         >>> from sympy.geometry import Point
         >>> p1, p2 = Point(1, 1), Point(13, 5)
         >>> p1.midpoint(p2)
@@ -276,11 +336,13 @@ class Point(GeometryEntity):
         where the coordinates are evaluated as floating point numbers.
 
         Returns
-        -------
+        =======
+
         point : Point
 
         Examples
-        --------
+        ========
+
         >>> from sympy import Point, Rational
         >>> p1 = Point(Rational(1, 2), Rational(3, 2))
         >>> p1
@@ -295,20 +357,24 @@ class Point(GeometryEntity):
         """The intersection between this point and another point.
 
         Parameters
-        ----------
+        ==========
+
         other : Point
 
         Returns
-        -------
+        =======
+
         intersection : list of Points
 
         Notes
-        -----
+        =====
+
         The return value will either be an empty list if there is no
         intersection, otherwise it will contain this point.
 
         Examples
-        --------
+        ========
+
         >>> from sympy import Point
         >>> p1, p2, p3 = Point(0, 0), Point(1, 1), Point(0, 0)
         >>> p1.intersection(p2)
@@ -326,6 +392,18 @@ class Point(GeometryEntity):
 
     @property
     def length(self):
+        """
+        The length of a Point.
+        This is needed for compatibility with line.
+
+        Examples
+        ========
+
+        >>> from sympy import Point
+        >>> p = Point(0, 1)
+        >>> p.length
+        0
+        """
         return S.Zero
 
     def __len__(self):

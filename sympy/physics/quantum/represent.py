@@ -5,9 +5,7 @@ TODO:
 * Document default basis functionality.
 """
 
-from sympy import Add, Mul, Pow, I, Expr, oo, Symbol, integrate
-from sympy.functions import conjugate, DiracDelta
-
+from sympy import Add, Expr, I, integrate, Mul, Pow
 from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.commutator import Commutator
 from sympy.physics.quantum.anticommutator import AntiCommutator
@@ -16,7 +14,7 @@ from sympy.physics.quantum.qexpr import QExpr
 from sympy.physics.quantum.tensorproduct import TensorProduct
 from sympy.physics.quantum.matrixutils import flatten_scalar
 from sympy.physics.quantum.state import KetBase, BraBase, StateBase
-from sympy.physics.quantum.operator import Operator, HermitianOperator, OuterProduct
+from sympy.physics.quantum.operator import Operator, OuterProduct
 from sympy.physics.quantum.qapply import qapply
 from sympy.physics.quantum.operatorset import operators_to_state, state_to_operators
 
@@ -73,6 +71,7 @@ def represent(expr, **options):
 
     Parameters
     ==========
+
     expr  : Expr
         The expression to represent.
     basis : Operator, basis set
@@ -88,11 +87,13 @@ def represent(expr, **options):
 
     Returns
     =======
+
     e : Expr
         The sympy expression of the represented quantum expression.
 
     Examples
     ========
+
     Here we subclass ``Operator`` and ``Ket`` to create the z-spin operator
     and its spin 1/2 up eigenstate. By definining the ``_represent_SzOp``
     method, the ket can be represented in the z-spin basis.
@@ -239,6 +240,7 @@ def rep_innerproduct(expr, **options):
 
     Examples
     ========
+
     >>> from sympy.physics.quantum.represent import rep_innerproduct
     >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
     >>> rep_innerproduct(XKet())
@@ -288,6 +290,7 @@ def rep_expectation(expr, **options):
 
     Examples
     ========
+
     >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
     >>> from sympy.physics.quantum.represent import rep_expectation
     >>> rep_expectation(XOp())
@@ -344,6 +347,7 @@ def integrate_result(orig_expr, result, **options):
 
     Examples
     ========
+
     >>> from sympy import symbols, DiracDelta
     >>> from sympy.physics.quantum.represent import integrate_result
     >>> from sympy.physics.quantum.cartesian import XOp, XKet
@@ -424,6 +428,7 @@ def get_basis(expr, **options):
 
     Examples
     ========
+
     >>> from sympy.physics.quantum.represent import get_basis
     >>> from sympy.physics.quantum.cartesian import XOp, XKet, PxOp, PxKet
     >>> x = XKet()
@@ -503,6 +508,7 @@ def enumerate_states(*args, **options):
 
     Examples
     ========
+
     >>> from sympy.physics.quantum.cartesian import XBra, XKet
     >>> from sympy.physics.quantum.represent import enumerate_states
     >>> test = XKet('foo')
