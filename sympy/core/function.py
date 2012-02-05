@@ -1341,8 +1341,13 @@ class Subs(Expr):
     def doit(self):
         return self.expr.doit().subs(zip(self.variables, self.point))
 
-    def evalf(self):
-        return self.doit().evalf()
+    def evalf(self, prec=None, **options):
+        if prec is None:
+            return self.doit().evalf(**options)
+        else:
+            return self.doit().evalf(prec, **options)
+
+    n = evalf
 
     @property
     def variables(self):
@@ -1493,7 +1498,7 @@ def expand(e, deep=True, modulus=None, power_base=True, power_exp=True, \
     Hints evaluated unless explicitly set to False are:
       basic, log, multinomial, mul, power_base, and power_exp
     The following hints are supported but not applied unless set to True:
-      complex, func, and trig.
+      complex, func, trig, frac, numer, and denom.
 
     basic is a generic keyword for methods that want to be expanded
     automatically.  For example, Integral uses expand_basic to expand the

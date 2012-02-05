@@ -23,7 +23,7 @@ from core import C
 from singleton import S
 from containers import Tuple
 
-LG10 = math.log(10,2)
+LG10 = math.log(10, 2)
 
 # Used in a few places as placeholder values to denote exponents and
 # precision levels, e.g. of exact numbers. Must be careful to avoid
@@ -610,6 +610,8 @@ def evalf_log(expr, prec, options):
 def evalf_atan(v, prec, options):
     arg = v.args[0]
     xre, xim, reacc, imacc = evalf(arg, prec+5, options)
+    if xre is xim is None:
+        return (None,)*4
     if xim:
         raise NotImplementedError
     return mpf_atan(xre, prec, round_nearest), None, prec, None
