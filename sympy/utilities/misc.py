@@ -1,5 +1,16 @@
 """Miscellaneous stuff that doesn't really fit anywhere else."""
 
+from textwrap import fill, dedent
+
+# if you use
+# filldedent('''
+#             the text''')
+# a space will be put before the first line because dedent will
+# put a \n as the first line and fill replaces \n with spaces
+# so we strip off any leading and trailing \n since printed wrapped
+# text should not have leading or trailing spaces.
+filldedent = lambda s: '\n' + fill(dedent(s).strip('\n'))
+
 def default_sort_key(item, order=None):
     """
     A default sort key for lists of SymPy objects to pass to functions like sorted().
@@ -84,7 +95,7 @@ else:
 
 def debug(*args):
     """
-    Print *args if SYMPY_DEBUG is True, else do nothing.
+    Print ``*args`` if SYMPY_DEBUG is True, else do nothing.
     """
     from sympy import SYMPY_DEBUG
     if SYMPY_DEBUG:

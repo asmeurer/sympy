@@ -25,7 +25,7 @@ Some more information how the single concepts work and who should use which:
     specific method in every object, that will be called if it's available
     and is then responsible for the representation. The name of that method
     depends on the specific printer and is defined under
-    Printer.printmethodname.
+    Printer.printmethod.
 
 2. Take the best fitting method defined in the printer.
 
@@ -123,13 +123,13 @@ class Printer(object):
 
         class CustomStrPrinter(StrPrinter):
             \"\"\"
-            Examples of how to customize the StrPrinter for both a Sympy class and a
-            user defined class subclassed from the Sympy Basic class.
+            Examples of how to customize the StrPrinter for both a SymPy class and a
+            user defined class subclassed from the SymPy Basic class.
             \"\"\"
 
             def _print_Derivative(self, expr):
                 \"\"\"
-                Custom printing of the Sympy Derivative class.
+                Custom printing of the SymPy Derivative class.
 
                 Instead of:
 

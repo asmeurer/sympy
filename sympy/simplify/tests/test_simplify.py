@@ -4,12 +4,12 @@ from sympy import (Symbol, symbols, hypersimp, factorial, binomial,
     solve, nsimplify, GoldenRatio, sqrt, E, I, sympify, atan, Derivative,
     S, diff, oo, Eq, Integer, gamma, acos, Integral, logcombine, Wild,
     separatevars, erf, rcollect, count_ops, combsimp, posify, expand,
-    factor, Mul, O, hyper, Add, Float, radsimp, collect_const)
+    factor, Mul, O, hyper, Add, Float, radsimp, collect_const, polygamma)
 from sympy.core.mul import _keep_coeff
 from sympy.simplify.simplify import fraction_expand
 from sympy.utilities.pytest import XFAIL
 
-from sympy.abc import x, y, z, t, a, b, c, d, e
+from sympy.abc import x, y, z, t, a, b, c, d, e, k
 
 def test_ratsimp():
     f, g = 1/x + 1/y, (x + y)/(x*y)
@@ -181,6 +181,14 @@ def test_simplify_other():
     assert simplify(Eq(sin(x)**2 + cos(x)**2, factorial(x)/gamma(x))) == Eq(1, x)
     nc = symbols('nc', commutative=False)
     assert simplify(x + x*nc) == x*(1 + nc)
+    # issue 3024
+    # f = exp(-I*(k*sqrt(t) + x/(2*sqrt(t)))**2)
+    # ans = integrate(f, (k, -oo, oo), conds='none')
+    ans = I*(-pi*x*exp(-3*I*pi/4 + I*x**2/(4*t))*erf(x*exp(-3*I*pi/4)/\
+        (2*sqrt(t)))/(2*sqrt(t)) + pi*x*exp(-3*I*pi/4 + I*x**2/(4*t))/\
+        (2*sqrt(t)))*exp(-I*x**2/(4*t))/(sqrt(pi)*x) - I*sqrt(pi)*\
+        (-erf(x*exp(I*pi/4)/(2*sqrt(t))) + 1)*exp(I*pi/4)/(2*sqrt(t))
+    assert simplify(ans) == -(-1)**(S(1)/4)*I*sqrt(pi)/sqrt(t)
 
 def test_simplify_ratio():
     # roots of x**3-3*x+5
@@ -242,6 +250,10 @@ def test_fraction():
 
     assert fraction(x*A/y) == (x*A, y)
     assert fraction(x*A**-1/y) == (x*A**-1, y)
+
+    n = symbols('n', negative=True)
+    assert fraction(exp(n)) == (1, exp(-n))
+    assert fraction(exp(-n)) == (exp(-n), 1)
 
 def test_separate():
     x, y, z = symbols('x,y,z')
@@ -696,9 +708,9 @@ def test_powdenest():
     i, j = symbols('i,j', integer=True)
 
     assert powdenest(x) == x
-    assert powdenest(x + 2*(x**(2*a/3))**(3*x)) == x + 2*(x**(a/3))**(6*x)
+    assert powdenest(x + 2*(x**(2*a/3))**(3*x)) == (x + 2*(x**(2*a/3))**(3*x))
     assert powdenest((exp(2*a/3))**(3*x)) == (exp(a/3))**(6*x)
-    assert powdenest((x**(2*a/3))**(3*x)) == (x**(a/3))**(6*x)
+    assert powdenest((x**(2*a/3))**(3*x)) == ((x**(2*a/3))**(3*x))
     assert powdenest(exp(3*x*log(2))) == 2**(3*x)
     assert powdenest(sqrt(p**2)) == p
     i, j = symbols('i,j', integer=True)
@@ -710,7 +722,7 @@ def test_powdenest():
     assert powdenest(exp(3*(log(a) + log(b)))) == a**3*b**3
     assert powdenest(((x**(2*i))**(3*y))**x) == ((x**(2*i))**(3*y))**x
     assert powdenest(((x**(2*i))**(3*y))**x, force=True) == x**(6*i*x*y)
-    assert powdenest(((x**(2*a/3))**(3*y/i))**x) == ((x**(a/3))**(y/i))**(6*x)
+    assert powdenest(((x**(2*a/3))**(3*y/i))**x) == (((x**(2*a/3))**(3*y/i))**x)
     assert powdenest((x**(2*i)*y**(4*i))**z, force=True) == (x*y**2)**(2*i*z)
     assert powdenest((p**(2*i)*q**(4*i))**j) == (p*q**2)**(2*i*j)
     assert powdenest(((p**(2*a))**(3*y))**x) == p**(6*a*x*y)
@@ -1006,3 +1018,9 @@ def test_unpolarify():
 def test_issue_2998():
     collect(a*y**(2.0*x)+b*y**(2.0*x),y**(x)) == y**(2.0*x)*(a + b)
     collect(a*2**(2.0*x)+b*2**(2.0*x),2**(x)) == 2**(2.0*x)*(a + b)
+
+@XFAIL
+def test_factorial_simplify():
+    # simplify(factorial(x + 1).diff(x) - ((x + 1)*factorial(x)).diff(x))) == 0
+    assert simplify(x*polygamma(0, x + 1) - x*polygamma(0, x + 2) +
+    polygamma(0, x + 1) - polygamma(0, x + 2) + 1) == 0

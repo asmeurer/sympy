@@ -80,6 +80,9 @@ class Tuple(Basic):
     def _to_mpmath(self, prec):
         return tuple([a._to_mpmath(prec) for a in self.args])
 
+    def __lt__(self, other):
+        return self.args < other.args
+
 def tuple_wrapper(method):
     """
     Decorator that converts any tuple in the function arguments into a Tuple.
@@ -129,6 +132,7 @@ class Dict(Basic):
 
     The args are sympified so the 1 and 2 are Integers and the values
     are Symbols. Queries automatically sympify args so the following work:
+
     >>> 1 in D
     True
     >>> D.has('one') # searches keys and values

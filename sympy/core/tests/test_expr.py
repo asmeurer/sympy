@@ -6,9 +6,10 @@ from sympy import (Add, Basic, S, Symbol, Wild,  Float, Integer, Rational, I,
     Pow, nsimplify, ratsimp, trigsimp, radsimp, powsimp, simplify, together,
     separate, collect, factorial, apart, combsimp, factor, refine, cancel,
     Tuple, default_sort_key, DiracDelta, gamma, Dummy, Sum)
-from sympy.core.function import UndefinedFunction
+from sympy.core.function import AppliedUndef
 from sympy.abc import a, b, c, d, e, n, t, u, x, y, z
 from sympy.physics.secondquant import FockState
+from sympy.physics.units import meter
 
 from sympy.utilities.pytest import raises, XFAIL
 
@@ -250,13 +251,13 @@ def test_atoms():
     # issue 3033
     f = Function('f')
     e = (f(x) + sin(x) + 2)
-    assert e.atoms(UndefinedFunction) == \
+    assert e.atoms(AppliedUndef) == \
         set([f(x)])
-    assert e.atoms(UndefinedFunction, Function) == \
+    assert e.atoms(AppliedUndef, Function) == \
         set([f(x), sin(x)])
     assert e.atoms(Function) == \
         set([f(x), sin(x)])
-    assert e.atoms(UndefinedFunction, Number) == \
+    assert e.atoms(AppliedUndef, Number) == \
         set([f(x), S(2)])
     assert e.atoms(Function, Number) == \
         set([S(2), sin(x), f(x)])
@@ -821,22 +822,48 @@ def test_as_coeff_exponent():
     assert fx.as_coeff_exponent(f(x)) == (fx ,0)
 
 def test_extractions():
-    n = Symbol("n", integer=True)
     assert ((x*y)**3).extract_multiplicatively(x**2 * y) == x*y**2
     assert ((x*y)**3).extract_multiplicatively(x**4 * y) == None
     assert (2*x).extract_multiplicatively(2) == x
     assert (2*x).extract_multiplicatively(3) == None
     assert (2*x).extract_multiplicatively(-1) == None
-    assert (Rational(1,2)*x).extract_multiplicatively(3) == x/6
+    assert (Rational(1, 2)*x).extract_multiplicatively(3) == x/6
     assert (sqrt(x)).extract_multiplicatively(x) == None
-    assert (sqrt(x)).extract_multiplicatively(1/x) == sqrt(x)**3
+    assert (sqrt(x)).extract_multiplicatively(1/x) == None
 
     assert ((x*y)**3).extract_additively(1) == None
-    assert (x+1).extract_additively(x) == 1
-    assert (x+1).extract_additively(2*x) == None
-    assert (x+1).extract_additively(-x) == 1+2*x
-    assert (-x+1).extract_additively(2*x) == 1-3*x
+    assert (x + 1).extract_additively(x) == 1
+    assert (x + 1).extract_additively(2*x) == None
+    assert (x + 1).extract_additively(-x) == None
+    assert (-x + 1).extract_additively(2*x) == None
+    assert (2*x + 3).extract_additively(x) == x + 3
+    assert (2*x + 3).extract_additively(2) == 2*x + 1
+    assert (2*x + 3).extract_additively(3) == 2*x
+    assert (2*x + 3).extract_additively(-2) == None
+    assert (2*x + 3).extract_additively(3*x) == None
+    assert (2*x + 3).extract_additively(2*x) == 3
+    assert x.extract_additively(0) == x
+    assert S(2).extract_additively(x) is None
+    assert S(2.).extract_additively(2) == S.Zero
+    assert S(2*x + 3).extract_additively(x + 1) == x + 2
+    assert S(2*x + 3).extract_additively(y + 1) is None
+    assert S(2*x - 3).extract_additively(x + 1) is None
+    assert S(2*x - 3).extract_additively(y + z) is None
+    assert ((a + 1)*x*4 + y).extract_additively(x).expand() == \
+        4*a*x + 3*x + y
+    assert ((a + 1)*x*4 + 3*y).extract_additively(x + 2*y).expand() == \
+        4*a*x + 3*x + y
+    assert (y*(x + 1)).extract_additively(x + 1) is None
+    assert ((y + 1)*(x + 1) + 3).extract_additively(x + 1) == \
+        y*(x + 1) + 3
+    assert ((x + y)*(x + 1) + x + y + 3).extract_additively(x + y) == \
+        x*(x + y) + 3
+    assert (x + y + 2*((x + y)*(x + 1)) + 3).extract_additively((x + y)*(x + 1)) == \
+        x + y + (x + 1)*(x + y) + 3
+    assert ((y + 1)*(x + 2*y + 1) + 3).extract_additively(y + 1) == \
+        (x + 2*y)*(y + 1) + 3
 
+    n = Symbol("n", integer=True)
     assert (Integer(-3)).could_extract_minus_sign() == True
     assert (-n*x+x).could_extract_minus_sign() != (n*x-x).could_extract_minus_sign()
     assert (x-y).could_extract_minus_sign() != (-x+y).could_extract_minus_sign()
@@ -858,19 +885,19 @@ def test_extractions():
 
 def test_coeff():
     assert (x+1).coeff(x+1) == 1
-    assert (3*x).coeff(0) == None
+    assert (3*x).coeff(0) == 0
     assert (z*(1+x)*x**2).coeff(1+x) == z*x**2
     assert (1+2*x*x**(1+x)).coeff(x*x**(1+x)) == 2
     assert (1+2*x**(y+z)).coeff(x**(y+z)) == 2
-    assert (3+2*x+4*x**2).coeff(1) == None
-    assert (3+2*x+4*x**2).coeff(-1) == None
+    assert (3+2*x+4*x**2).coeff(1) == 0
+    assert (3+2*x+4*x**2).coeff(-1) == 0
     assert (3+2*x+4*x**2).coeff(x) == 2
     assert (3+2*x+4*x**2).coeff(x**2) == 4
-    assert (3+2*x+4*x**2).coeff(x**3) == None
+    assert (3+2*x+4*x**2).coeff(x**3) == 0
 
     assert (-x/8 + x*y).coeff(x) == -S(1)/8 + y
     assert (-x/8 + x*y).coeff(-x) == S(1)/8
-    assert (4*x).coeff(2*x) == None
+    assert (4*x).coeff(2*x) == 0
     assert (2*x).coeff(2*x) == 1
     assert (-oo*x).coeff(x*oo) == -1
 
@@ -880,8 +907,8 @@ def test_coeff():
     assert (n1*n2 + x*n1).coeff(n1) == 1 # 1*n1*(n2+x)
     assert (n2*n1 + x*n1).coeff(n1) == n2 + x
     assert (n2*n1 + x*n1**2).coeff(n1) == n2
-    assert (n1**x).coeff(n1) == None
-    assert (n1*n2 + n2*n1).coeff(n1) == None
+    assert (n1**x).coeff(n1) == 0
+    assert (n1*n2 + n2*n1).coeff(n1) == 0
     assert (2*(n1+n2)*n2).coeff(n1+n2, right=1) == n2
     assert (2*(n1+n2)*n2).coeff(n1+n2, right=0) == 2
 
@@ -891,33 +918,39 @@ def test_coeff():
     expr = z*(x+y)**2
     expr2 = z*(x+y)**2 + z*(2*x + 2*y)**2
     assert expr.coeff(z) == (x+y)**2
-    assert expr.coeff(x+y) == None
+    assert expr.coeff(x+y) == 0
     assert expr2.coeff(z) == (x+y)**2 + (2*x + 2*y)**2
 
     assert (x + y + 3*z).coeff(1) == x + y
     assert (-x + 2*y).coeff(-1) == x
     assert (x - 2*y).coeff(-1) == 2*y
-    assert (3 + 2*x + 4*x**2).coeff(1) == None
+    assert (3 + 2*x + 4*x**2).coeff(1) == 0
     assert (-x - 2*y).coeff(2) == -y
     assert (x + sqrt(2)*x).coeff(sqrt(2)) == x
     assert (3 + 2*x + 4*x**2).coeff(x) ==  2
     assert (3 + 2*x + 4*x**2).coeff(x**2) == 4
-    assert (3 + 2*x + 4*x**2).coeff(x**3) == None
-    assert (z*(x + y)**2).coeff((x+y)**2) == z
-    assert (z*(x + y)**2).coeff(x+y) == None
-    assert (2 + 2*x + (x+1)*y).coeff(x+1) == y
+    assert (3 + 2*x + 4*x**2).coeff(x**3) == 0
+    assert (z*(x + y)**2).coeff((x + y)**2) == z
+    assert (z*(x + y)**2).coeff(x + y) == 0
+    assert (2 + 2*x + (x + 1)*y).coeff(x + 1) == y
+
+    assert (x + 2*y + 3).coeff(1) == x
+    assert (x + 2*y + 3).coeff(x, 0) == 2*y + 3
+    assert (x**2 + 2*y + 3*x).coeff(x**2, 0) == 2*y + 3*x
+    assert x.coeff(0, 0) == 0
+    assert x.coeff(x, 0) == 0
 
     n, m, o, l = symbols('n m o l', commutative=False)
     assert n.coeff(n) ==  1
-    assert y.coeff(n) == None
+    assert y.coeff(n) == 0
     assert (3*n).coeff(n) == 3
-    assert (2 + n).coeff(x*m) == None
+    assert (2 + n).coeff(x*m) == 0
     assert (2*x*n*m).coeff(x) == 2*n*m
-    assert (2 + n).coeff(x*m*n + y) == None
-    assert (2*x*n*m).coeff(3*n) == None
+    assert (2 + n).coeff(x*m*n + y) == 0
+    assert (2*x*n*m).coeff(3*n) == 0
     assert (n*m + m*n*m).coeff(n) == 1 + m
     assert (n*m + m*n*m).coeff(n, right=True) == m # = (1 + m)*n*m
-    assert (n*m + m*n).coeff(n) == None
+    assert (n*m + m*n).coeff(n) == 0
     assert (n*m + o*m*n).coeff(m*n) == o
     assert (n*m + o*m*n).coeff(m*n, right=1) == 1
     assert (n*m + n*m*n).coeff(n*m, right=1) == 1 + n # = n*m*(n + 1)
@@ -1032,12 +1065,14 @@ def test_2127():
     assert Mul(evaluate=False) == 1
     assert Mul(x+y, evaluate=False).is_Add
 
-def test_symbols():
-    # symbols should return the free symbols of an object
+def test_free_symbols():
+    # free_symbols should return the free symbols of an object
     assert S(1).free_symbols == set()
     assert (x).free_symbols == set([x])
     assert Integral(x, (x, 1, y)).free_symbols == set([y])
     assert (-Integral(x, (x, 1, y))).free_symbols == set([y])
+    assert meter.free_symbols == set()
+    assert (meter**x).free_symbols == set([x])
 
 def test_issue2201():
     x = Symbol('x', commutative=False)
@@ -1228,24 +1263,43 @@ def test_is_constant():
     assert Pow(S(2), S(3), evaluate=False).is_constant() == True
 
     z1, z2 = symbols('z1 z2', zero=True)
-    assert (z1+2*z2).is_constant
+    assert (z1 + 2*z2).is_constant() is True
+
+    assert meter.is_constant() is True
+    assert (3*meter).is_constant() is True
+    assert (x*meter).is_constant() is False
 
 @XFAIL
 def test_is_not_constant():
     assert (-3 - sqrt(5) + (-sqrt(10)/2 - sqrt(2)/2)**2).is_zero != False
 
 def test_equals():
+    assert (-3 - sqrt(5) + (-sqrt(10)/2 - sqrt(2)/2)**2).equals(0)
     assert (x**2 - 1).equals((x + 1)*(x - 1))
     assert (cos(x)**2 + sin(x)**2).equals(1)
     assert (a*cos(x)**2 + a*sin(x)**2).equals(a)
     r = sqrt(2)
     assert (-1/(r + r*x) + 1/r/(1 + x)).equals(0)
     assert factorial(x + 1).equals((x + 1)*factorial(x))
+    assert sqrt(3).equals(2*sqrt(3)) is False
+    assert (sqrt(5)*sqrt(3)).equals(sqrt(3)) is False
+    assert (sqrt(5) + sqrt(3)).equals(0) is False
+    assert (sqrt(5) + pi).equals(0) is False
+    assert meter.equals(0) is False
+    assert (3*meter**2).equals(0) is False
 
-@XFAIL
-def test_equals_factorial():
-    assert factorial(x + 1).diff(x).equals(((x + 1)*factorial(x)).diff(x))
+    # from integrate(x*sqrt(1+2*x), x);
+    # diff is zero, but differentiation does not show it
+    i = 2*sqrt(2)*x**(S(5)/2)*(1 + 1/(2*x))**(S(5)/2)/5 + \
+        2*sqrt(2)*x**(S(3)/2)*(1 + 1/(2*x))**(S(5)/2)/(-6 - 3/x)
+    ans = sqrt(2*x + 1)*(6*x**2 + x - 1)/15
+    diff = i - ans
+    assert diff.equals(0) is not False # should be True, but now it's None
+    # XXX TODO add a force=True option to equals to posify both
+    # self and other before beginning comparisions
+    p = Symbol('p', positive=True)
+    assert diff.subs(x, p).equals(0) is True
 
-@XFAIL
-def test_issue_2330():
-    assert sqrt(I).conjugate() != sqrt(I)
+def test_random():
+    from sympy import posify
+    assert posify(x)[0]._random() is not None

@@ -607,8 +607,10 @@ def classify_ode(eq, func=None, dict=False, prep=True):
     See sympy.ode.allhints or the sympy.ode docstring for a list of all
     supported hints that can be returned from classify_ode.
 
-    Notes on Hint Names
-    ===================
+    Notes
+    =====
+
+    These are remarks on hint names.
 
     *"_Integral"*
 
@@ -759,8 +761,8 @@ def classify_ode(eq, func=None, dict=False, prep=True):
             u = Dummy('u')
             ind, dep = (reduced_eq + u).as_independent(f)
             ind, dep = [tmp.subs(u, 0) for tmp in [ind, dep]]
-        r = {a: dep.coeff(df) or S.Zero, # if we get None for coeff, take 0
-             b: dep.coeff(f(x)) or S.Zero, # ditto
+        r = {a: dep.coeff(df),
+             b: dep.coeff(f(x)),
              c: ind}
         # double check f[a] since the preconditioning may have failed
         if not r[a].has(f) and (r[a]*df + r[b]*f(x) + r[c]).expand() - reduced_eq == 0:
@@ -1846,11 +1848,11 @@ def ode_1st_homogeneous_coeff_best(eq, func, order, match):
     References
     ==========
 
-        - http://en.wikipedia.org/wiki/Homogeneous_differential_equation
-        - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
-          Dover 1963, pp. 59
+    - http://en.wikipedia.org/wiki/Homogeneous_differential_equation
+    - M. Tenenbaum & H. Pollard, "Ordinary Differential Equations",
+      Dover 1963, pp. 59
 
-        # indirect doctest
+    # indirect doctest
 
     """
     # There are two substitutions that solve the equation, u1=y/x and u2=x/y
@@ -2921,10 +2923,10 @@ def ode_nth_linear_constant_coeff_variation_of_parameters(eq, func, order, match
     return _solve_variation_of_parameters(eq, func, order, match)
 
 def _solve_variation_of_parameters(eq, func, order, match):
-    """	  	
+    """
     Helper function for the method of variation of parameters.
 
-    See the ode_nth_linear_constant_coeff_variation_of_parameters() 	
+    See the ode_nth_linear_constant_coeff_variation_of_parameters()
     docstring for more information on this method.
 
     match should be a dictionary that has the following keys:
@@ -2948,7 +2950,7 @@ def _solve_variation_of_parameters(eq, func, order, match):
         wr = simplify(wr) # We need much better simplification for some ODEs.
         #                   See issue 1563, for example.
 
-        # To reduce commonly occuring sin(x)**2 + cos(x)**2 to 1  	
+        # To reduce commonly occuring sin(x)**2 + cos(x)**2 to 1
         wr = trigsimp(wr, deep=True, recursive=True)
     if not wr:
         # The wronskian will be 0 iff the solutions are not linearly independent.

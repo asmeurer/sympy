@@ -37,7 +37,7 @@ import sympy
 
 # Make sure I have the right Python version.
 if sys.version_info[:2] < (2,5):
-    print "Sympy requires Python 2.5 or newer. Python %d.%d detected" % \
+    print "SymPy requires Python 2.5 or newer. Python %d.%d detected" % \
           sys.version_info[:2]
     sys.exit(-1)
 
@@ -83,18 +83,19 @@ modules = [
     'sympy.simplify',
     'sympy.solvers',
     'sympy.statistics',
+    'sympy.stats',
     'sympy.tensor',
     'sympy.utilities',
     'sympy.utilities.mathml',
   ]
 
 class audit(Command):
-    """Audits Sympy's source code for following issues:
+    """Audits SymPy's source code for following issues:
         - Names which are used but not defined or used before they are defined.
         - Names which are redefined without having been used.
     """
 
-    description = "Audit Sympy source with PyFlakes"
+    description = "Audit SymPy source with PyFlakes"
     user_options = []
 
     def initialize_options(self):
@@ -175,6 +176,12 @@ class test_sympy(Command):
             if not sympy.doctest():
                 tests_successful = False
 
+            print
+            sys.path.append("examples")
+            from all import run_examples # examples/all.py
+            if not run_examples(quiet=True):
+                tests_successful = False
+
             if not (sys.platform == "win32" or sys.version_info[0] == 3):
                 # run Sage tests; Sage currently doesn't support Windows or Python 3
                 dev_null = open(os.devnull, 'w')
@@ -249,7 +256,6 @@ tests = [
     'sympy.printing.tests',
     'sympy.series.tests',
     'sympy.simplify.tests',
-    'sympy.slow_tests',
     'sympy.solvers.tests',
     'sympy.statistics.tests',
     'sympy.tensor.tests',

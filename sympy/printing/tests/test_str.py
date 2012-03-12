@@ -4,7 +4,7 @@ from sympy import (Abs, Catalan, cos, Derivative, E, EulerGamma, exp,
     factorial, factorial2, Function, GoldenRatio, I, Integer, Integral,
     Interval, Lambda, Limit, log, Matrix, nan, O, oo, pi, Rational, Float, Rel,
     S, sin, SparseMatrix, sqrt, summation, Sum, Symbol, symbols, Wild,
-    WildFunction, zeta, zoo, Dummy, Dict)
+    WildFunction, zeta, zoo, Dummy, Dict, Tuple, round)
 from sympy.core import Expr
 from sympy.physics.units import second, joule
 from sympy.polys import Poly, RootOf, RootSum, groebner
@@ -302,6 +302,8 @@ def test_Float():
     assert str(pi.evalf(1+2))   == '3.14'
     assert str(pi.evalf(1+14))  == '3.14159265358979'
     assert str(pi.evalf(1+64))  == '3.1415926535897932384626433832795028841971693993751058209749445923'
+    assert str(round(pi, -1)) == '0.'
+    assert str((pi**400 - round(pi**400, 1)).n(1)) == '-0.e+91'
 
 def test_Relational():
     assert str(Rel(x, y, "<")) == "x < y"
@@ -446,3 +448,15 @@ def test_empty_printer():
 
 def test_settings():
     raises(TypeError, lambda: sstr(S(4), method="garbage"))
+
+def test_RandomDomain():
+    from sympy.stats import Normal, Die, Exponential, pspace, Where
+    X = Normal(0, 1, symbol=Symbol('x1'))
+    assert str(Where(X>0)) == "Domain: 0 < x1"
+
+    D = Die(6, symbol=Symbol('d1'))
+    assert str(Where(D>4)) == "Domain: Or(d1 == 5, d1 == 6)"
+
+    A = Exponential(1, symbol=Symbol('a'))
+    B = Exponential(1, symbol=Symbol('b'))
+    assert str(pspace(Tuple(A,B)).domain) =="Domain: And(0 <= a, 0 <= b)"

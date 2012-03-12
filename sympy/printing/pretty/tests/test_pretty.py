@@ -3595,7 +3595,7 @@ atan2⎜───────, ╲╱ x ⎟\n\
 
 def test_pretty_geometry():
     e = Segment((0, 1), (0, 2))
-    assert pretty(e) == 'Segment(Point(0, 2), Point(0, 1))'
+    assert pretty(e) == 'Segment(Point(0, 1), Point(0, 2))'
     e = Ray((1, 1), angle=4.2*pi)
     assert pretty(e) == 'Ray(Point(1, 1), Point(2, tan(0.2*pi) + 1))'
 
@@ -3619,3 +3619,15 @@ def test_expint():
     assert upretty(Si(x)) == 'Si(x)'
     assert upretty(Ci(x)) == 'Ci(x)'
     assert upretty(Chi(x)) == 'Chi(x)'
+
+def test_RandomDomain():
+    from sympy.stats import Normal, Die, Exponential, pspace, Where
+    X = Normal(0, 1, symbol=Symbol('x1'))
+    assert upretty(Where(X>0)) == u"Domain: 0 < x₁"
+
+    D = Die(6, symbol=Symbol('d1'))
+    assert upretty(Where(D>4)) == u'Domain: d₁ = 5 ∨ d₁ = 6'
+
+    A = Exponential(1, symbol=Symbol('a'))
+    B = Exponential(1, symbol=Symbol('b'))
+    assert upretty(pspace(Tuple(A,B)).domain) ==u'Domain: 0 ≤ b ∧ 0 ≤ a'

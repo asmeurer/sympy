@@ -3,7 +3,7 @@ from sympy import (Matrix, Symbol, solve, exp, log, cos, acos, Rational, Eq,
     S, sympify, sstr, Wild, solve_linear, Integral,
     And, Or, Lt, Gt, Q, re, im, expand, tan, Poly, cosh, sinh, atanh,
     atan, Dummy, Float, tanh)
-from sympy.abc import a, b, c, d, x, y, z
+from sympy.abc import a, b, c, d, x, y, z, t
 from sympy.core.function import nfloat
 from sympy.solvers import solve_linear_system, solve_linear_system_LU,\
      solve_undetermined_coeffs
@@ -447,9 +447,9 @@ def test_checking():
 def test_issue_1572_1364_1368():
     assert solve((sqrt(x**2 - 1) - 2)) in ([sqrt(5), -sqrt(5)],
                                            [-sqrt(5), sqrt(5)])
-    assert solve((2**exp(y**2/x) + 2)/(x**2 + 15), y) == \
-        [-sqrt(x)*sqrt(-log(log(2)) + log(log(2) + I*pi)),
-          sqrt(x)*sqrt(-log(log(2)) + log(log(2) + I*pi))]
+    assert solve((2**exp(y**2/x) + 2)/(x**2 + 15), y) == [
+        -sqrt(x*(-log(log(2)) + log(log(2) + I*pi))),
+         sqrt(x*(-log(log(2)) + log(log(2) + I*pi)))]
 
     C1, C2 = symbols('C1 C2')
     f = Function('f')
@@ -861,6 +861,9 @@ def test_float_handling():
     assert test(nfloat(x/3), x/3.0)
     assert test(nfloat(x**4 + 2*x + cos(S(1)/3) + 1),
             x**4 + 2.0*x + 1.94495694631474)
+    # don't call nfloat if there is no solution
+    tot = 100 + c + z + t
+    assert solve(((.7 + c)/tot - .6, (.2 + z)/tot - .3, t/tot - .1)) is None
 
 def test_check_assumptions():
     x = symbols('x', positive=1)

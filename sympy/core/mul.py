@@ -37,7 +37,7 @@ class Mul(AssocOp):
         """Return commutative, noncommutative and order arguments by
         combining related terms.
 
-        ** Developer Notes **
+        ** Note **
             * In an expression like ``a*b*c``, python process this through sympy
               as ``Mul(Mul(a, b), c)``. This can have undesirable consequences.
 
@@ -146,6 +146,8 @@ class Mul(AssocOp):
         coeff = S.One       # standalone term
                             # e.g. 3 * ...
 
+        iu = []             # ImaginaryUnits, I
+
         c_powers = []       # (base,exp)      n
                             # e.g. (x,n) for x
 
@@ -210,10 +212,17 @@ class Mul(AssocOp):
                 continue
 
             elif o is S.ComplexInfinity:
-                if not coeff or coeff is S.ComplexInfinity:
-                    # we know for sure the result will be nan
+                if not coeff:
+                    # 0 * zoo = NaN
                     return [S.NaN], [], None
+                if coeff is S.ComplexInfinity:
+                    # zoo * zoo = zoo
+                    return [S.ComplexInfinity], [], None
                 coeff = S.ComplexInfinity
+                continue
+
+            elif o is S.ImaginaryUnit:
+                iu.append(o)
                 continue
 
             elif o.is_commutative:
@@ -244,7 +253,7 @@ class Mul(AssocOp):
                     elif b.is_positive or e.is_integer:
                         num_exp.append((b, e))
                         continue
-                c_powers.append((b,e))
+                c_powers.append((b, e))
 
             # NON-COMMUTATIVE
             # TODO: Make non-commutative exponents not combine automatically
@@ -282,6 +291,21 @@ class Mul(AssocOp):
                     else:
                         nc_part.append(o1)
                         nc_part.append(o)
+
+        # handle the ImaginaryUnits
+        if iu:
+            if len(iu) == 1:
+                c_powers.append((iu[0], S.One))
+            else:
+                # a product of I's has one of 4 values; select that value
+                # based on the length of iu:
+                # len(iu) % 4 of (0, 1, 2, 3) has a corresponding value of
+                #                (1, I,-1,-I)
+                niu = len(iu) % 4
+                if niu % 2:
+                    c_powers.append((S.ImaginaryUnit, S.One))
+                if niu in (2, 3):
+                    coeff = -coeff
 
         # We do want a combined exponent if it would not be an Add, such as
         #  y    2y     3y
@@ -426,11 +450,10 @@ class Mul(AssocOp):
             if p.is_Number:
                 coeff *= p
             else:
-                if p.is_Mul:
-                    c, p = p.args
-                    coeff *= c
-                    assert p.is_Pow and p.base is S.NegativeOne
-                    neg1e = p.args[1]
+                c, p = p.as_coeff_Mul()
+                coeff *= c
+                if p.is_Pow and p.base is S.NegativeOne:
+                    neg1e = p.exp
                 for e, b in pnew.iteritems():
                     if e == neg1e and b.is_positive:
                         pnew[e] = -b
@@ -497,26 +520,49 @@ class Mul(AssocOp):
         coeff, b = b.as_coeff_Mul()
         bc, bnc = b.args_cnc()
 
-        bnc = Pow(Mul._from_args(bnc), e, evaluate=False)
+        done = [Pow(Mul._from_args(bnc), e, evaluate=False) if bnc else S.One]
+
         if e.is_Number:
             if e.is_Integer:
                 # (a*b)**2 -> a**2 * b**2
-                return coeff**e*(Mul(*[s**e for s in bc])*bnc)
+                return Mul(*([s**e for s in [coeff] + bc] + done))
 
             if e.is_Rational or e.is_Float:
-                unk=[]
-                nonneg=[]
-                neg=[]
+                unk = []
+                nonneg = []
+                neg = []
+                iu = []
                 for bi in bc:
-                    if bi.is_negative is not None: #then we know the sign
+                    if bi.is_polar:
+                        nonneg.append(bi)
+                    elif bi.is_negative is not None:
                         if bi.is_negative:
                             neg.append(bi)
-                        else:
+                        elif bi.is_nonnegative:
                             nonneg.append(bi)
-                    elif bi.is_polar:
-                        nonneg.append(bi)
+                        elif bi is S.ImaginaryUnit:
+                            iu.append(bi)
+                        else:
+                            unk.append(bi)
                     else:
                         unk.append(bi)
+
+                if iu:
+                    niu = len(iu) % 4
+                    i = S.ImaginaryUnit if niu % 2 else S.One
+                    if niu in (2, 3):
+                        coeff = -coeff
+                    if i is S.ImaginaryUnit:
+                        if unk or e.is_Float:
+                            unk.append(i)
+                        else:
+                            if coeff.is_negative and e.is_Rational:
+                                coeff = -coeff
+                                ie = Rational(4*e.q - e.p, 2*e.q)
+                                done.append(Pow(-1, ie))
+                            else:
+                                done.append(i**e)
+
                 if len(unk) == len(bc) or len(neg) == len(bc) == 1:
                     # if all terms were unknown there is nothing to pull
                     # out except maybe the coeff; if there is a single
@@ -527,7 +573,7 @@ class Mul(AssocOp):
                         bc[0] = -bc[0]
                     if coeff is S.One:
                         return None
-                    return Mul(Pow(coeff, e), Pow(Mul(*bc), e), bnc)
+                    return Mul(*([Pow(coeff, e), Pow(Mul(*bc), e)] + done))
 
                 # otherwise return the new expression expanding out the
                 # known terms; those that are not known can be expanded
@@ -544,14 +590,12 @@ class Mul(AssocOp):
                         unk.append(S.NegativeOne)
                     if len(neg) % 2:
                         unk.append(S.NegativeOne)
-                return Mul(*[Pow(s, e) for s in nonneg + neg + [coeff]])* \
-                   Pow(Mul(*unk), e)*bnc
+
+                done.extend([Pow(s, e) for s in nonneg + neg + [coeff, Mul(*unk)]])
+                return Mul(*done)
 
         if e.is_even and coeff.is_negative:
             return Pow(-coeff, e)*Pow(b, e)
-
-        #if e.has(Wild):
-        #    return Mul(*[t**e for t in b])
 
     @classmethod
     def class_key(cls):
@@ -1375,8 +1419,27 @@ def prod(a, start=1):
     """
     return reduce(operator.mul, a, start)
 
-def _keep_coeff(coeff, factors):
-    """Return ``coeff*factors`` unevaluated if necessary."""
+def _keep_coeff(coeff, factors, clear=True):
+    """Return ``coeff*factors`` unevaluated if necessary.
+
+    If clear is False, do not keep the coefficient as a factor
+    if it can be distributed on a single factor such that one or
+    more terms will still have integer coefficients.
+
+    Examples
+    ========
+
+    >>> from sympy.core.mul import _keep_coeff
+    >>> from sympy.abc import x, y
+    >>> from sympy import S
+
+    >>> _keep_coeff(S.Half, x + 2)
+    (x + 2)/2
+    >>> _keep_coeff(S.Half, x + 2, clear=False)
+    x/2 + 1
+    >>> _keep_coeff(S.Half, (x + 2)*y, clear=False)
+    y*(x + 2)/2
+    """
 
     if not coeff.is_Number:
         if factors.is_Number:
@@ -1388,6 +1451,13 @@ def _keep_coeff(coeff, factors):
     elif coeff == -1: # don't keep sign?
         return -factors
     elif factors.is_Add:
+        if not clear and coeff.is_Rational and coeff.q != 1:
+            q = S(coeff.q)
+            for i in factors.args:
+                c, t = i.as_coeff_Mul()
+                r = c/q
+                if r == int(r):
+                    return coeff*factors
         return Mul._from_args((coeff, factors))
     elif factors.is_Mul:
         margs = list(factors.args)
