@@ -2,7 +2,7 @@
 from sympy import Poly, S, symbols, oo
 from sympy.integrals.risch import NonElementaryIntegral
 from sympy.integrals.rde import (order_at, weak_normalizer, normal_denom,
-    bound_degree, spde, solve_poly_rde, no_cancel_equal, rischDE)
+    bound_degree, spde, solve_poly_rde, no_cancel_equal, rischDE, special_denom)
 from sympy.utilities.pytest import raises
 from sympy.abc import x, t, z, n
 
