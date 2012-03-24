@@ -160,6 +160,7 @@ def test_line():
     assert l7.equation() == y - 1
     assert p1 in l1 # is p1 on the line l1?
     assert p1 not in l3
+    assert Line((-x,x),(-x+1,x-1)).coefficients == (1, 1, 0)
 
     assert simplify(l1.equation()) in (x-y, y-x)
     assert simplify(l3.equation()) in (x-x1, x1-x)
@@ -531,7 +532,6 @@ def test_ellipse():
     ans = [Point(a - c/8, a/2 + c), Point(a + c/8, a/2 - c)]
     assert e1.intersection(e2) == ans
     e2 = Ellipse(Point(x, y), 4, 8)
-    ans = list(reversed(ans))
     assert [p.subs({x: 2, y:1}) for p in e1.intersection(e2)] == ans
 
     # Combinations of above
@@ -844,6 +844,11 @@ def test_subs():
         assert 'y' in str(o.subs(x, y))
     assert p.subs({x: 1}) == Point(1, 2)
     assert Point(1, 2).subs(Point(1, 2), Point(3, 4)) == Point(3, 4)
+    assert Point(1, 2).subs((1,2), Point(3,4)) == Point(3, 4)
+    assert Point(1, 2).subs(Point(1,2), Point(3,4)) == Point(3, 4)
+    assert Point(1, 2).subs(set([(1, 2)])) == Point(2, 2)
+    raises(ValueError, 'Point(1, 2).subs(1)')
+    raises(ValueError, 'Point(1, 1).subs((Point(1, 1), Point(1, 2)), 1, 2)')
 
 def test_encloses():
     # square with a dimpled left side

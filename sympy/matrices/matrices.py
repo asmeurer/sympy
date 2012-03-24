@@ -1,5 +1,6 @@
 from sympy.core.add import Add
 from sympy.core.basic import Basic, C
+from sympy.core.function import count_ops
 from sympy.core.power import Pow
 from sympy.core.symbol import Symbol, Dummy
 from sympy.core.numbers import Integer, ilcm, Rational
@@ -8,8 +9,9 @@ from sympy.core.sympify import sympify, converter, SympifyError
 from sympy.core.compatibility import is_sequence
 
 from sympy.polys import PurePoly, roots, cancel
-from sympy.simplify import simplify as sympy_simplify
+from sympy.simplify import simplify as _simplify, signsimp
 from sympy.utilities.iterables import flatten
+from sympy.utilities.misc import filldedent
 from sympy.functions.elementary.miscellaneous import sqrt, Max, Min
 from sympy.printing import sstr
 from sympy.functions.elementary.trigonometric import cos, sin
@@ -19,6 +21,7 @@ from sympy.core.decorators import call_highest_priority
 
 import random
 import warnings
+from types import FunctionType
 
 class MatrixError(Exception):
     pass
@@ -84,76 +87,88 @@ class MatrixBase(object):
         [0, 2]
 
         """
+        # Matrix(Matrix(...))
         if len(args) == 1 and isinstance(args[0], MatrixBase):
             return args[0].rows, args[0].cols, args[0].mat
 
-        self = object.__new__(cls)
+        # Matrix(MatrixSymbol('X', 2,2))
+        if len(args) == 1 and isinstance(args[0], Basic) and args[0].is_Matrix:
+            return args[0].rows, args[0].cols, args[0].as_explicit().mat
+
+        # Matrix(2, 2, lambda i,j: i+j)
         if len(args) == 3 and callable(args[2]):
             operation = args[2]
-            self.rows = int(args[0])
-            self.cols = int(args[1])
-            self.mat = []
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    self.mat.append(sympify(operation(i, j)))
+            rows = int(args[0])
+            cols = int(args[1])
+            mat = []
+            for i in range(rows):
+                for j in range(cols):
+                    mat.append(sympify(operation(i, j)))
+
+        # Matrix(2, 2, [1,2,3,4])
         elif len(args)==3 and is_sequence(args[2]):
-            self.rows=args[0]
-            self.cols=args[1]
-            mat = args[2]
-            if len(mat) != len(self):
+            rows = args[0]
+            cols = args[1]
+            mat  = args[2]
+            if len(mat) != rows*cols:
                 raise ValueError('List length should be equal to rows*columns')
-            self.mat = map(lambda i: sympify(i), mat)
+            mat = map(lambda i: sympify(i), mat)
+
+        # Matrix(numpy.ones((2,2)))
         elif len(args) == 1:
-            mat = args[0]
-            if hasattr(mat, "__array__"): #pragma: no cover
+            in_mat = args[0]
+            if hasattr(in_mat, "__array__"): #pragma: no cover
                 # NumPy array or matrix or some other object that implements
                 # __array__. So let's first use this method to get a
                 # numpy.array() and then make a python list out of it.
-                arr = mat.__array__()
+                arr = in_mat.__array__()
                 if len(arr.shape) == 2:
-                    self.rows, self.cols = arr.shape[0], arr.shape[1]
-                    self.mat = map(lambda i: sympify(i), arr.ravel())
-                    return self.rows, self.cols, self.mat
+                    rows, cols = arr.shape[0], arr.shape[1]
+                    mat = map(lambda i: sympify(i), arr.ravel())
+                    return rows, cols, mat
                 elif len(arr.shape) == 1:
-                    self.rows, self.cols = 1, arr.shape[0]
-                    self.mat = [0]*self.cols
+                    rows, cols = 1, arr.shape[0]
+                    mat = [0]*cols
                     for i in xrange(len(arr)):
-                        self.mat[i] = sympify(arr[i])
-                    return self.rows, self.cols, self.mat
+                        mat[i] = sympify(arr[i])
+                    return rows, cols, mat
                 else:
                     raise NotImplementedError("SymPy supports just 1D and 2D matrices")
-            elif not is_sequence(mat, include=MatrixBase):
-                raise TypeError("Matrix constructor doesn't accept %s as input" % str(type(mat)))
-            mat = []
+            elif not is_sequence(in_mat, include=MatrixBase):
+                raise TypeError("Matrix constructor doesn't accept %s as input"
+                        % str(type(in_mat)))
+            in_mat = []
             for row in args[0]:
                 if isinstance(row, MatrixBase):
-                    mat.extend(row.tolist())
+                    in_mat.extend(row.tolist())
                 else:
-                    mat.append(row)
-            self.rows = len(mat)
-            if len(mat) != 0:
-                if not is_sequence(mat[0]):
-                    self.cols = 1
-                    self.mat = map(lambda i: sympify(i), mat)
-                    return self.rows, self.cols, self.mat
-                self.cols = len(mat[0])
+                    in_mat.append(row)
+            rows = len(in_mat)
+            if len(in_mat) != 0:
+                if not is_sequence(in_mat[0]):
+                    cols = 1
+                    mat = map(lambda i: sympify(i), in_mat)
+                    return rows, cols, mat
+                cols = len(in_mat[0])
             else:
-                self.cols = 0
-            self.mat = []
-            for j in xrange(self.rows):
-                if len(mat[j]) != self.cols:
+                cols = 0
+            mat = []
+            for j in xrange(rows):
+                if len(in_mat[j]) != cols:
                     raise ValueError("Input %s inconsistant to form a Matrix." %
                         args)
-                for i in xrange(self.cols):
-                    self.mat.append(sympify(mat[j][i]))
+                for i in xrange(cols):
+                    mat.append(sympify(in_mat[j][i]))
+
+        # Matrix()
         elif len(args) == 0:
             # Empty Matrix
-            self.rows = self.cols = 0
-            self.mat = []
+            rows = cols = 0
+            mat = []
         else:
             raise TypeError("Data type not understood")
 
-        return self.rows, self.cols, self.mat
+        return rows, cols, mat
 
     def transpose(self):
         """
@@ -2392,7 +2407,7 @@ class MatrixBase(object):
         if not self.is_square:
             raise NonSquareMatrixError()
 
-        ok = self.rref(simplified=True)[0]
+        ok = self.rref(simplify=True)[0]
         if any(iszerofunc(ok[j, j]) for j in range(ok.rows)):
             raise ValueError("Matrix det == 0; not invertible.")
 
@@ -2413,7 +2428,7 @@ class MatrixBase(object):
             raise NonSquareMatrixError()
 
         big = self.row_join(self.eye(self.rows))
-        red = big.rref(iszerofunc=iszerofunc, simplified=True)[0]
+        red = big.rref(iszerofunc=iszerofunc, simplify=True)[0]
         if any(iszerofunc(red[j, j]) for j in range(red.rows)):
             raise ValueError("Matrix det == 0; not invertible.")
 
@@ -2437,7 +2452,7 @@ class MatrixBase(object):
         zero = d.equals(0)
         if zero is None:
             # if equals() can't decide, will rref be able to?
-            ok = self.rref(simplified=True)[0]
+            ok = self.rref(simplify=True)[0]
             zero = any(iszerofunc(ok[j, j]) for j in range(ok.rows))
         if zero:
             raise ValueError("Matrix det == 0; not invertible.")
@@ -2445,25 +2460,40 @@ class MatrixBase(object):
         return self.adjugate()/d
 
     def rref(self, simplified=False, iszerofunc=_iszero,
-            simplify=sympy_simplify):
+            simplify=False):
         """
-        Take any matrix and return reduced row-echelon form and indices of pivot vars
+        Return reduced row-echelon form of matrix and indices of pivot vars.
 
-        To simplify elements before finding nonzero pivots set simplified=True.
-        To set a custom simplify function, use the simplify keyword argument.
+        To simplify elements before finding nonzero pivots set simplify=True
+        (to use the default SymPy simplify function) or pass a custom
+        simplify function.
+
+        >>> from sympy import Matrix
+        >>> from sympy.abc import x
+        >>> m = Matrix([[1, 2], [x, 1 - 1/x]])
+        >>> m.rref()
+        ([1, 0]
+        [0, 1], [0, 1])
         """
-
+        if simplified is not False:
+            warnings.warn(filldedent('''
+            Use of simplified is deprecated. Set simplify=True to
+            use SymPy's simplify function or set simplify to your
+            own custom simplification function.
+            '''))
+            simplify = simplify or True
+        simpfunc = simplify if isinstance(simplify, FunctionType) else _simplify
         pivot, r = 0, self[:,:].as_mutable()        # pivot: index of next row to contain a pivot
         pivotlist = []                  # indices of pivot variables (non-free)
         for i in range(r.cols):
             if pivot == r.rows:
                 break
-            if simplified:
-                r[pivot,i] = simplify(r[pivot,i])
+            if simplify:
+                r[pivot,i] = simpfunc(r[pivot,i])
             if iszerofunc(r[pivot,i]):
                 for k in range(pivot, r.rows):
-                    if simplified and k > pivot:
-                        r[k,i] = simplify(r[k,i])
+                    if simplify and k > pivot:
+                        r[k,i] = simpfunc(r[k,i])
                     if not iszerofunc(r[k,i]):
                         break
                 if k == r.rows - 1 and iszerofunc(r[k,i]):
@@ -2480,11 +2510,19 @@ class MatrixBase(object):
             pivot += 1
         return self._new(r), pivotlist
 
-    def nullspace(self, simplified=False):
+    def nullspace(self, simplified=False, simplify=False):
         """
         Returns list of vectors (Matrix objects) that span nullspace of self
         """
-        reduced, pivots = self.rref(simplified)
+        if simplified is not False:
+            warnings.warn(filldedent('''
+            Use of simplified is deprecated. Set simplify=True to
+            use SymPy's simplify function or set simplify to your
+            own custom simplification function.
+            '''))
+            simplify = simplify or True
+        simpfunc = simplify if isinstance(simplify, FunctionType) else _simplify
+        reduced, pivots = self.rref(simplify=simpfunc)
 
         basis = []
         # create a set of vectors for the basis
@@ -2633,7 +2671,7 @@ class MatrixBase(object):
 
         return tuple(minors)
 
-    def berkowitz_charpoly(self, x=Dummy('lambda'), simplify=sympy_simplify):
+    def berkowitz_charpoly(self, x=Dummy('lambda'), simplify=_simplify):
         """Computes characteristic polynomial minors using Berkowitz method.
 
         A PurePoly is returned so using different variables for ``x`` does
@@ -2683,9 +2721,15 @@ class MatrixBase(object):
     eigenvals = berkowitz_eigenvals
 
     def eigenvects(self, **flags):
-        """Return list of triples (eigenval, multiplicity, basis)."""
+        """Return list of triples (eigenval, multiplicity, basis).
+
+        If the flag ``simplify`` is True, as_content_primitive() will
+        be used to tidy up normalization artifacts; if the flag is a
+        function, that function will be used to do the simplification."""
 
         simplify = flags.pop('simplify', False)
+        simpfunc = simplify if isinstance(simplify, FunctionType) else \
+            lambda x: signsimp(x).as_content_primitive()
 
         if 'multiple' in flags:
             del flags['multiple']
@@ -2700,17 +2744,17 @@ class MatrixBase(object):
             # necessary.
             if not basis:
                 # The nullspace routine failed, try it again with simplification
-                basis = tmp.nullspace(simplified=True)
+                basis = tmp.nullspace(simplify=simpfunc)
                 if not basis:
                     raise NotImplementedError("Can't evaluate eigenvector for eigenvalue %s" % r)
             if simplify:
                 # the relationship A*e = lambda*e will still hold if we change the
                 # eigenvector; so if simplify is True we tidy up any normalization
-                # artifacts with as_content_primtive and remove any pure Integer
-                # denominators
+                # artifacts with as_content_primtive (default) and remove any pure Integer
+                # denominators.
                 l = 1
                 for i, b in enumerate(basis[0]):
-                    c, p = b.as_content_primitive()
+                    c, p = simpfunc(b)
                     if c is not S.One:
                         b = c*p
                         l = ilcm(l, c.q)
@@ -3224,6 +3268,8 @@ class MatrixBase(object):
 
     @property
     def is_Identity(self):
+        if not self.is_square:
+            return False
         for i in xrange(self.rows):
             for j in xrange(self.cols):
                 if i==j and self[i,j] != 1:
@@ -3241,8 +3287,6 @@ class MutableMatrix(MatrixBase):
 
     @classmethod
     def _new(cls, *args, **kwargs):
-        if len(args)==1 and isinstance(args[0], MutableMatrix):
-            return args[0]
         rows, cols, mat = MatrixBase._handle_creation_inputs(*args, **kwargs)
         self = object.__new__(cls)
         self.rows = rows
@@ -3534,11 +3578,10 @@ class MutableMatrix(MatrixBase):
         self.cols -= 1
 
     # Utility functions
-    def simplify(self, simplify=sympy_simplify, ratio=1.7):
-        """Simplify the elements of a matrix in place.
+    def simplify(self, ratio=1.7, measure=count_ops):
+        """Applies simplify to the elements of a matrix in place.
 
-        If (result length)/(input length) > ratio, then input is returned
-        unmodified. If 'ratio=oo', then simplify() is applied anyway.
+        This is a shortcut for M.applyfunc(lambda x: simplify(x, ratio, measure))
 
         See Also
         ========
@@ -3546,7 +3589,7 @@ class MutableMatrix(MatrixBase):
         sympy.simplify.simplify.simplify
         """
         for i in xrange(len(self.mat)):
-            self.mat[i] = simplify(self.mat[i], ratio=ratio)
+            self.mat[i] = _simplify(self.mat[i], ratio=ratio, measure=measure)
 
     def fill(self, value):
         """Fill the matrix with the scalar value.
