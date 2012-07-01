@@ -1244,7 +1244,8 @@ def split_surds(expr):
     >>> split_surds(3*sqrt(3) + sqrt(5)/7 + sqrt(6) + sqrt(10) + sqrt(15))
     (5, 1/7 + sqrt(2) + sqrt(3), sqrt(6) + 3*sqrt(3))
     """
-    coeff_muls =  [x.as_coeff_Mul() for x in expr.args]
+    args = sorted(expr.args, key=default_sort_key)
+    coeff_muls =  [x.as_coeff_Mul() for x in args]
     surds = [x[1]**2 for x in coeff_muls if x[1].is_Pow]
     g, b1, b2 = _split_gcd(*surds)
     g2 = g
