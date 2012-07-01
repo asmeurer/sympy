@@ -10,6 +10,7 @@ from sympy.matrices import ImmutableMatrix
 from sympy.utilities.iterables import flatten, capture
 from sympy.utilities.pytest import raises, XFAIL
 from sympy.matrices import rot_axis1, rot_axis2, rot_axis3
+from sympy.utilities import default_sort_key
 
 def test_division():
     x, y, z = symbols('x y z')
@@ -639,7 +640,7 @@ def canonicalize(v):
     def c(x):
         a, b, c = x
         return (S(a), S(b), tuple(c[0]))
-    return tuple(set([c(x) for x in v]))
+    return sorted(set([c(x) for x in v]), key=default_sort_key)
 
 def test_eigen():
     x,y = symbols('x y')
@@ -713,14 +714,14 @@ def test_eigen():
     M._eigenvects = M.eigenvects(simplify=True)
     assert max(i.q for i in M._eigenvects[0][2][0]) == 1
     M = Matrix([[S(1)/4, 1], [1, 1]])
-    assert M.eigenvects(simplify=True) == [
+    assert canonicalize(M.eigenvects(simplify=True)) == canonicalize([
         (-sqrt(73)/8 + S(5)/8, 1, [Matrix([[8/(-sqrt(73) + 3)], [1]])]),
-        (S(5)/8 + sqrt(73)/8, 1, [Matrix([[8/(3 + sqrt(73))],   [1]])])]
-    assert M.eigenvects(simplify=False) == [
+        (S(5)/8 + sqrt(73)/8, 1, [Matrix([[8/(3 + sqrt(73))],   [1]])])])
+    assert canonicalize(M.eigenvects(simplify=False)) == canonicalize([
     (-sqrt(73)/8 + Rational(5, 8), 1,
         [Matrix([[-1/(Rational(-3, 8) + sqrt(73)/8)], [1]])]),
     (Rational(5, 8) + sqrt(73)/8, 1,
-        [Matrix([[-1/(-sqrt(73)/8 + Rational(-3, 8))], [1]])])]
+        [Matrix([[-1/(-sqrt(73)/8 + Rational(-3, 8))], [1]])])])
 
     m = Matrix([[1, .6, .6], [.6, .9, .9], [.9, .6, .6]])
     evals = {-sqrt(385)/20 + S(5)/4: 1, sqrt(385)/20 + S(5)/4: 1, S.Zero: 1}
@@ -1578,7 +1579,7 @@ def test_diagonalization():
     assert m.is_diagonalizable()
     (P, D) = m.diagonalize()
     assert P.inv() * m * P == D
-    assert P == eye(2)
+    assert P == Matrix([[0, 1], [1, 0]])
 
     # diagonalizable, complex only
     m = Matrix(2,2,[0, 1, -1, 0])
@@ -1620,7 +1621,7 @@ def test_jordan_form():
 
     # diagonalizable
     m = Matrix(3, 3, [7, -12, 6, 10, -19, 10, 12, -24, 13])
-    Jmust = Matrix(3, 3, [1, 0, 0, 0, 1, 0, 0, 0, -1])
+    Jmust = Matrix(3, 3, [-1, 0, 0, 0, 1, 0, 0, 0, 1])
     (P, J) = m.jordan_form()
     assert Jmust == J
     assert Jmust == m.diagonalize()[1]
@@ -1648,7 +1649,7 @@ def test_jordan_form():
 
     #complexity: two of eigenvalues are zero
     m = Matrix(3, 3, [4, -5, 2, 5, -7, 3, 6, -9, 4])
-    Jmust = Matrix(3, 3, [1, 0, 0, 0, 0, 1, 0, 0, 0])
+    Jmust = Matrix(3, 3, [0, 1, 0, 0, 0, 0, 0, 0, 1])
     (P, J) = m.jordan_form()
     assert Jmust == J
 
@@ -1658,7 +1659,7 @@ def test_jordan_form():
     assert Jmust == J
 
     m = Matrix(4, 4, [6, 2, -8, -6, -3, 2, 9, 6, 2, -2, -8, -6, -1, 0, 3, 4])
-    Jmust = Matrix(4, 4, [2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0, -2])
+    Jmust = Matrix(4, 4, [-2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 2])
     (P, J) = m.jordan_form()
     assert Jmust == J
 
