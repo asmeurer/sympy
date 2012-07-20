@@ -56,7 +56,8 @@ def test_re():
     assert re(x).as_real_imag() == (re(x), 0)
 
     assert re(i*r*x).diff(r) == re(i*x)
-    assert re(i*r*x).diff(i) == -I * im(r*x)
+    assert re(i*r*x) == I*r*i*im(x)
+    assert re(i*r*x).diff(i) == I*r*im(x)
 
     assert re(sqrt(a + b*I)) == (a**2 + b**2)**Rational(1,4)*cos(atan2(b, a)/2)
     assert re(a * (2 + b*I)) == 2*a

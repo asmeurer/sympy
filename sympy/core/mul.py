@@ -677,18 +677,28 @@ class Mul(AssocOp):
             return S.One, self
 
     def as_real_imag(self, deep=True, **hints):
-        other = []
+        from sympy.core.function import expand_complex, expand_mul, expand_multinomial
+        if deep:
+            sself = self.func(*(expand_complex(i) for i in self.args))
+            sself = expand_mul(expand_multinomial(sself, deep=False), deep=False)
+        else:
+            sself = self
+
         coeff = S(1)
-        for a in self.args:
-            if a.is_real:
-                coeff *= a
-            else:
-                other.append(a)
-        m = Mul(*other)
-        if hints.get('ignore') == m:
+        if sself.is_Add:
+            return sself.as_real_imag(deep=False, **hints)
+        else: # sself.is_Mul
+            other = []
+            for a in Mul.make_args(sself):
+                if a.is_real:
+                    coeff *= a
+                else:
+                    other.append(a)
+            sself = Mul(*other)
+        if hints.get('ignore') == sself:
             return None
         else:
-            return (coeff*C.re(m), coeff*C.im(m))
+            return (coeff*C.re(sself), coeff*C.im(sself))
 
     @staticmethod
     def _expandsums(sums):

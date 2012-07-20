@@ -2619,6 +2619,11 @@ class Expr(Basic, EvalfMixin):
 
         return _eval_expand_hint
 
+    # This is defined here because the logic itself lies in .as_real_imag()
+    def _eval_expand_complex(self, deep=True, **hints):
+        real, imag = self.as_real_imag(deep=deep, **hints)
+        return real + S.ImaginaryUnit * imag
+
     @cacheit
     def expand(self, deep=True, modulus=None, power_base=True, power_exp=True, \
             mul=True, log=True, multinomial=True, basic=True, **hints):

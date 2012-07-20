@@ -525,14 +525,6 @@ class Function(Application, Expr):
             l.append(g)
         return Add(*l) + C.Order(x**n, x)
 
-    def _eval_expand_complex(self, deep=True, **hints):
-        if deep:
-            func = self.func(*[a._eval_expand_complex(deep, **hints) for a in
-                               self.args])
-        else:
-            func = self
-        return C.re(func) + S.ImaginaryUnit * C.im(func)
-
     def _eval_rewrite(self, pattern, rule, **hints):
         if hints.get('deep', False):
             args = [a._eval_rewrite(pattern, rule, **hints) for a in self.args]
