@@ -1,6 +1,7 @@
 """Tools to assist importing optional external modules."""
 
 import sys
+import types
 
 # Override these in the module to change the default warning behavior.
 # For example, you might set both to False before running the tests so that
@@ -23,11 +24,12 @@ if __sympy_debug():
 def import_module(module, min_module_version=None, min_python_version=None,
         warn_not_installed=None, warn_old_version=None,
         module_version_attr='__version__', module_version_attr_call_args=None,
-        __import__kwargs={}, catch=()):
+        __import__kwargs={}, catch=(), lazy=True):
     """
     Import and return a module if it is installed.
 
-    If the module is not installed, it returns None.
+    If the module is not installed, the boolean value of the returned object
+    will be False.
 
     A minimum version for the module can be given as the keyword argument
     min_module_version.  This should be comparable against the module version.
@@ -68,6 +70,16 @@ def import_module(module, min_module_version=None, min_python_version=None,
     catch additional errors, pass them as a tuple to the catch keyword
     argument.
 
+    Note, by default, import_module does not actually return the module to be
+    imported, but a lazy object that acts just like the module, except that it
+    doesn't actually import the module until it is used.  This can be used to
+    defer the import of module so that it is not imported when sympy is
+    imported, which can slow down the time of "import sympy" if the external
+    module is installed.  Be aware though that the module will be imported as
+    soon as the object returned by import_module is used in any way.  You can
+    check if a module has been imported by seeing if it is in sys.modules.
+    This behavior can be disabled by setting lazy=False.
+
     Examples
     ========
 
@@ -96,7 +108,22 @@ def import_module(module, min_module_version=None, min_python_version=None,
     >>> matplotlib = import_module('matplotlib',
     ... __import__kwargs={'fromlist':['pyplot']}, catch=(RuntimeError,))
 
+    >>> dne = import_module("doesnotexist")
+    >>> dne
+    DeferredImport('doesnotexist')
+    >>> bool(dne)
+    False
+
     """
+    if lazy:
+        return DeferredImport(module, min_module_version=min_python_version,
+            min_python_version=min_python_version,
+            warn_not_installed=warn_not_installed,
+            warn_old_version=warn_old_version,
+            module_version_attr=module_version_attr,
+            module_version_attr_call_args=module_version_attr_call_args,
+            __import__kwargs=__import__kwargs, catch=catch)
+
     # keyword argument overrides default, and global variable overrides
     # keyword argument.
     warn_old_version = (WARN_OLD_VERSION if WARN_OLD_VERSION is not None
@@ -153,3 +180,39 @@ def import_module(module, min_module_version=None, min_python_version=None,
             return
 
     return mod
+
+class DeferredImport(types.ModuleType):
+    """
+    An object that pretends it is an imported module, but doesn't actually
+    import the module until it is used.
+
+    See also the docstring of import_module.
+    """
+    def __init__(self, name, *args, **kwargs):
+        # Note, all names begin with double underscores so that Python will
+        # use name mangling, preventing any possible name conflicts
+        self.__name = name
+        self.__args = args
+        self.__kwargs = kwargs
+        self.__kwargs['lazy'] = False
+
+    @property
+    def __module(self):
+        return import_module(self.__name, *self.__args, **self.__kwargs)
+
+    def __getattr__(self, attr):
+        return getattr(self.__module, attr)
+
+    def __nonzero__(self):
+        return bool(self.__module)
+
+    # XXX: Do we need this one?
+    def __getitem__(self, key):
+        return self.__module[key]
+
+    def __repr__(self):
+        return "DeferredImport(%s)" % repr(self.__name)
+
+    @property
+    def __dict__(self):
+        return self.__module.__dict__
