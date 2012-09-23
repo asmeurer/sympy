@@ -187,6 +187,14 @@ class DeferredImport(types.ModuleType):
     import the module until it is used.
 
     See also the docstring of import_module.
+
+    At least two cases where this will work different from an actual import:
+
+    - The code checks if the module is in sys.modules
+
+    - The code compares the object against the real module using "is"
+      comparison (__eq__ is implemented).
+
     """
     def __init__(self, name, *args, **kwargs):
         # Note, all names begin with double underscores so that Python will
@@ -216,3 +224,9 @@ class DeferredImport(types.ModuleType):
     @property
     def __dict__(self):
         return self.__module.__dict__
+
+    def __eq__(self, other):
+        return self is other or self.__module is other
+
+    def __hash__(self):
+        return hash(self.__module)
