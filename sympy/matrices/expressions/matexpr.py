@@ -155,6 +155,7 @@ class MatrixExpr(Expr):
 
         Examples
         ========
+
         >>> from sympy import Identity
         >>> I = Identity(3)
         >>> I
@@ -268,6 +269,7 @@ class MatrixSymbol(MatrixExpr, Symbol):
 
 class Identity(MatrixSymbol):
     """The Matrix Identity I - multiplicative identity
+
     >>> from sympy.matrices import Identity, MatrixSymbol
     >>> A = MatrixSymbol('A', 3, 5)
     >>> I = Identity(3)
@@ -299,6 +301,7 @@ class Identity(MatrixSymbol):
 
 class ZeroMatrix(MatrixSymbol):
     """The Matrix Zero 0 - additive identity
+
     >>> from sympy import MatrixSymbol, ZeroMatrix
     >>> A = MatrixSymbol('A', 3, 5)
     >>> Z = ZeroMatrix(3, 5)
