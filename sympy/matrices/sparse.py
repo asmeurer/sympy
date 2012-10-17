@@ -826,12 +826,15 @@ class SparseMatrix(MatrixBase):
 
     def LDLdecomposition(self):
         """
-        Returns the LDL Decomposition (L,D) of matrix A,
-        such that L * D * L.T == A
-        This method eliminates the use of square root.
-        Further this ensures that all the diagonal entries of L are 1.
-        A must be a square, symmetric, positive-definite
-        and non-singular matrix.
+        Returns the LDL Decomposition (matrices ``L`` and ``D``) of matrix
+        ``A``, such that ``L * D * L.T == A``. ``A`` must be a square,
+        symmetric, positive-definite and non-singular.
+
+        This method eliminates the use of square root and ensures that all
+        the diagonal entries of L are 1. 
+
+        Examples
+        ========
 
         >>> from sympy.matrices import SparseMatrix
         >>> A = SparseMatrix(((25, 15, -5), (15, 18, 0), (-5, 0, 11)))
