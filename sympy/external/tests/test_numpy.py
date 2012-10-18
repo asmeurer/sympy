@@ -263,7 +263,7 @@ def test_symarray():
     syms = symbols('_0,_1,_2')
     s1 = symarray("", 3)
     s2 = symarray("", 3)
-    npt.assert_array_equal (s1, np.array(syms, dtype=object))
+    npt.assert_array_equal(s1, np.array(syms, dtype=object))
     assert s1[0] is s2[0]
 
     a = symarray('a', 3)
@@ -271,7 +271,7 @@ def test_symarray():
     assert not(a[0] is b[0])
 
     asyms = symbols('a_0,a_1,a_2')
-    npt.assert_array_equal (a, np.array(asyms, dtype=object))
+    npt.assert_array_equal(a, np.array(asyms, dtype=object))
 
     # Multidimensional checks
     a2d = symarray('a', (2,3))
