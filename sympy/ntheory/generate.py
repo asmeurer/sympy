@@ -215,7 +215,7 @@ def prime(nth):
     """
     n = as_int(nth)
     if n < 1:
-        raise ValueError("nth must be a positive integer; prime(1) == 2");
+        raise ValueError("nth must be a positive integer; prime(1) == 2")
     return sieve[n]
 
 
