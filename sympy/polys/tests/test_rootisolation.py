@@ -609,7 +609,7 @@ def test_dup_count_complex_roots_8():
     assert dup_count_complex_roots([1, 0, -2, 0, 3, 0, -6, 0, -4, 0, 8, 0], ZZ, c, d) == 4
 
 def test_dup_count_complex_roots_implicit():
-    f = [1, 0, 0, 0, -1, 0] # z*(z-1)*(z+1)*(z-I)*(z+I)
+    f = [1, 0, 0, 0, -1, 0]  # z*(z-1)*(z+1)*(z-I)*(z+I)
 
     assert dup_count_complex_roots(f, ZZ) == 5
 
@@ -617,7 +617,7 @@ def test_dup_count_complex_roots_implicit():
     assert dup_count_complex_roots(f, ZZ, inf=(0, 0)) == 3
 
 def test_dup_count_complex_roots_exclude():
-    f = [1, 0, 0, 0, -1, 0] # z*(z-1)*(z+1)*(z-I)*(z+I)
+    f = [1, 0, 0, 0, -1, 0]  # z*(z-1)*(z+1)*(z-I)*(z+I)
 
     a, b = (-QQ(1), QQ(0)), (QQ(1), QQ(1))
 

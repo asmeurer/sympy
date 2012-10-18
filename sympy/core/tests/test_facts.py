@@ -153,7 +153,7 @@ def test_FactRules_deduce():
     assert D({'c': F}) == {'a': F, 'b': F, 'c': F                }
     assert D({'d': F}) == {'a': F, 'b': F,         'd': F        }
 
-    assert D({'a': U}) == {'a': U} # XXX ok?
+    assert D({'a': U}) == {'a': U}  # XXX ok?
 
 
 def test_FactRules_deduce2():
