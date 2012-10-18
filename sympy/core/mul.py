@@ -1272,7 +1272,7 @@ class Mul(AssocOp):
             ok = False
         elif (
             # unmatched non-commutative bases
-                set(_[0] for _ in  old_nc).difference(set(_[0] for _ in nc))):
+                set(_[0] for _ in old_nc).difference(set(_[0] for _ in nc))):
             ok = False
         elif (
             # unmatched commutative terms
