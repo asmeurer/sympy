@@ -137,6 +137,7 @@ def test_FactRules_parse2():
 
 def test_FactRules_deduce():
     f = FactRules(['a -> b', 'b -> c', 'b -> d', 'c -> e'])
+
     def D(facts):
         kb = FactKB(f)
         kb.deduce_all_facts(facts)
@@ -159,6 +160,7 @@ def test_FactRules_deduce():
 def test_FactRules_deduce2():
     # pos/neg/zero, but the rules are not sufficient to derive all relations
     f = FactRules(['pos -> !neg', 'pos -> !z'])
+
     def D(facts):
         kb = FactKB(f)
         kb.deduce_all_facts(facts)
@@ -185,6 +187,7 @@ def test_FactRules_deduce2():
 def test_FactRules_deduce_multiple():
     # deduction that involves _several_ starting points
     f = FactRules(['real == pos | npos'])
+
     def D(facts):
         kb = FactKB(f)
         kb.deduce_all_facts(facts)
@@ -206,6 +209,7 @@ def test_FactRules_deduce_multiple():
 
 def test_FactRules_deduce_multiple2():
     f = FactRules(['real == neg | zero | pos'])
+
     def D(facts):
         kb = FactKB(f)
         kb.deduce_all_facts(facts)
