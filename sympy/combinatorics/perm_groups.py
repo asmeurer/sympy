@@ -797,7 +797,7 @@ class PermutationGroup(Basic):
         # construct the basic orbits, generators for the stabilizer chain
         # and transversal elements from whatever was provided
         transversals, basic_orbits, strong_gens_distr =\
-        _handle_precomputed_bsgs(base, strong_gens, transversals,\
+            _handle_precomputed_bsgs(base, strong_gens, transversals,\
                                  basic_orbits, strong_gens_distr)
         base_len = len(base)
         degree = self.degree
@@ -2911,7 +2911,7 @@ class PermutationGroup(Basic):
                 orbit_member = el(base_point)
                 transversals[index][orbit_member] = el
             basic_orbits[index] =\
-            transversals[index].keys()
+                transversals[index].keys()
         self._transversals = transversals
         self._basic_orbits = basic_orbits
 
@@ -3041,7 +3041,7 @@ class PermutationGroup(Basic):
                                 stabs[l] =\
                                         PermutationGroup(strong_gens_distr[l])
                                 transversals[l] =\
-                                dict(stabs[l].orbit_transversal(_base[l],\
+                                    dict(stabs[l].orbit_transversal(_base[l],\
                                                                 pairs=True))
                                 orbs[l] = transversals[l].keys()
                             i = j - 1
@@ -3513,7 +3513,7 @@ class PermutationGroup(Basic):
         res_strong_gens_distr = _distribute_gens_by_base(res_base,\
                                 res_strong_gens)
         res_basic_orbits_init_base =\
-        [PermutationGroup(res_strong_gens_distr[i]).orbit(res_base[i])\
+            [PermutationGroup(res_strong_gens_distr[i]).orbit(res_base[i])\
          for i in range(base_len)]
         # initialize orbit representatives
         orbit_reps = [None]*base_len
@@ -3620,7 +3620,7 @@ class PermutationGroup(Basic):
                 res_strong_gens_distr = _distribute_gens_by_base(res_base,\
                                                           res_strong_gens)
                 res_basic_orbits_init_base =\
-                [PermutationGroup(res_strong_gens_distr[i]).orbit(res_base[i])\
+                    [PermutationGroup(res_strong_gens_distr[i]).orbit(res_base[i])\
                  for i in range(base_len)]
                 # line 21: recalculate orbit representatives
                 stab_f = PermutationGroup(res_strong_gens_distr[f])

@@ -199,7 +199,7 @@ def test_Permutation():
     for i in range(5):
         for j in range(i+1, 5):
             assert a[i].commutes_with(a[j]) == \
-            (rmul(a[i], a[j]) == rmul(a[j], a[i]))
+                (rmul(a[i], a[j]) == rmul(a[j], a[i]))
             if a[i].commutes_with(a[j]):
                 assert a[i].commutator(a[j]) == iden
                 assert a[j].commutator(a[i]) == iden
@@ -263,7 +263,7 @@ def test_ranking():
 
     a = [Permutation.unrank_nonlex(4, i).array_form for i in range(24)]
     assert a == \
-    [[1, 2, 3, 0], [3, 2, 0, 1], [1, 3, 0, 2], [1, 2, 0, 3], [2, 3, 1, 0], \
+        [[1, 2, 3, 0], [3, 2, 0, 1], [1, 3, 0, 2], [1, 2, 0, 3], [2, 3, 1, 0], \
      [2, 0, 3, 1], [3, 0, 1, 2], [2, 0, 1, 3], [1, 3, 2, 0], [3, 0, 2, 1], \
      [1, 0, 3, 2], [1, 0, 2, 3], [2, 1, 3, 0], [2, 3, 0, 1], [3, 1, 0, 2], \
      [2, 1, 0, 3], [3, 2, 1, 0], [0, 2, 3, 1], [0, 3, 1, 2], [0, 2, 1, 3], \

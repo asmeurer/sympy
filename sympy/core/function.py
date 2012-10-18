@@ -269,7 +269,7 @@ class Function(Application, Expr):
                        'argument%(plural)s (%(given)s given)')
                 raise TypeError(temp %
                     {
-                    'name': cls,
+                                'name': cls,
                     'args': cls.nargs,
                     'plural': 's'*(n != 1),
                     'given': n})
