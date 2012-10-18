@@ -192,7 +192,7 @@ def test_FactRules_deduce_multiple():
 
     assert D({'real': T})   == {'real': T}
     assert D({'real': F})   == {'real': F, 'pos': F, 'npos': F}
-    assert D({'pos' : T})   == {'real': T, 'pos': T}
+    assert D({'pos': T})   == {'real': T, 'pos': T}
     assert D({'npos': T})   == {'real': T, 'npos': T}
 
     # --- key tests below ---
@@ -213,9 +213,9 @@ def test_FactRules_deduce_multiple2():
 
     assert D({'real': T})   == {'real': T}
     assert D({'real': F})   == {'real': F, 'neg': F, 'zero': F, 'pos': F}
-    assert D({'neg' : T})   == {'real': T, 'neg': T}
+    assert D({'neg': T})   == {'real': T, 'neg': T}
     assert D({'zero': T})   == {'real': T, 'zero': T}
-    assert D({'pos' : T})   == {'real': T, 'pos': T}
+    assert D({'pos': T})   == {'real': T, 'pos': T}
 
     # --- key tests below ---
     assert D({'neg': F, 'zero': F, 'pos': F})   ==  {'real': F, 'neg': F, 'zero': F, 'pos': F}
