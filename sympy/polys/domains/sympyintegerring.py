@@ -5,6 +5,7 @@ from sympy.polys.domains.groundtypes import SymPyIntegerType
 
 from sympy.polys.polyerrors import CoercionFailed
 
+
 class SymPyIntegerRing(IntegerRing):
     """Integer ring based on SymPy's ``Integer`` type. """
 
