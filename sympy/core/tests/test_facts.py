@@ -33,7 +33,6 @@ def test_deduce_alpha_implications():
     raises(ValueError, lambda: D([('a', 'b'), ('b', Not('a'))]))
     raises(ValueError, lambda: D([('a', 'b'), ('b', 'c'), ('b', 'na'), ('na', Not('a'))]))
 
-
     # something related to real-world
     I, P = D([('rat', 'real'), ('int', 'rat')])
 
@@ -232,7 +231,6 @@ def test_FactRules_deduce_multiple2():
     assert D({'real': T,           'zero': F, 'pos': F}) == {'real': T, 'neg': T, 'zero': F, 'pos': F}
     assert D({'real': T, 'neg': F,            'pos': F}) == {'real': T, 'neg': F, 'zero': T, 'pos': F}
     assert D({'real': T, 'neg': F, 'zero': F          }) == {'real': T, 'neg': F, 'zero': F, 'pos': T}
-
 
     assert D({'neg': T, 'zero': F, 'pos': F}) == {'real': T, 'neg': T, 'zero': F, 'pos': F}
     assert D({'neg': F, 'zero': T, 'pos': F}) == {'real': T, 'neg': F, 'zero': T, 'pos': F}
