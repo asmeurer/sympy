@@ -1813,14 +1813,14 @@ class Half(RationalConstant):
 class Infinity(Number):
     __metaclass__ = Singleton
 
-    is_commutative   = True
-    is_positive      = True
-    is_bounded       = False
-    is_finite        = False
+    is_commutative = True
+    is_positive = True
+    is_bounded = False
+    is_finite = False
     is_infinitesimal = False
-    is_integer       = None
-    is_rational      = None
-    is_odd           = None
+    is_integer = None
+    is_rational = None
+    is_odd = None
 
     __slots__ = []
 
@@ -1971,14 +1971,14 @@ oo = S.Infinity
 class NegativeInfinity(Number):
     __metaclass__ = Singleton
 
-    is_commutative   = True
-    is_real          = True
-    is_positive      = False
-    is_bounded       = False
-    is_finite        = False
+    is_commutative = True
+    is_real = True
+    is_positive = False
+    is_bounded = False
+    is_finite = False
     is_infinitesimal = False
-    is_integer       = None
-    is_rational      = None
+    is_integer = None
+    is_rational = None
 
     __slots__ = []
 

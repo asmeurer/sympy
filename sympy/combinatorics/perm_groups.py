@@ -3667,7 +3667,7 @@ class PermutationGroup(Basic):
                 element = identity
             else:
                 element = ~(computed_words[l - 1])
-            gamma  = element(sorted_orbits[l][c[l]])
+            gamma = element(sorted_orbits[l][c[l]])
             u[l] = transversals[l][gamma]
             if l == 0:
                 computed_words[l] = u[l]

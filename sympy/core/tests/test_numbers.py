@@ -408,9 +408,9 @@ def test_Infinity():
     assert -oo*3 == -oo
     assert oo + oo == oo
     assert -oo + oo*(-5) == -oo
-    assert 1/oo  == 0
-    assert 1/(-oo)  == 0
-    assert 8/oo  == 0
+    assert 1/oo == 0
+    assert 1/(-oo) == 0
+    assert 8/oo == 0
     assert oo % 2 == nan
     assert 2 % oo == nan
     assert oo/oo == nan
@@ -565,9 +565,9 @@ def test_NaN():
     assert -nan*3 == nan
     assert nan + nan == nan
     assert -nan + nan*(-5) == nan
-    assert 1/nan  == nan
-    assert 1/(-nan)  == nan
-    assert 8/nan  == nan
+    assert 1/nan == nan
+    assert 1/(-nan) == nan
+    assert 8/nan == nan
     assert not nan > 0
     assert not nan < 0
     assert not nan >= 0
@@ -656,37 +656,37 @@ def test_powers_Integer():
     assert S(0) ** S.Infinity == 0
 
     # check Nan
-    assert S(1)  ** S.NaN == S.One
+    assert S(1) ** S.NaN == S.One
     assert S(-1) ** S.NaN == S.NaN
 
     # check for exact roots
-    assert S(-1)  ** Rational(6, 5) == - (-1)**(S(1)/5)
+    assert S(-1) ** Rational(6, 5) == - (-1)**(S(1)/5)
     assert sqrt(S(4)) == 2
     assert sqrt(S(-4)) == I * 2
-    assert S(16)  ** Rational(1, 4) == 2
+    assert S(16) ** Rational(1, 4) == 2
     assert S(-16) ** Rational(1, 4) == 2 * (-1)**Rational(1,4)
-    assert S(9)   ** Rational(3, 2) == 27
-    assert S(-9)  ** Rational(3, 2) == -27*I
-    assert S(27)  ** Rational(2, 3) == 9
+    assert S(9) ** Rational(3, 2) == 27
+    assert S(-9) ** Rational(3, 2) == -27*I
+    assert S(27) ** Rational(2, 3) == 9
     assert S(-27) ** Rational(2, 3) == 9 * (S(-1) ** Rational(2, 3))
     assert (-2) ** Rational(-2, 1) == Rational(1, 4)
 
     # not exact roots
-    assert sqrt(-3)  == I*sqrt(3)
-    assert (3)  ** (S(3)/2)  == 3 * sqrt(3)
-    assert (-3) ** (S(3)/2)  == - 3 * sqrt(-3)
-    assert (-3) ** (S(5)/2)  ==  9 * I * sqrt(3)
-    assert (-3) ** (S(7)/2)  == - I * 27 * sqrt(3)
-    assert (2)  ** (S(3)/2)  == 2 * sqrt(2)
-    assert (2)  ** (S(-3)/2) == sqrt(2) / 4
-    assert (81) ** (S(2)/3)  == 9 * (S(3) ** (S(2)/3))
-    assert (-81) ** (S(2)/3)  == 9 * (S(-3) ** (S(2)/3))
+    assert sqrt(-3) == I*sqrt(3)
+    assert (3) ** (S(3)/2) == 3 * sqrt(3)
+    assert (-3) ** (S(3)/2) == - 3 * sqrt(-3)
+    assert (-3) ** (S(5)/2) ==  9 * I * sqrt(3)
+    assert (-3) ** (S(7)/2) == - I * 27 * sqrt(3)
+    assert (2) ** (S(3)/2) == 2 * sqrt(2)
+    assert (2) ** (S(-3)/2) == sqrt(2) / 4
+    assert (81) ** (S(2)/3) == 9 * (S(3) ** (S(2)/3))
+    assert (-81) ** (S(2)/3) == 9 * (S(-3) ** (S(2)/3))
     assert (-3) ** Rational(-7, 3) == -(-1)**Rational(2, 3)*3**Rational(2, 3)/27
     assert (-3) ** Rational(-2, 3) == -(-1)**Rational(1, 3)*3**Rational(1, 3)/3
 
     # join roots
     assert sqrt(6) + sqrt(24) == 3*sqrt(6)
-    assert sqrt(2) * sqrt(3)  == sqrt(6)
+    assert sqrt(2) * sqrt(3) == sqrt(6)
 
     # separate symbols & constansts
     x = Symbol("x")
@@ -743,12 +743,12 @@ def test_powers_Rational():
     assert Rational(-3,2)** S.Infinity == S.Infinity + S.Infinity * S.ImaginaryUnit
 
     # check Nan
-    assert Rational(3,4)  ** S.NaN == S.NaN
+    assert Rational(3,4) ** S.NaN == S.NaN
     assert Rational(-2,3) ** S.NaN == S.NaN
 
     # exact roots on numerator
     assert sqrt(Rational(4,3)) == 2 * sqrt(3) / 3
-    assert Rational(4,3)  ** Rational(3,2) == 8 * sqrt(3) / 9
+    assert Rational(4,3) ** Rational(3,2) == 8 * sqrt(3) / 9
     assert sqrt(Rational(-4,3)) == I * 2 * sqrt(3) / 3
     assert Rational(-4,3) ** Rational(3,2) == - I * 8 * sqrt(3) / 9
     assert Rational(27,2) ** Rational(1,3) == 3 * (2 ** Rational(2,3)) / 2
@@ -845,79 +845,79 @@ def test_Integer_factors():
     def F(i):
         return Integer(i).factors()
 
-    assert F(1)   == { 1:1}
-    assert F(2)   == { 2:1}
-    assert F(3)   == { 3:1}
-    assert F(4)   == { 2:2}
-    assert F(5)   == { 5:1}
-    assert F(6)   == { 2:1,  3:1}
-    assert F(7)   == { 7:1}
-    assert F(8)   == { 2:3}
-    assert F(9)   == { 3:2}
-    assert F(10)  == { 2:1,  5:1}
-    assert F(11)  == {11:1}
-    assert F(12)  == { 2:2,  3:1}
-    assert F(13)  == {13:1}
-    assert F(14)  == { 2:1,  7:1}
-    assert F(15)  == { 3:1,  5:1}
-    assert F(16)  == { 2:4}
-    assert F(17)  == {17:1}
-    assert F(18)  == { 2:1,  3:2}
-    assert F(19)  == {19:1}
-    assert F(20)  == { 2:2,  5:1}
-    assert F(21)  == { 3:1,  7:1}
-    assert F(22)  == { 2:1, 11:1}
-    assert F(23)  == {23:1}
-    assert F(24)  == { 2:3,  3:1}
-    assert F(25)  == { 5:2}
-    assert F(26)  == { 2:1, 13:1}
-    assert F(27)  == { 3:3}
-    assert F(28)  == { 2:2,  7:1}
-    assert F(29)  == {29:1}
-    assert F(30)  == { 2:1,  3:1,  5:1}
-    assert F(31)  == {31:1}
-    assert F(32)  == { 2:5}
-    assert F(33)  == { 3:1, 11:1}
-    assert F(34)  == { 2:1, 17:1}
-    assert F(35)  == { 5:1,  7:1}
-    assert F(36)  == { 2:2,  3:2}
-    assert F(37)  == {37:1}
-    assert F(38)  == { 2:1, 19:1}
-    assert F(39)  == { 3:1, 13:1}
-    assert F(40)  == { 2:3,  5:1}
-    assert F(41)  == {41:1}
-    assert F(42)  == { 2:1,  3:1,  7:1}
-    assert F(43)  == {43:1}
-    assert F(44)  == { 2:2, 11:1}
-    assert F(45)  == { 3:2,  5:1}
-    assert F(46)  == { 2:1, 23:1}
-    assert F(47)  == {47:1}
-    assert F(48)  == { 2:4,  3:1}
-    assert F(49)  == { 7:2}
-    assert F(50)  == { 2:1,  5:2}
-    assert F(51)  == { 3:1, 17:1}
+    assert F(1) == { 1:1}
+    assert F(2) == { 2:1}
+    assert F(3) == { 3:1}
+    assert F(4) == { 2:2}
+    assert F(5) == { 5:1}
+    assert F(6) == { 2:1,  3:1}
+    assert F(7) == { 7:1}
+    assert F(8) == { 2:3}
+    assert F(9) == { 3:2}
+    assert F(10) == { 2:1,  5:1}
+    assert F(11) == {11:1}
+    assert F(12) == { 2:2,  3:1}
+    assert F(13) == {13:1}
+    assert F(14) == { 2:1,  7:1}
+    assert F(15) == { 3:1,  5:1}
+    assert F(16) == { 2:4}
+    assert F(17) == {17:1}
+    assert F(18) == { 2:1,  3:2}
+    assert F(19) == {19:1}
+    assert F(20) == { 2:2,  5:1}
+    assert F(21) == { 3:1,  7:1}
+    assert F(22) == { 2:1, 11:1}
+    assert F(23) == {23:1}
+    assert F(24) == { 2:3,  3:1}
+    assert F(25) == { 5:2}
+    assert F(26) == { 2:1, 13:1}
+    assert F(27) == { 3:3}
+    assert F(28) == { 2:2,  7:1}
+    assert F(29) == {29:1}
+    assert F(30) == { 2:1,  3:1,  5:1}
+    assert F(31) == {31:1}
+    assert F(32) == { 2:5}
+    assert F(33) == { 3:1, 11:1}
+    assert F(34) == { 2:1, 17:1}
+    assert F(35) == { 5:1,  7:1}
+    assert F(36) == { 2:2,  3:2}
+    assert F(37) == {37:1}
+    assert F(38) == { 2:1, 19:1}
+    assert F(39) == { 3:1, 13:1}
+    assert F(40) == { 2:3,  5:1}
+    assert F(41) == {41:1}
+    assert F(42) == { 2:1,  3:1,  7:1}
+    assert F(43) == {43:1}
+    assert F(44) == { 2:2, 11:1}
+    assert F(45) == { 3:2,  5:1}
+    assert F(46) == { 2:1, 23:1}
+    assert F(47) == {47:1}
+    assert F(48) == { 2:4,  3:1}
+    assert F(49) == { 7:2}
+    assert F(50) == { 2:1,  5:2}
+    assert F(51) == { 3:1, 17:1}
 
 
 def test_Rational_factors():
     def F(p,q,visual=None):
         return Rational(p,q).factors(visual=visual)
 
-    assert F(2,3)   == { 2:1, 3:-1}
-    assert F(2,9)   == { 2:1, 3:-2}
-    assert F(2,15)  == { 2:1, 3:-1, 5:-1}
-    assert F(6,10)  == { 3:1, 5:-1}
+    assert F(2,3) == { 2:1, 3:-1}
+    assert F(2,9) == { 2:1, 3:-2}
+    assert F(2,15) == { 2:1, 3:-1, 5:-1}
+    assert F(6,10) == { 3:1, 5:-1}
     assert str(F(12,1, visual=True)) == '2**2*3**1'
     assert str(F(1,1, visual=True)) == '1'
     assert str(F(25, 14, visual=True)) == '5**2/(2*7)'
     assert str(F(-25, 14*9, visual=True)) == '-5**2/(2*3**2*7)'
 
 def test_issue1008():
-    assert pi*(E + 10) + pi*(-E - 10)         != 0
+    assert pi*(E + 10) + pi*(-E - 10) != 0
     assert pi*(E + 10**10) + pi*(-E - 10**10) != 0
     assert pi*(E + 10**20) + pi*(-E - 10**20) != 0
     assert pi*(E + 10**80) + pi*(-E - 10**80) != 0
 
-    assert (pi*(E + 10) + pi*(-E - 10)).expand()         == 0
+    assert (pi*(E + 10) + pi*(-E - 10)).expand() == 0
     assert (pi*(E + 10**10) + pi*(-E - 10**10)).expand() == 0
     assert (pi*(E + 10**20) + pi*(-E - 10**20)).expand() == 0
     assert (pi*(E + 10**80) + pi*(-E - 10**80)).expand() == 0

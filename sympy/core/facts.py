@@ -261,12 +261,12 @@ class Prover(object):
 
     def __init__(self):
         self.proved_rules = []
-        self._rules_seen  = set()
+        self._rules_seen = set()
 
     def split_alpha_beta(self):
         """split proved rules into alpha and beta chains"""
         rules_alpha = []    # a      -> b
-        rules_beta  = []    # &(...) -> b
+        rules_beta = []    # &(...) -> b
         for a,b in self.proved_rules:
             if isinstance(a, And):
                 rules_beta.append((a,b))

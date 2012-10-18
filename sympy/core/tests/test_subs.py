@@ -110,8 +110,8 @@ def test_dict_ambigous():   # see #467
     assert g.subs(dg) == y**2
 
     # and this is how order can affect the result
-    assert f .subs(x, y) .subs(exp(x), y)  == y*exp(y)
-    assert f .subs(exp(x), y) .subs(x, y)  == y**2
+    assert f .subs(x, y) .subs(exp(x), y) == y*exp(y)
+    assert f .subs(exp(x), y) .subs(x, y) == y**2
 
     # length of args and count_ops are the same so
     # default_sort_key resolves ordering...if one
@@ -150,7 +150,7 @@ def test_issue643():
     y = Symbol('y')
 
     e = sqrt(x)*exp(y)
-    assert e.subs(sqrt(x), 1)   == exp(y)
+    assert e.subs(sqrt(x), 1) == exp(y)
 
 def test_subs_dict1():
     x, y = symbols('x y')
@@ -320,13 +320,13 @@ def test_division():
     a, b, c = symbols('a b c', commutative=True)
     x, y, z = symbols('x y z', commutative=True)
 
-    assert (1/a).subs(a, c)  == 1/c
-    assert (1/a**2).subs(a, c)  == 1/c**2
+    assert (1/a).subs(a, c) == 1/c
+    assert (1/a**2).subs(a, c) == 1/c**2
     assert (1/a**2).subs(a, -2) == Rational(1, 4)
     assert (-(1/a**2)).subs(a, -2) == -Rational(1, 4)
 
-    assert (1/x).subs(x, z)  == 1/z
-    assert (1/x**2).subs(x, z)  == 1/z**2
+    assert (1/x).subs(x, z) == 1/z
+    assert (1/x**2).subs(x, z) == 1/z**2
     assert (1/x**2).subs(x, -2) == Rational(1, 4)
     assert (-(1/x**2)).subs(x, -2) == -Rational(1, 4)
 
