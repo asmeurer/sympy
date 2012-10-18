@@ -1264,23 +1264,23 @@ class Mul(AssocOp):
         ok = True
         if (
             # more non-commutative terms
-            len(old_nc) > len(nc)):
+                len(old_nc) > len(nc)):
             ok = False
         elif (
             # more commutative terms
-            len(old_c) > len(c)):
+                len(old_c) > len(c)):
             ok = False
         elif (
             # unmatched non-commutative bases
-            set(_[0] for _ in  old_nc).difference(set(_[0] for _ in nc))):
+                set(_[0] for _ in  old_nc).difference(set(_[0] for _ in nc))):
             ok = False
         elif (
             # unmatched commutative terms
-            set(old_c).difference(set(c))):
+                set(old_c).difference(set(c))):
             ok = False
         elif (
             # differences in sign
-            any(sign(c[b]) != sign(old_c[b]) for b in old_c)):
+                any(sign(c[b]) != sign(old_c[b]) for b in old_c)):
             ok = False
         if not ok:
             return rv
