@@ -51,7 +51,7 @@ def test_systematic_basic():
             Float("1.3"),
             x,
             y,
-            pow(x,y)*y,
+            pow(x, y)*y,
             Integer(5),
             Float(5.5),
             ]
@@ -63,7 +63,7 @@ def test_systematic_basic():
             ]
     for x in sympy_objs:
         for y in numpy_objs:
-            s(x,y)
+            s(x, y)
 
 
 # now some random tests, that test particular problems and that also
@@ -88,7 +88,7 @@ def test_arrays():
     zero = Rational(0)
     X = array([one, zero, zero])
     Y = one*X
-    X = array([Symbol("a")+Rational(1,2)])
+    X = array([Symbol("a")+Rational(1, 2)])
     Y = X+X
     assert Y == array([1+2*Symbol("a")])
     Y = Y + 1
@@ -116,7 +116,7 @@ def test_conversion2():
     zero = Rational(0)
     X = list2numpy([one, zero, zero])
     Y = one*X
-    X = list2numpy([Symbol("a")+Rational(1,2)])
+    X = list2numpy([Symbol("a")+Rational(1, 2)])
     Y = X+X
     assert Y == array([1+2*Symbol("a")])
     Y = Y + 1
@@ -131,47 +131,47 @@ def test_list2numpy():
 def test_Matrix1():
     x = Symbol("x")
     m = Matrix([[x, x**2], [5, 2/x]])
-    assert (array(m.subs(x, 2)) == array([[2, 4],[5, 1]])).all()
+    assert (array(m.subs(x, 2)) == array([[2, 4], [5, 1]])).all()
     m = Matrix([[sin(x), x**2], [5, 2/x]])
-    assert (array(m.subs(x, 2)) == array([[sin(2), 4],[5, 1]])).all()
+    assert (array(m.subs(x, 2)) == array([[sin(2), 4], [5, 1]])).all()
 
 def test_Matrix2():
     x = Symbol("x")
     m = Matrix([[x, x**2], [5, 2/x]])
-    assert (matrix(m.subs(x, 2)) == matrix([[2, 4],[5, 1]])).all()
+    assert (matrix(m.subs(x, 2)) == matrix([[2, 4], [5, 1]])).all()
     m = Matrix([[sin(x), x**2], [5, 2/x]])
-    assert (matrix(m.subs(x, 2)) == matrix([[sin(2), 4],[5, 1]])).all()
+    assert (matrix(m.subs(x, 2)) == matrix([[sin(2), 4], [5, 1]])).all()
 
 def test_Matrix3():
     x = Symbol("x")
-    a = array([[2, 4],[5, 1]])
+    a = array([[2, 4], [5, 1]])
     assert Matrix(a) == Matrix([[2, 4], [5, 1]])
     assert Matrix(a) != Matrix([[2, 4], [5, 2]])
     a = array([[sin(2), 4], [5, 1]])
-    assert Matrix(a) == Matrix([[sin(2), 4],[5, 1]])
-    assert Matrix(a) != Matrix([[sin(0), 4],[5, 1]])
+    assert Matrix(a) == Matrix([[sin(2), 4], [5, 1]])
+    assert Matrix(a) != Matrix([[sin(0), 4], [5, 1]])
 
 def test_Matrix4():
     x = Symbol("x")
-    a = matrix([[2, 4],[5, 1]])
+    a = matrix([[2, 4], [5, 1]])
     assert Matrix(a) == Matrix([[2, 4], [5, 1]])
     assert Matrix(a) != Matrix([[2, 4], [5, 2]])
     a = matrix([[sin(2), 4], [5, 1]])
-    assert Matrix(a) == Matrix([[sin(2), 4],[5, 1]])
-    assert Matrix(a) != Matrix([[sin(0), 4],[5, 1]])
+    assert Matrix(a) == Matrix([[sin(2), 4], [5, 1]])
+    assert Matrix(a) != Matrix([[sin(0), 4], [5, 1]])
 
 def test_Matrix_sum():
     x, y, z = Symbol('x'), Symbol('y'), Symbol('z')
-    M = Matrix([[1,2,3],[x,y,x],[2*y,-50,z*x]])
-    m = matrix([[2,3,4],[x,5,6],[x,y,z**2]])
-    assert M+m == Matrix([[3,5,7],[2*x,y+5,x+6],[2*y+x,y-50,z*x+z**2]])
-    assert m+M == Matrix([[3,5,7],[2*x,y+5,x+6],[2*y+x,y-50,z*x+z**2]])
+    M = Matrix([[1, 2, 3], [x, y, x], [2*y, -50, z*x]])
+    m = matrix([[2, 3, 4], [x, 5, 6], [x, y, z**2]])
+    assert M+m == Matrix([[3, 5, 7], [2*x, y+5, x+6], [2*y+x, y-50, z*x+z**2]])
+    assert m+M == Matrix([[3, 5, 7], [2*x, y+5, x+6], [2*y+x, y-50, z*x+z**2]])
     assert M+m == M.add(m)
 
 def test_Matrix_mul():
     x, y, z = Symbol('x'), Symbol('y'), Symbol('z')
-    M = Matrix([[1,2,3],[x,y,x]])
-    m = matrix([[2,4],[x,6],[x,z**2]])
+    M = Matrix([[1, 2, 3], [x, y, x]])
+    m = matrix([[2, 4], [x, 6], [x, z**2]])
     assert M*m == Matrix([
                          [         2 + 5*x,        16 + 3*z**2],
                          [2*x + x*y + x**2, 4*x + 6*y + x*z**2],
@@ -190,14 +190,14 @@ def test_Matrix_array():
     class matarray(object):
         def __array__(self):
             from numpy import array
-            return array([[1,2,3],[4,5,6],[7,8,9]])
+            return array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     matarr = matarray()
-    assert Matrix(matarr) == Matrix([[1,2,3],[4,5,6],[7,8,9]])
+    assert Matrix(matarr) == Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 def test_issue629():
     x = Symbol("x")
-    assert (Rational(1,2)*array([2*x, 0]) == array([x, 0])).all()
-    assert (Rational(1,2) + array([2*x, 0]) == array([2*x + Rational(1,2), Rational(1,2)])).all()
+    assert (Rational(1, 2)*array([2*x, 0]) == array([x, 0])).all()
+    assert (Rational(1, 2) + array([2*x, 0]) == array([2*x + Rational(1, 2), Rational(1, 2)])).all()
     assert (Float("0.5")*array([2*x, 0]) == array([Float("1.0")*x, 0])).all()
     assert (Float("0.5") + array([2*x, 0]) == array([2*x + Float("0.5"), Float("0.5")])).all()
 
@@ -217,22 +217,22 @@ def test_lambdify():
 
 def test_lambdify_matrix():
     x = Symbol("x")
-    f = lambdify(x, Matrix([[x, 2*x],[1, 2]]), "numpy")
-    assert (f(1) == matrix([[1,2],[1,2]])).all()
+    f = lambdify(x, Matrix([[x, 2*x], [1, 2]]), "numpy")
+    assert (f(1) == matrix([[1, 2], [1, 2]])).all()
 
 def test_lambdify_matrix_multi_input():
-    x,y,z = symbols('x,y,z')
+    x, y, z = symbols('x,y,z')
     M=sympy.Matrix([[x**2, x*y, x*z],
                     [y*x, y**2, y*z],
                     [z*x, z*y, z**2]])
-    f = lambdify((x,y,z), M, "numpy")
+    f = lambdify((x, y, z), M, "numpy")
 
-    xh,yh,zh = 1.0, 2.0, 3.0
+    xh, yh, zh = 1.0, 2.0, 3.0
     expected = matrix([[xh**2, xh*yh, xh*zh],
                        [yh*xh, yh**2, yh*zh],
                        [zh*xh, zh*yh, zh**2]])
-    actual = f(xh,yh,zh)
-    assert numpy.allclose(actual,expected)
+    actual = f(xh, yh, zh)
+    assert numpy.allclose(actual, expected)
 
 def test_lambdify_matrix_vec_input():
     X=sympy.DeferredVector('X')
@@ -246,7 +246,7 @@ def test_lambdify_matrix_vec_input():
                        [Xh[1]*Xh[0], Xh[1]**2, Xh[1]*Xh[2]],
                        [Xh[2]*Xh[0], Xh[2]*Xh[1], Xh[2]**2]])
     actual = f(Xh)
-    assert numpy.allclose(actual,expected)
+    assert numpy.allclose(actual, expected)
 
 def test_lambdify_transl():
     from sympy.utilities.lambdify import NUMPY_TRANSLATIONS
@@ -274,18 +274,18 @@ def test_symarray():
     npt.assert_array_equal(a, np.array(asyms, dtype=object))
 
     # Multidimensional checks
-    a2d = symarray('a', (2,3))
-    assert a2d.shape == (2,3)
+    a2d = symarray('a', (2, 3))
+    assert a2d.shape == (2, 3)
     a00, a12 = symbols('a_0_0,a_1_2')
-    assert a2d[0,0] is a00
-    assert a2d[1,2] is a12
+    assert a2d[0, 0] is a00
+    assert a2d[1, 2] is a12
 
-    a3d = symarray('a', (2,3,2))
-    assert a3d.shape == (2,3,2)
+    a3d = symarray('a', (2, 3, 2))
+    assert a3d.shape == (2, 3, 2)
     a000, a120, a121 = symbols('a_0_0_0,a_1_2_0,a_1_2_1')
-    assert a3d[0,0,0] is a000
-    assert a3d[1,2,0] is a120
-    assert a3d[1,2,1] is a121
+    assert a3d[0, 0, 0] is a000
+    assert a3d[1, 2, 0] is a120
+    assert a3d[1, 2, 1] is a121
 
 def test_vectorize():
     assert (numpy.vectorize(sin)([1, 2, 3]) == numpy.array([sin(1), sin(2), sin(3)])).all()

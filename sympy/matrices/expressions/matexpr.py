@@ -170,7 +170,7 @@ class MatrixExpr(Expr):
         as_mutable: returns mutable Matrix type
         """
         from sympy.matrices.immutable import ImmutableMatrix
-        return ImmutableMatrix([[    self[i,j]
+        return ImmutableMatrix([[    self[i, j]
                             for j in range(self.cols)]
                             for i in range(self.rows)])
 
@@ -261,7 +261,7 @@ class MatrixSymbol(MatrixExpr, Symbol):
         # MatMul _entry will pass us a Dummy and ask that we remember it
         # so that it can be summed over later. We'll use the function syntax
         if i.is_Dummy or j.is_Dummy:
-            return Symbol(self.name)(i,j)
+            return Symbol(self.name)(i, j)
         # If that isn't the case we'd really rather just make a symbol
         # They are simpler and look much nicer
         else:
@@ -343,8 +343,8 @@ def matrixify(expr):
     Calling matrixify after calling these functions will reset classes back to
     their matrix equivalents
     """
-    class_dict = {Mul:MatMul, Add:MatAdd, MatMul:MatMul, MatAdd:MatAdd,
-            Pow:MatPow, MatPow:MatPow}
+    class_dict = {Mul: MatMul, Add: MatAdd, MatMul: MatMul, MatAdd: MatAdd,
+            Pow: MatPow, MatPow: MatPow}
 
     if expr.__class__ not in class_dict:
         return expr
