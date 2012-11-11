@@ -159,103 +159,31 @@ def enable_automatic_int_sympification(app):
     """
     Allow IPython to automatically convert integer literals to Integer.
     """
-    hasshell = hasattr(app, 'shell')
-
     import ast
-    if hasshell:
-        old_run_cell = app.shell.run_cell
-    else:
-        old_run_cell = app.run_cell
-    def my_run_cell(cell, *args, **kwargs):
-        try:
-            # Check the cell for syntax errors.  This way, the syntax error
-            # will show the original input, not the transformed input.  The
-            # downside here is that IPython magic like %timeit will not work
-            # with transformed input (but on the other hand, IPython magic
-            # that doesn't expect transformed input will continue to work).
-            ast.parse(cell)
-        except SyntaxError:
-            pass
-        else:
-            cell = int_to_Integer(cell)
-        old_run_cell(cell, *args, **kwargs)
 
-    if hasshell:
-        app.shell.run_cell = my_run_cell
-    else:
-        app.run_cell = my_run_cell
+    class IntegerWrapper(ast.NodeTransformer):
+        """Wraps all integers in a call to Integer()"""
+        def visit_Num(self, node):
+            if isinstance(node.n, int):
+                return ast.Call(func=ast.Name(id='Integer', ctx=ast.Load()),
+                    args=[node], keywords=[])
+            return node
+
+    app.shell.ast_transformers.append(IntegerWrapper())
 
 def enable_automatic_symbols(app):
     """Allow IPython to automatially create symbols (``isympy -a``). """
-    # XXX: This should perhaps use tokenize, like int_to_Integer() above.
-    # This would avoid re-executing the code, which can lead to subtle
-    # issues.  For example:
-    #
-    # In [1]: a = 1
-    #
-    # In [2]: for i in range(10):
-    #    ...:     a += 1
-    #    ...:
-    #
-    # In [3]: a
-    # Out[3]: 11
-    #
-    # In [4]: a = 1
-    #
-    # In [5]: for i in range(10):
-    #    ...:     a += 1
-    #    ...:     print b
-    #    ...:
-    # b
-    # b
-    # b
-    # b
-    # b
-    # b
-    # b
-    # b
-    # b
-    # b
-    #
-    # In [6]: a
-    # Out[6]: 12
-    #
-    # Note how the for loop is executed again because `b` was not defined, but `a`
-    # was already incremented once, so the result is that it is incremented
-    # multiple times.
+    import ast
 
-    import re
-    re_nameerror = re.compile("name '(?P<symbol>[A-Za-z_][A-Za-z0-9_]*)' is not defined")
+    class SymbolWrapper(ast.NodeTransformer):
+        """Wrap undefined names in Symbol"""
+        def visit_Name(self, node):
+            if node.ctx.__class__ == ast.Load and node.id not in app.shell.user_ns:
+                return ast.Call(func=ast.Name(id='Symbol',
+                    ctx=ast.Load()), args=[ast.Str(s=node.id)], keywords=[])
+            return node
 
-    def _handler(self, etype, value, tb, tb_offset=None):
-        """Handle :exc:`NameError` exception and allow injection of missing symbols. """
-        if etype is NameError and tb.tb_next and not tb.tb_next.tb_next:
-            match = re_nameerror.match(str(value))
-
-            if match is not None:
-                # XXX: Make sure Symbol is in scope. Otherwise you'll get infinite recursion.
-                self.run_cell("%(symbol)s = Symbol('%(symbol)s')" %
-                    {'symbol': match.group("symbol")}, store_history=False)
-
-                try:
-                    code = self.user_ns['In'][-1]
-                except (KeyError, IndexError):
-                    pass
-                else:
-                    self.run_cell(code, store_history=False)
-                    return None
-                finally:
-                    self.run_cell("del %s" % match.group("symbol"),
-                                  store_history=False)
-
-        stb = self.InteractiveTB.structured_traceback(etype, value, tb, tb_offset=tb_offset)
-        self._showtraceback(etype, value, stb)
-
-    if hasattr(app, 'shell'):
-        app.shell.set_custom_exc((NameError,), _handler)
-    else:
-        # This was restructured in IPython 0.13
-        app.set_custom_exc((NameError,), _handler)
+    app.shell.ast_transformers.append(SymbolWrapper())
 
 def init_ipython_session(argv=[], auto_symbols=False, auto_int_to_Integer=False):
     """Construct new IPython session. """
