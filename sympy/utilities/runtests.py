@@ -144,7 +144,7 @@ def setup_pprint():
 
 def run_in_subprocess_with_hash_randomization(function, function_args=(),
     function_kwargs={}, command=sys.executable,
-        module='sympy.utilities.runtests', force=False):
+    module='sympy.utilities.runtests', force=False, use_arch=True):
     """
     Run a function in a Python subprocess with hash randomization enabled.
 
@@ -178,6 +178,12 @@ def run_in_subprocess_with_hash_randomization(function, function_args=(),
     3.1.5, and 3.2.3, and is enabled by default in all Python versions after
     and including 3.3.0.
 
+    If use_arch is True, it will attempt to use the ``arch`` command to make
+    the subprocess architecture (32-bit or 64-bit) match that of the current
+    interpreter.  This is necessary if the current interpreter's architecture
+    was also set using ``arch``, as otherwise the subprocess will revert to
+    the default architecture for the executable.
+
     Examples
     ========
 
@@ -195,10 +201,25 @@ def run_in_subprocess_with_hash_randomization(function, function_args=(),
     # Note, we must return False everywhere, not None, as subprocess.call will
     # sometimes return None.
 
+    if use_arch:
+        try:
+            a = subprocess.Popen(["arch"], stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+            a.communicate()
+        except Exception:
+            pass
+        else:
+            if a.returncode == 0:
+                from .misc import ARCH
+                if ARCH == '64-bit':
+                    command = 'arch -x86_64 ' + command
+                else: # ARCH == '32-bit'
+                    command = 'arch -i386 ' + command
+
     # First check if the Python version supports hash randomization
     # If it doesn't have this support, it won't reconize the -R flag
     p = subprocess.Popen([command, "-RV"], stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT)
+        stderr=subprocess.STDOUT)
     p.communicate()
     if p.returncode != 0:
         return False
@@ -290,8 +311,7 @@ def run_all_tests(test_args=(), test_kwargs={}, doctest_args=(),
 
 
 def test(*paths, **kwargs):
-    """
-    Run tests in the specified test_*.py files.
+    """Run tests in the specified test_*.py files.
 
     Tests in a particular test_*.py file are run if any of the given strings
     in ``paths`` matches a part of the test file's path. If ``paths=[]``,
@@ -411,8 +431,8 @@ def test(*paths, **kwargs):
 
     If the seed is not set, a random seed will be chosen.
 
-    Note that to reproduce the same hash values, you must use both the same as
-    well as the same architecture (32-bit vs. 64-bit).
+    Note that to reproduce the same hash values, you must use both the same
+    hash as well as the same architecture (32-bit vs. 64-bit).
 
     """
     subprocess = kwargs.pop("subprocess", True)
