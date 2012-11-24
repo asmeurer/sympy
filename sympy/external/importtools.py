@@ -226,7 +226,7 @@ class DeferredImport(types.ModuleType):
         return self.__module.__dict__
 
     def __eq__(self, other):
-        return self is other or self.__module is other
+        return (type(self) == type(other) and self.__module == other.__module) or self.__module is other
 
     def __hash__(self):
         return hash(self.__module)
