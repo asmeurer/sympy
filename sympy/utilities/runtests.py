@@ -31,6 +31,7 @@ import random
 import subprocess
 import signal
 import stat
+import time
 
 from sympy.core.cache import clear_cache
 from sympy.core.compatibility import exec_, PY3, string_types, range
@@ -2207,6 +2208,7 @@ class PyTestReporter(Reporter):
         return ok
 
     def entering_filename(self, filename, n):
+        self.timer = time.time()
         rel_name = filename[len(self._root_dir) + 1:]
         self._active_file = rel_name
         self._active_file_error = False
@@ -2220,6 +2222,8 @@ class PyTestReporter(Reporter):
         else:
             self.write("[OK]", "Green", align="right")
         self.write("\n")
+        runtime = int(time.time() - self.timer)
+        self.write("(%d seconds)" % (runtime), "Purple", align="right")
         if self._verbose:
             self.write("\n")
 
