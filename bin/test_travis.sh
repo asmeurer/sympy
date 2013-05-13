@@ -16,7 +16,7 @@ else
     cat << EOF | python
 import sympy
 import os
-os.environ['PYTHONHASHSEED'] = 3923950132
+os.environ['PYTHONHASHSEED'] = '3923950132'
 t1=sympy.test()
 t2=sympy.doctest()
 if not (t1 and t2):
