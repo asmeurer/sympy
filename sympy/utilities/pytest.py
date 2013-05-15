@@ -2,6 +2,7 @@
 
 import sys
 import functools
+import inspect
 
 try:
     import py
@@ -111,23 +112,29 @@ if not USE_PYTEST:
     class Skipped(Exception):
         pass
 
-    def XFAIL(func):
-        def wrapper():
-            try:
-                func()
-            except Exception, e:
-                if sys.version_info[:2] < (2, 6):
-                    message = getattr(e, 'message', '')
-                else:
-                    message = str(e)
-                if message != "Timeout":
-                    raise XFail(func.func_name)
-                else:
-                    raise Skipped("Timeout")
-            raise XPass(func.func_name)
+    class XFAIL(object):
+        def __init__(self, exception):
+            if inspect.isfunction(exception):
+                raise ValueError("XFAIL must be called as XFAIL(Exception)")
+            self.exception = exception
 
-        wrapper = functools.update_wrapper(wrapper, func)
-        return wrapper
+        def __call__(self, func):
+            def wrapper():
+                try:
+                    func()
+                except self.exception, e:
+                    if sys.version_info[:2] < (2, 6):
+                        message = getattr(e, 'message', '')
+                    else:
+                        message = str(e)
+                    if message != "Timeout":
+                        raise XFail(func.func_name)
+                    else:
+                        raise Skipped("Timeout")
+                raise XPass(func.func_name)
+
+            wrapper = functools.update_wrapper(wrapper, func)
+            return wrapper
 
     def skip(str):
         raise Skipped(str)
