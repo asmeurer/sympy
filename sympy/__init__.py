@@ -9,7 +9,9 @@ See the webpage for more information and documentation:
 
     http://code.google.com/p/sympy/"""
 
-__version__ = "0.7.2-git"
+__stable_version__ = "0.7.2"    # No -git or .rc, just major.minor.micro
+__subversion__ = "-git"
+__version__ = __stable_version__ + __subversion__
 
 # Try to determine if 2to3 has been run. To do this, we look at long.__name__.
 # If 2to3 has been run, it should convert long to int.

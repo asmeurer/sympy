@@ -2,12 +2,15 @@
 General SymPy exceptions and warnings.
 """
 
+import sympy
 from sympy.utilities.misc import filldedent
 from warnings import warn as warning
 
 
 class SymPyDeprecationWarning(DeprecationWarning):
-    r"""A warning for deprecated features of SymPy.
+    # We need to explicitly assign to __doc__ because we do string
+    # formatting, which prevents it from automatically being recognized.
+    __doc__ = r"""A warning for deprecated features of SymPy.
 
     This class is expected to be used with the warnings.warn function (note
     that one has to explicitly turn on deprecation warnings):
@@ -92,8 +95,8 @@ class SymPyDeprecationWarning(DeprecationWarning):
     >>> SymPyDeprecationWarning(
     ...    feature="Old feature",
     ...    useinstead="new feature",
-    ...    deprecated_since_version="0.7.2")
-    Old feature has been deprecated since SymPy 0.7.2. Use new feature
+    ...    deprecated_since_version="%s")
+    Old feature has been deprecated since SymPy %s. Use new feature
     instead.
 
     Note that it may be necessary to go back through all the deprecations
@@ -108,7 +111,7 @@ class SymPyDeprecationWarning(DeprecationWarning):
     ========
     sympy.core.decorators.deprecated
 
-    """
+    """ % (sympy.__stable_version__, sympy.__stable_version__)
 
     def __init__(self, value=None, feature=None, last_supported_version=None,
                  useinstead=None, issue=None, deprecated_since_version=None):

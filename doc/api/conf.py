@@ -41,9 +41,9 @@ copyright = '2013, SymPy Development Team'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = sympy.__version__
+version = sympy.__stable_version__
 # The full version, including alpha/beta/rc tags.
-release = version
+release = sympy.__version__
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
