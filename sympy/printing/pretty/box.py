@@ -55,6 +55,15 @@ class HorizMultiBox(MultiBox):
         self.height = max(left.height, right.height)
 
     def __str__(self):
+        # Thoughts: '\n'.join([''.join(i) for i in zip(*a.split('\n'))]) will
+        # "transpose" a string, for example
+        # >>> print a
+        # 123
+        # 456
+        # >>> print '\n'.join([''.join(i) for i in zip(*a.split('\n'))])
+        # 14
+        # 25
+        # 36
         leftstr = str(self.left)
         rightstr = str(self.right)
 
