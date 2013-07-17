@@ -73,6 +73,8 @@ class VertMultiBox(MultiBox):
         bigger = max(['top', 'bottom'], key=lambda i: getattr(self, i).width)
         if bigger == 'bottom':
             topstr = topstr[:-1]
+            botstr[0] = botstr[0][:self.top.width+1] + '+' + botstr[0][self.top.width+2:]
         else:
             botstr = botstr[1:]
+            topstr[-1] = topstr[-1][:self.bottom.width+1] + '+' + topstr[-1][self.bottom.width+2:]
         return '\n'.join(topstr + botstr)
