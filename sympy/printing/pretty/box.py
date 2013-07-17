@@ -80,6 +80,8 @@ class VertMultiBox(MultiBox):
         topstr = str(self.top).split('\n')
         botstr = str(self.bottom).split('\n')
         bigger = max(['top', 'bottom'], key=lambda i: getattr(self, i).width)
+        topstr = [line + ' '*(self.width - self.top.width) for line in topstr]
+        botstr = [line + ' '*(self.width - self.bottom.width) for line in botstr]
         if bigger == 'bottom':
             topstr = topstr[:-1]
             botstr[0] = botstr[0][:self.top.width+1] + '+' + botstr[0][self.top.width+2:]
