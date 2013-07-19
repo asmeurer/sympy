@@ -17,6 +17,12 @@ class Box(object):
         mid = '|' + ' '*(self.width) + '|'
         return '\n'.join([top] + [mid]*(self.height) + [top])
 
+    def transpose(self):
+        return self.__class__(self.args[1], self.args[0])
+
+    def __invert__(self):
+        return self.transpose()
+
     def stack_right(self, other):
         return HorizMultiBox(self, other)
 
@@ -76,6 +82,8 @@ class HorizMultiBox(Box):
         middle = mergerows(topstrl[-1], botstrl[0])
         return strtranspose('\n'.join(topstrl[:-1] + [middle] + botstrl[1:]))
 
+    def transpose(self):
+        return VertMultiBox(self.args[1].transpose(), self.args[0].transpose())
 
 class VertMultiBox(Box):
     def __init__(self, bottom, top):
@@ -90,6 +98,10 @@ class VertMultiBox(Box):
         botstrl = str(self.bottom).split('\n')
         middle = mergerows(topstrl[-1], botstrl[0])
         return '\n'.join(topstrl[:-1] + [middle] + botstrl[1:])
+
+    def transpose(self):
+        return HorizMultiBox(self.args[1].transpose(),
+            self.args[0].transpose())
 
 def boxkey(item):
     return (
