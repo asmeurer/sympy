@@ -40,8 +40,11 @@ class Box(object):
     # surprised by the behavior of x + y ** z, especially if you write it like
     # x + y**z.
 
-    __add__ = stack_right
-    __radd__ = stack_left
+    def __add__(self, other):
+        return self.stack_right(other)
+
+    def __radd__(self, other):
+        return self.stack_left(other)
 
     def stack_top(self, other):
         return VertMultiBox(self, other)
@@ -49,8 +52,11 @@ class Box(object):
     def stack_bottom(self, other):
         return VertMultiBox(other, self)
 
-    __pow__ = stack_top
-    __rpow__ = stack_bottom
+    def __pow__(self, other):
+        return self.stack_top(other)
+
+    def __rpow__(self, other):
+        return self.stack_bottom(other)
 
     def __mul__(self, other):
         if not isinstance(other, int):
@@ -66,9 +72,10 @@ class EmptyBox(Box):
     def __init__(self):
         super(EmptyBox, self).__init__(0, 0)
 
-    def __add__(self, other):
+    def stack_top(self, other):
         return other
-    __radd__ = __pow__ = __rpow__ = __add__
+
+    stack_bottom = stack_right = stack_left = stack_top
 
 class InvisiBox(Box):
     def __str__(self):
