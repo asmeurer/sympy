@@ -1,4 +1,5 @@
 from itertools import izip_longest
+import operator
 
 class Box(object):
     def __init__(self, width, height):
@@ -44,6 +45,13 @@ class Box(object):
 
     __pow__ = stack_top
     __rpow__ = stack_bottom
+
+    def __mul__(self, other):
+        if not isinstance(other, int):
+            return NotImplemented
+        return reduce(operator.add, other*[self], EmptyBox())
+
+    __rmul__ = __mul__
 
 def mergerows(row1, row2):
     newrow = [max(c1, c2, key=boxkey) for c1, c2 in izip_longest(row1,
