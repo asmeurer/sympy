@@ -59,6 +59,21 @@ class Box(object):
 
     __rmul__ = __mul__
 
+class EmptyBox(Box):
+    """
+    A 0x0 box, except when stacked it goes away
+    """
+    def __init__(self):
+        super(EmptyBox, self).__init__(0, 0)
+
+    def __add__(self, other):
+        return other
+    __radd__ = __pow__ = __rpow__ = __add__
+
+class InvisiBox(Box):
+    def __str__(self):
+        return '\n'.join([' '*(self.width + 2)]*(self.height + 2))
+
 def mergerows(row1, row2):
     newrow = [max(c1, c2, key=boxkey) for c1, c2 in izip_longest(row1,
         row2, fillvalue=' ')]
