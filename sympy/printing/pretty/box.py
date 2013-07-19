@@ -1,3 +1,5 @@
+from itertools import izip_longest
+
 class Box(object):
     def __init__(self, width, height):
         if width < 0 or height < 0:
@@ -44,7 +46,11 @@ class Box(object):
     __rpow__ = stack_bottom
 
 class MultiBox(Box):
-    pass
+    def mergerows(self, row1, row2):
+        newrow = [max(c1, c2, key=boxkey) for c1, c2 in izip_longest(row1,
+            row2, fillvalue=' ')]
+        return ''.join(newrow)
+
 
 class HorizMultiBox(MultiBox):
     def __init__(self, left, right):
@@ -55,17 +61,13 @@ class HorizMultiBox(MultiBox):
         self.height = max(left.height, right.height)
 
     def __str__(self):
-        # Thoughts: '\n'.join([''.join(i) for i in zip(*a.split('\n'))]) will
-        # "transpose" a string, for example
-        # >>> print a
-        # 123
-        # 456
-        # >>> print '\n'.join([''.join(i) for i in zip(*a.split('\n'))])
-        # 14
-        # 25
-        # 36
         leftstr = str(self.left)
         rightstr = str(self.right)
+        # Now transpose, so left becomes top, and right becomes bottom
+        topstrl = strtranspose(leftstr).split('\n')
+        botstrl = strtranspose(rightstr).split('\n')
+        middle = self.mergerows(topstrl[-1], botstrl[0])
+        return strtranspose('\n'.join(topstrl[:-1] + [middle] + botstrl[1:]))
 
 
 class VertMultiBox(MultiBox):
@@ -77,15 +79,31 @@ class VertMultiBox(MultiBox):
         self.height = bottom.height + top.height
 
     def __str__(self):
-        topstr = str(self.top).split('\n')
-        botstr = str(self.bottom).split('\n')
-        bigger = max(['top', 'bottom'], key=lambda i: getattr(self, i).width)
-        topstr = [line + ' '*(self.width - self.top.width) for line in topstr]
-        botstr = [line + ' '*(self.width - self.bottom.width) for line in botstr]
-        if bigger == 'bottom':
-            topstr = topstr[:-1]
-            botstr[0] = botstr[0][:self.top.width+1] + '+' + botstr[0][self.top.width+2:]
-        else:
-            botstr = botstr[1:]
-            topstr[-1] = topstr[-1][:self.bottom.width+1] + '+' + topstr[-1][self.bottom.width+2:]
-        return '\n'.join(topstr + botstr)
+        topstrl = str(self.top).split('\n')
+        botstrl = str(self.bottom).split('\n')
+        middle = self.mergerows(topstrl[-1], botstrl[0])
+        return '\n'.join(topstrl[:-1] + [middle] + botstrl[1:])
+
+def boxkey(item):
+    return (
+        item == '+',
+        item == '|',
+        item == '-',
+        )
+
+def strtranspose(s):
+    r"""
+    "transpose" a string, for example
+
+    >>> from sympy.printing.pretty.box import strtranspose
+    >>> a = '123\n456'
+    >>> print a
+    123
+    456
+    >>> print strtranspose(a)
+    14
+    25
+    36
+    """
+    return '\n'.join([''.join(i) for i in izip_longest(*s.split('\n'),
+        fillvalue=' ')])
