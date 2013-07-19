@@ -45,14 +45,13 @@ class Box(object):
     __pow__ = stack_top
     __rpow__ = stack_bottom
 
-class MultiBox(Box):
-    def mergerows(self, row1, row2):
-        newrow = [max(c1, c2, key=boxkey) for c1, c2 in izip_longest(row1,
-            row2, fillvalue=' ')]
-        return ''.join(newrow)
+def mergerows(row1, row2):
+    newrow = [max(c1, c2, key=boxkey) for c1, c2 in izip_longest(row1,
+        row2, fillvalue=' ')]
+    return ''.join(newrow)
 
 
-class HorizMultiBox(MultiBox):
+class HorizMultiBox(Box):
     def __init__(self, left, right):
         self.left = left
         self.right = right
@@ -66,11 +65,11 @@ class HorizMultiBox(MultiBox):
         # Now transpose, so left becomes top, and right becomes bottom
         topstrl = strtranspose(leftstr).split('\n')
         botstrl = strtranspose(rightstr).split('\n')
-        middle = self.mergerows(topstrl[-1], botstrl[0])
+        middle = mergerows(topstrl[-1], botstrl[0])
         return strtranspose('\n'.join(topstrl[:-1] + [middle] + botstrl[1:]))
 
 
-class VertMultiBox(MultiBox):
+class VertMultiBox(Box):
     def __init__(self, bottom, top):
         self.bottom = bottom
         self.top = top
@@ -81,7 +80,7 @@ class VertMultiBox(MultiBox):
     def __str__(self):
         topstrl = str(self.top).split('\n')
         botstrl = str(self.bottom).split('\n')
-        middle = self.mergerows(topstrl[-1], botstrl[0])
+        middle = mergerows(topstrl[-1], botstrl[0])
         return '\n'.join(topstrl[:-1] + [middle] + botstrl[1:])
 
 def boxkey(item):
