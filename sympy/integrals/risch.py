@@ -169,6 +169,38 @@ class DifferentialExtension(object):
       self.T[self.level] == self.t and self.D[self.level] == self.d.
       Use the methods self.increment_level() and self.decrement_level() to change
       the current level.
+
+    Examples
+    ========
+
+        >>> from sympy.integrals.risch import DifferentialExtension
+        >>> from sympy import log, exp
+        >>> from sympy.abc import x
+        >>> d = DifferentialExtension(log(x)*log(2*x)*exp(x), x)
+        >>> d.f
+        exp(x)*log(x)*log(2*x)
+        >>> d.fa
+        Poly((_t0**2 - _t0*log(2))*_t1, _t1, domain='EX')
+        >>> d.fd
+        Poly(1, _t1, domain='ZZ')
+        >>> d.d
+        Poly(_t1, _t1, domain='ZZ')
+        >>> d.D
+        [Poly(1, x, domain='ZZ'), Poly(1/x, _t0, domain='ZZ(x)'), Poly(_t1, _t1, domain='ZZ')]
+        >>> d.E_K
+        [2]
+        >>> d.E_args
+        [x]
+        >>> d.L_K
+        [1]
+        >>> d.L_args
+        [2*x]
+        >>> d.T
+        [x, _t0, _t1]
+        >>> d.Tfuncs
+        [Lambda(_i, log(2*_i)), Lambda(_i, exp(_i))]
+        >>> d.t
+        _t1
     """
     # __slots__ is defined mainly so we can iterate over all the attributes
     # of the class easily (the memory use doesn't matter too much, since we
@@ -573,6 +605,9 @@ class DifferentialExtension(object):
             self.backsubs, self.E_K, self.E_args, self.L_K, self.L_args)
 
     # TODO: Implement __repr__
+    def __repr__(self):
+        return "Tower(f={%s}, D={%s}, fa={%s}, fd={%s})" % (
+            self.f, self.D, self.fa, self.fd)
 
     def __str__(self):
         return str(self._important_attrs)
