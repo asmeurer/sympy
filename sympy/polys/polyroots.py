@@ -6,7 +6,7 @@ import math
 
 from sympy.core.symbol import Dummy, Symbol, symbols
 from sympy.core import S, I, pi
-from sympy.core.mul import expand_2arg
+from sympy.core.mul import expand_2arg, Mul
 from sympy.core.sympify import sympify
 from sympy.core.numbers import Rational, igcd
 
@@ -59,7 +59,7 @@ def roots_quadratic(f):
         r = -c/a
 
         if not dom.is_Numerical:
-            R = sqrt(_simplify(r))
+            R = _denested_sqrt(_simplify(r))
         else:
             R = sqrt(r)
 
@@ -74,7 +74,7 @@ def roots_quadratic(f):
             r0 = (-b + D) / (2*a)
             r1 = (-b - D) / (2*a)
         else:
-            D = sqrt(_simplify(d))
+            D = _denested_sqrt(_simplify(d))
             A = 2*a
 
             E = _simplify(-b/A)
@@ -85,6 +85,20 @@ def roots_quadratic(f):
 
     return sorted([expand_2arg(i) for i in (r0, r1)], key=default_sort_key)
 
+def _denested_sqrt(x):
+    """
+    Returns the denested square root of x
+
+    sqrt(x**2) != x in general, but what is true is that sqrt(x) = x or -x. So
+    by the symmetry of the quadratic formula, we can make this reduction,
+    because no matter which branch we pick, the other root will still be the
+    other one.
+    """
+    if x.is_Pow:
+        return x.base**(x.exp/2)
+    if x.is_Mul:
+        return Mul(*[_denested_sqrt(i) for i in x.args])
+    return sqrt(x)
 
 def roots_cubic(f):
     """Returns a list of roots of a cubic polynomial."""
