@@ -1,0 +1,16 @@
+package:
+  name: sympy-release
+  version: 1.0
+
+requirements:
+  run:
+    # Also requires vagrant, but there isn't a conda package for that yet.
+    - python
+    - fabric
+    - fabric-virtualenv
+    - requests
+    - requests-oauthlib
+
+about:
+  license: BSD
+  summary: "All the things needed to make a release of SymPy."
