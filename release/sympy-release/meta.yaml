@@ -1,6 +1,6 @@
 package:
   name: sympy-release
-  version: 1.0
+  version: 2.0
 
 requirements:
   run:
@@ -10,6 +10,7 @@ requirements:
     - fabric-virtualenv
     - requests
     - requests-oauthlib
+    - ipython
 
 about:
   license: BSD
