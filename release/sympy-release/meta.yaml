@@ -1,6 +1,6 @@
 package:
   name: sympy-release
-  version: 2.0
+  version: 3.0
 
 requirements:
   run:
@@ -11,6 +11,10 @@ requirements:
     - requests
     - requests-oauthlib
     - ipython
+    - urllib3
+    - ndg-httpsclient
+    - pyasn1
+    - pyopenssl
 
 about:
   license: BSD
