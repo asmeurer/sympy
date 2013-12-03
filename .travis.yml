@@ -104,4 +104,4 @@ notifications:
   email: false
   webhooks:
     urls:
-      - https://webhooks.trou.pe/endpoint/8d42e565b952bb018a93/529d3532ed5ab0b3bf04e5be/
+      - https://webhooks.trou.pe/endpoint/2c7290b2e3a4cb23f670/529d4eebed5ab0b3bf04e5ce/
