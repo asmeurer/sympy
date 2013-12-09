@@ -1,21 +1,27 @@
 package:
   name: sympy-release
-  version: 4.0
+  version: 5.0
 
 requirements:
   run:
     # Also requires vagrant, but there isn't a conda package for that yet.
     - python
+    # Not strictly needed, but it's useful
+    - ipython
+    # The release script uses fabric to communicate with vagrant
     - fabric
     - fabric-virtualenv
+    # Needed to upload to GitHub
     - requests
     - requests-oauthlib
-    - ipython
+    # requests must have these installed to support SNI, which GitHub requires
     - urllib3
     - ndg-httpsclient
     - pyasn1
     - pyopenssl
+    # Needed to build the website
     - babel
+    - jinja2
 
 about:
   license: BSD
