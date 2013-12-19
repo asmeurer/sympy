@@ -1,6 +1,6 @@
 package:
   name: sympy-release
-  version: 5.0
+  version: 6.0
 
 requirements:
   run:
@@ -8,6 +8,8 @@ requirements:
     - python
     # Not strictly needed, but it's useful
     - ipython
+    # The whole thing is done in vagrant
+    - vagrant
     # The release script uses fabric to communicate with vagrant
     - fabric
     - fabric-virtualenv
