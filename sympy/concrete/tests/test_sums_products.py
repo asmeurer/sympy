@@ -1,7 +1,7 @@
 from sympy import (
     Abs, And, binomial, Catalan, cos, Derivative, E, Eq, exp, EulerGamma,
     factorial, Function, harmonic, I, Integral, KroneckerDelta, log,
-    nan, oo, pi, Piecewise, Product, product, Rational, S, simplify,
+    nan, Ne, Or, oo, pi, Piecewise, Product, product, Rational, S, simplify,
     sqrt, Sum, summation, Symbol, symbols, sympify, zeta, gamma
 )
 from sympy.abc import a, b, c, d, f, k, m, x, y, z
@@ -375,6 +375,10 @@ def test_evalf_symbolic():
     assert expr.evalf() == expr
 
 
+def test_evalf_issue_3273():
+    assert Sum(0, (k, 1, oo)).evalf() == 0
+
+
 def test_simple_products():
     assert Product(S.NaN, (x, 1, 3)) is S.NaN
     assert product(S.NaN, (x, 1, 3)) is S.NaN
@@ -521,6 +525,11 @@ def test_Sum_doit():
     l = Symbol('l', integer=True, positive=True)
     assert Sum(f(l)*Sum(KroneckerDelta(m, l), (m, 0, oo)), (l, 1, oo)).doit() == \
         Sum(f(l), (l, 1, oo))
+
+    # github issue #2597
+    nmax = symbols('N', integer=True, positive=True)
+    pw = Piecewise((1, And(S(1) <= n, n <= nmax)), (0, True))
+    assert Sum(pw, (n, 1, nmax)).doit() == Sum(pw, (n, 1, nmax))
 
 
 def test_Product_doit():
@@ -771,3 +780,20 @@ def test_factor_expand_subs():
     assert Sum(x,(x,1,10)).subs([(x,y-2)]) == Sum(x,(x,1,10))
     assert Sum(1/x,(x,1,10)).subs([(x,(3+n)**3)]) == Sum(1/x,(x,1,10))
     assert Sum(1/x,(x,1,10)).subs([(x,3*x-2)]) == Sum(1/x,(x,1,10))
+
+
+def test_distribution_over_equality():
+    assert Product(Eq(x*2, f(x)), (x, 1, 3)).doit() == Eq(48, f(1)*f(2)*f(3))
+    assert Sum(Eq(f(x), x**2), (x, 0, y)) == \
+        Eq(Sum(f(x), (x, 0, y)), Sum(x**2, (x, 0, y)))
+
+
+def test_github_issue_2787():
+    n, k = symbols('n k', positive=True, integer=True)
+    p = symbols('p', positive=True)
+    binomial_dist = binomial(n, k)*p**k*(1 - p)**(n - k)
+    s = Sum(binomial_dist*k, (k, 0, n))
+    res = s.doit().simplify()
+    assert res == Piecewise((n*p, And(Or(-n + 1 < 0, -n + 1 >= 0),
+        Or(-n + 1 < 0, Ne(p/(p - 1), 1)), p*Abs(1/(p - 1)) <= 1)),
+        (Sum(k*p**k*(-p + 1)**(-k)*(-p + 1)**n*binomial(n, k), (k, 0, n)), True))

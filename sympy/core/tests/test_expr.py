@@ -230,12 +230,12 @@ def test_basic_nostr():
 
 
 def test_series_expansion_for_uniform_order():
-    assert (1/x + y + x).series(x, 0, 0) == 1/x + O(1)
+    assert (1/x + y + x).series(x, 0, 0) == 1/x + O(1, x)
     assert (1/x + y + x).series(x, 0, 1) == 1/x + y + O(x)
-    assert (1/x + 1 + x).series(x, 0, 0) == 1/x + O(1)
+    assert (1/x + 1 + x).series(x, 0, 0) == 1/x + O(1, x)
     assert (1/x + 1 + x).series(x, 0, 1) == 1/x + 1 + O(x)
-    assert (1/x + x).series(x, 0, 0) == 1/x + O(1)
-    assert (1/x + y + y*x + x).series(x, 0, 0) == 1/x + O(1)
+    assert (1/x + x).series(x, 0, 0) == 1/x + O(1, x)
+    assert (1/x + y + y*x + x).series(x, 0, 0) == 1/x + O(1, x)
     assert (1/x + y + y*x + x).series(x, 0, 1) == 1/x + y + O(x)
 
 def test_leadterm():
@@ -966,6 +966,7 @@ def test_extractions():
     assert (Rational(1, 2)*x).extract_multiplicatively(3) == x/6
     assert (sqrt(x)).extract_multiplicatively(x) is None
     assert (sqrt(x)).extract_multiplicatively(1/x) is None
+    assert x.extract_multiplicatively(-x) is None
 
     assert ((x*y)**3).extract_additively(1) is None
     assert (x + 1).extract_additively(x) == 1

@@ -63,7 +63,7 @@ def test_2124():
     assert ((sin(x))**y).nseries(x, n=1, logx=logx) == \
         exp(y*logx) + O(x*exp(y*logx), x)
 
-    assert sin(1/x).series(x, oo, n=5) == 1/x - 1/(6*x**3) + O(x**(-5), x, oo)
+    assert sin(1/x).series(x, oo, n=5) == 1/x - 1/(6*x**3) + O(x**(-5), (x, oo))
     assert abs(x).series(x, oo, n=5, dir='+') == x
     assert abs(x).series(x, -oo, n=5, dir='-') == -x
     assert abs(-x).series(x, oo, n=5, dir='+') == x
@@ -109,6 +109,11 @@ def test_acceleration():
     A = Sum(Integer(-1)**(k + 1) / k, (k, 1, n))
     assert round(shanks(A, n, 25).evalf(), 4) == round(log(2).evalf(), 4)
     assert round(shanks(A, n, 25, 5).evalf(), 10) == round(log(2).evalf(), 10)
+
+
+def test_issue_2753():
+    assert series(1/cos(x/log(x)), x, 0) == 1 + x**2/(2*log(x)**2) + \
+        5*x**4/(24*log(x)**4) + O(x**6)
 
 
 def test_1484():

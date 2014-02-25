@@ -252,6 +252,10 @@ class Sum(AddWithLimits,ExprWithIntLimits):
         else:
             return NotImplementedError('Lower and upper bound expected.')
 
+    def _eval_simplify(self, ratio, measure):
+        from sympy.simplify.simplify import sum_simplify
+        return sum_simplify(self)
+
     def _eval_summation(self, f, x):
         return None
 
@@ -301,7 +305,8 @@ class Sum(AddWithLimits,ExprWithIntLimits):
         m = int(m)
         n = int(n)
         f = self.function
-        assert len(self.limits) == 1
+        if len(self.limits) != 1:
+            raise ValueError("More than 1 limit")
         i, a, b = self.limits[0]
         if (a > b) is True:
             if a - b == 1:
@@ -559,8 +564,7 @@ def eval_sum(f, limits):
     if a == b:
         return f.subs(i, a)
     if isinstance(f, Piecewise):
-        from sympy.utilities.iterables import flatten
-        if i not in flatten([arg.args[1].free_symbols for arg in f.args]):
+        if not any(i in arg.args[1].free_symbols for arg in f.args):
             # Piecewise conditions do not depend on the dummy summation variable,
             # therefore we can fold:     Sum(Piecewise((e, c), ...), limits)
             #                        --> Piecewise((Sum(e, limits), c), ...)
@@ -580,6 +584,8 @@ def eval_sum(f, limits):
     # Doing it directly may be faster if there are very few terms.
     if definite and (dif < 100):
         return eval_sum_direct(f, (i, a, b))
+    if isinstance(f, Piecewise):
+        return None
     # Try to do it symbolically. Even when the number of terms is known,
     # this can save time when b-a is big.
     # We should try to transform to partial fractions
@@ -772,7 +778,7 @@ def eval_sum_hyper(f, i_a_b):
     res = _eval_sum_hyper(f, i, a)
     if res is not None:
         r, c = res
-        if c is False:
+        if c == False:
             if r.is_number:
                 f = f.subs(i, Dummy('i', integer=True, positive=True) + a)
                 if f.is_positive or f.is_zero:
