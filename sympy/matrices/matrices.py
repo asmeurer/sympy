@@ -10,7 +10,7 @@ from sympy.core.symbol import Symbol, Dummy, symbols
 from sympy.core.numbers import Integer, ilcm, Rational, Float
 from sympy.core.singleton import S
 from sympy.core.sympify import sympify
-from sympy.core.compatibility import is_sequence, default_sort_key, xrange
+from sympy.core.compatibility import is_sequence, default_sort_key, xrange, NotIterable
 
 from sympy.polys import PurePoly, roots, cancel, gcd
 from sympy.simplify import simplify as _simplify, signsimp, nsimplify
@@ -42,7 +42,7 @@ class NonSquareMatrixError(ShapeError):
     pass
 
 
-class DeferredVector(Symbol):
+class DeferredVector(Symbol, NotIterable):
     """A vector whose components are deferred (e.g. for use with lambdify)
 
     Examples
@@ -199,15 +199,13 @@ class MatrixBase(object):
             if len(ncol) > 1:
                 raise ValueError("Got rows of variable lengths: %s" %
                     sorted(list(ncol)))
-            rows = len(in_mat)
+            cols = ncol.pop() if ncol else 0
+            rows = len(in_mat) if cols else 0
             if rows:
                 if not is_sequence(in_mat[0]):
                     cols = 1
                     flat_list = [cls._sympify(i) for i in in_mat]
                     return rows, cols, flat_list
-                cols = ncol.pop()
-            else:
-                cols = 0
             flat_list = []
             for j in range(rows):
                 for i in range(cols):
@@ -575,7 +573,7 @@ class MatrixBase(object):
             for i in range(A.shape[0]):
                 ret[i] = list(map(lambda j, k: j + k, alst[i], blst[i]))
             rv = classof(A, B)._new(ret)
-            if not A.rows:
+            if 0 in A.shape:
                 rv = rv.reshape(*A.shape)
             return rv
         raise TypeError('cannot add matrix and %s' % type(other))
@@ -2638,10 +2636,10 @@ class MatrixBase(object):
                     if simplify and k > pivot:
                         r[k, i] = simpfunc(r[k, i])
                     if not iszerofunc(r[k, i]):
+                        r.row_swap(pivot, k)
                         break
-                if k == r.rows - 1 and iszerofunc(r[k, i]):
+                else:
                     continue
-                r.row_swap(pivot, k)
             scale = r[pivot, i]
             r.row_op(pivot, lambda x, _: x / scale)
             for j in xrange(r.rows):

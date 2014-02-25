@@ -305,6 +305,13 @@ want to be mentioned here, so see our repository history for a full list).
 #. Avichal Dayal: removed duplicate solutions obtained from solve
 #. Paul Scott: pass along keywords for plots
 #. shiprabanga: code quality fixes
+#. Pramod Ch: fix problem with (I*oo).expand_complex()
+#. Akshay: added normal_lines to Ellipse
+#. Buck Shlegeris: add inverses to error functions
+#. Jonathan Miller: documentation
+#. Edward: update license year
+#. Rajath S: corrected iteration values in gaunt, racah, and wigner_9j
+
 
 Up-to-date list in the order of the first contribution is given in the `AUTHORS
 <https://github.com/sympy/sympy/blob/master/AUTHORS>`_ file.

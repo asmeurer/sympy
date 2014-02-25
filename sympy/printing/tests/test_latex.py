@@ -1,6 +1,6 @@
 from sympy import (
     Abs, Chi, Ci, CosineTransform, Dict, Ei, Eq, FallingFactorial, FiniteSet,
-    Float, FourierTransform, Function, Integral, Interval,
+    Float, FourierTransform, Function, IndexedBase, Integral, Interval,
     InverseCosineTransform, InverseFourierTransform,
     InverseLaplaceTransform, InverseMellinTransform, InverseSineTransform,
     Lambda, LaplaceTransform, Limit, Matrix, Max, MellinTransform, Min, Mul,
@@ -132,14 +132,18 @@ def test_latex_symbols():
     mass, volume = symbols('mass, volume')
     assert latex(Gamma + lmbda) == r"\Gamma + \lambda"
     assert latex(Gamma * lmbda) == r"\Gamma \lambda"
+    assert latex(Symbol('q1')) == r"q_{1}"
     assert latex(Symbol('q21')) == r"q_{21}"
     assert latex(Symbol('epsilon0')) == r"\epsilon_{0}"
+    assert latex(Symbol('omega1')) == r"\omega_{1}"
     assert latex(Symbol('91')) == r"91"
     assert latex(Symbol('alpha_new')) == r"\alpha_{new}"
     assert latex(Symbol('C^orig')) == r"C^{orig}"
     assert latex(Symbol('x^alpha')) == r"x^{\alpha}"
     assert latex(Symbol('beta^alpha')) == r"\beta^{\alpha}"
     assert latex(Symbol('e^Alpha')) == r"e^{A}"
+    assert latex(Symbol('omega_alpha^beta')) == r"\omega^{\beta}_{\alpha}"
+    assert latex(Symbol('omega') ** Symbol('beta')) == r"\omega^{\beta}"
 
 
 @XFAIL
@@ -176,6 +180,16 @@ def test_latex_functions():
     # not to be confused with the beta function
     assert latex(beta(x)) == r"\beta{\left (x \right )}"
     assert latex(beta) == r"\beta"
+
+    a1 = Function('a_1')
+
+    assert latex(a1) == r"\operatorname{a_{1}}"
+    assert latex(a1(x)) == r"\operatorname{a_{1}}{\left (x \right )}"
+
+    # issue #2769
+    omega1 = Function('omega1')
+    assert latex(omega1) == r"\omega_{1}"
+    assert latex(omega1(x)) == r"\omega_{1}{\left (x \right )}"
 
     assert latex(sin(x)) == r"\sin{\left (x \right )}"
     assert latex(sin(x), fold_func_brackets=True) == r"\sin {x}"
@@ -366,6 +380,11 @@ def test_latex_brackets():
     assert latex((-1)**x) == r"\left(-1\right)^{x}"
 
 
+def test_latex_indexed():
+    Psi_symbol = Symbol('Psi_0', complex=True, real=False)
+    Psi_indexed = IndexedBase(Symbol('Psi', complex=True, real=False))
+    assert latex(Psi_symbol * conjugate(Psi_symbol)) == latex(Psi_indexed[0] * conjugate(Psi_indexed[0]))
+
 def test_latex_derivatives():
     # regular "d" for ordinary derivatives
     assert latex(diff(x**3, x, evaluate=False)) == \
@@ -528,6 +547,11 @@ def test_latex_dict():
     assert latex(D) == '\\begin{Bmatrix}1 : 1, & x : 3, & x^{2} : 2, & x^{3} : 4\\end{Bmatrix}'
 
 
+def test_latex_list():
+    l = [Symbol('omega1'), Symbol('a'), Symbol('alpha')]
+    assert latex(l) == r'\begin{bmatrix}\omega_{1}, & a, & \alpha\end{bmatrix}'
+
+
 def test_latex_rational():
     #tests issue 874
     assert latex(-Rational(1, 2)) == "- \\frac{1}{2}"
@@ -620,6 +644,24 @@ def test_latex_Matrix():
     assert latex(M2) == \
         r'\left[\begin{array}{ccccccccccc}' \
         r'0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\end{array}\right]'
+
+
+def test_latex_matrix_with_functions():
+    t = symbols('t')
+    theta1 = symbols('theta1', cls=Function)
+
+    M = Matrix([[sin(theta1(t)), cos(theta1(t))],
+                [cos(theta1(t).diff(t)), sin(theta1(t).diff(t))]])
+
+    expected = (r'\left[\begin{matrix}\sin{\left '
+                r'(\theta_{1}{\left (t \right )} \right )} & '
+                r'\cos{\left (\theta_{1}{\left (t \right )} \right '
+                r')}\\\cos{\left (\frac{d}{d t} \theta_{1}{\left (t '
+                r'\right )} \right )} & \sin{\left (\frac{d}{d t} '
+                r'\theta_{1}{\left (t \right )} \right '
+                r')}\end{matrix}\right]')
+
+    assert latex(M) == expected
 
 
 def test_latex_mul_symbol():

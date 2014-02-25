@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 
 import decimal
+import fractions
 import math
 import re as regex
 from collections import defaultdict
@@ -69,18 +70,6 @@ def seterr(divide=False):
     if _errdict["divide"] != divide:
         clear_cache()
         _errdict["divide"] = divide
-
-
-def _as_integer_ratio(p):
-    """compatibility implementation for python < 2.6"""
-    neg_pow, man, expt, bc = getattr(p, '_mpf_', mpmath.mpf(p)._mpf_)
-    p = [1, -1][neg_pow % 2]*man
-    if expt < 0:
-        q = 2**-expt
-    else:
-        q = 1
-        p *= 2**expt
-    return int(p), int(q)
 
 
 def _decimal_to_Rational_prec(dec):
@@ -1077,7 +1066,7 @@ class Rational(Number):
                     pass  # error will raise below
 
                 if isinstance(p, (float, Float)):
-                    return Rational(*_as_integer_ratio(p))
+                    return Rational(*float(p).as_integer_ratio())
 
             if not isinstance(p, SYMPY_INTS + (Rational,)):
                 raise TypeError('invalid input: %s' % p)
@@ -1219,7 +1208,10 @@ class Rational(Number):
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
         if isinstance(other, Rational):
-            return Rational(self.p*other.q, self.q*other.p)
+            if self.p and other.p == S.Zero:
+                return S.ComplexInfinity
+            else:
+                return Rational(self.p*other.q, self.q*other.p)
         elif isinstance(other, Float):
             return self*(1/other)
         else:
@@ -1877,9 +1869,11 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
     Examples
     ========
 
-    >>> from sympy import S, Integer
+    >>> from sympy import S, Integer, zoo
     >>> Integer(0) is S.Zero
     True
+    >>> 1/S.Zero
+    zoo
 
     References
     ==========
@@ -1909,7 +1903,7 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         if expt.is_positive:
             return self
         if expt.is_negative:
-            return S.Infinity
+            return S.ComplexInfinity
         if expt.is_real is False:
             return S.NaN
         # infinities are already handled with pos and neg
@@ -1917,7 +1911,7 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         # exponent
         coeff, terms = expt.as_coeff_Mul()
         if coeff.is_negative:
-            return S.Infinity**terms
+            return S.ComplexInfinity**terms
         if coeff is not S.One:  # there is a Number to discard
             return self**terms
 
@@ -2242,16 +2236,28 @@ class Infinity(with_metaclass(Singleton, Number)):
     def __ne__(self, other):
         return other is not S.Infinity
 
+    @_sympifyit('other', NotImplemented)
     def __lt__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return False
 
+    @_sympifyit('other', NotImplemented)
     def __le__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return other is S.Infinity
 
+    @_sympifyit('other', NotImplemented)
     def __gt__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return other is not S.Infinity
 
+    @_sympifyit('other', NotImplemented)
     def __ge__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return True
 
     def __mod__(self, other):
@@ -2423,16 +2429,28 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     def __ne__(self, other):
         return other is not S.NegativeInfinity
 
+    @_sympifyit('other', NotImplemented)
     def __lt__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return other is not S.NegativeInfinity
 
+    @_sympifyit('other', NotImplemented)
     def __le__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return True
 
+    @_sympifyit('other', NotImplemented)
     def __gt__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return False
 
+    @_sympifyit('other', NotImplemented)
     def __ge__(self, other):
+        if other.is_number and other.is_real is False:
+            raise TypeError("Invalid comparison of %s and %s" % (self, other))
         return other is S.NegativeInfinity
 
 
@@ -2571,7 +2589,7 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
     is_commutative = True
     is_bounded = False
     is_real = None
-    is_number = False
+    is_number = True
 
     __slots__ = []
 
@@ -3075,16 +3093,12 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
 
 I = S.ImaginaryUnit
 
-try:
-    # fractions is only available for python 2.6+
-    import fractions
 
-    def sympify_fractions(f):
-        return Rational(f.numerator, f.denominator)
+def sympify_fractions(f):
+    return Rational(f.numerator, f.denominator)
 
-    converter[fractions.Fraction] = sympify_fractions
-except ImportError:
-    pass
+converter[fractions.Fraction] = sympify_fractions
+
 
 try:
     if HAS_GMPY == 2:
