@@ -164,6 +164,8 @@ def test_even():
     assert newask(Q.even(x*y), Q.even(x)) is None
     assert newask(Q.even(x*y), Q.odd(x) & Q.integer(y)) is None
     assert newask(Q.even(x*y), Q.odd(x) & Q.odd(y)) is False
+    assert newask(Q.even(x*y*z), Q.even(x) & Q.even(y) & Q.odd(z)) is True
+    assert newask(Q.even(x+y+z), Q.even(x) & Q.even(y) & Q.even(z)) is True
 
     assert newask(Q.even(abs(x)), Q.even(x)) is True
     assert newask(Q.even(abs(x)), Q.odd(x)) is False
@@ -180,6 +182,9 @@ def test_odd():
     assert newask(Q.odd(x*y), Q.even(x)) is None
     assert newask(Q.odd(x*y), Q.odd(x) & Q.integer(y)) is None
     assert newask(Q.odd(x*y), Q.odd(x) & Q.odd(y)) is True
+    assert newask(Q.odd(x+y+z), Q.odd(x) & Q.even(y) & Q.even(z)) is True
+    assert newask(Q.odd(x+y+z), Q.odd(x) & Q.odd(y) & Q.even(z)) is False
+    assert newask(Q.odd(2*x+1), Q.integer(x)) is True
 
     assert newask(Q.odd(abs(x)), Q.even(x)) is False
     assert newask(Q.odd(abs(x)), Q.odd(x)) is True
