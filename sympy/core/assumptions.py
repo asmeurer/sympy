@@ -51,7 +51,9 @@ from sympy.core.facts import FactRules, FactKB
 from sympy.core.core import BasicMeta
 from sympy.core.compatibility import integer_types, with_metaclass
 
-from random import shuffle
+import os
+from random import Random
+shuffle = Random(os.environ.get('PYTHONHASHSEED', 0)).shuffle
 
 
 # This are the rules under which our assumptions function
