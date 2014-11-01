@@ -22,6 +22,22 @@ y = a ** 2 * (N.x | N.y) + b * (N.y | N.y) + c * sin(alpha) * (N.z | N.y)
 x = alpha * (N.x | N.x) + sin(omega) * (N.y | N.z) + alpha * beta * (N.z | N.x)
 
 
+def vpretty(expr, **settings):
+    # Based on pretty() from sympy.printing.pretty.pretty.
+    # TODO: Put this in the main namespace
+    from sympy.printing.pretty.pretty_symbology import pretty_use_unicode
+
+    pp = VectorPrettyPrinter(settings)
+
+    # XXX: this is an ugly hack, but at least it works
+    use_unicode = pp._settings['use_unicode']
+    uflag = pretty_use_unicode(use_unicode)
+
+    try:
+        return pp.doprint(expr)
+    finally:
+        pretty_use_unicode(uflag)
+
 def test_latex_printer():
     r = Function('r')('t')
     assert VectorLatexPrinter().doprint(r ** 2) == "r^{2}"
@@ -35,19 +51,17 @@ def test_vector_pretty_print():
     # TODO : The pretty print division does not print correctly here:
     # w = alpha * N.x + sin(omega) * N.y + alpha / beta * N.z
 
-    pp = VectorPrettyPrinter()
-
     expected = u("""\
  2
 a  n_x + b n_y + c⋅sin(α) n_z\
 """)
 
-    assert expected == pp.doprint(v)
+    assert expected == vpretty(v)
     assert expected == v._pretty().render()
 
     expected = u('α n_x + sin(ω) n_y + α⋅β n_z')
 
-    assert expected == pp.doprint(w)
+    assert expected == vpretty(w)
     assert expected == w._pretty().render()
 
 
