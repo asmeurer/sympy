@@ -56,6 +56,8 @@ def test_vector_pretty_print():
 a  n_x + b n_y + c⋅sin(α) n_z\
 """)
 
+    print(expected)
+    print(vpretty(v))
     assert expected == vpretty(v)
     assert expected == v._pretty().render()
 
