@@ -3286,6 +3286,7 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
     .. [1] http://en.wikipedia.org/wiki/Imaginary_unit
     """
 
+    is_zero = False
     is_imaginary = True
     is_real = False
     is_algebraic = True

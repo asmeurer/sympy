@@ -15,27 +15,82 @@ being integer, is also real, complex, etc.
 
 Here follows a list of possible assumption names:
 
-    - commutative    - object commutes with any other object with
-                       respect to multiplication operation.
-    - real           - object can have only values from the set
-                       of real numbers
-    - integer        - object can have only values from the set
-                       of integers
-    - algebraic      - object can have only values from the set
-                       of algebraic numbers
-    - transcendental - object can have only values from the set
-                       of transcendental numbers
-    - finite         - object absolute value is bounded
-    - positive       - object can have only positive values
-    - negative       - object can have only negative values
-    - nonpositive    - object can have only nonpositive values
-    - nonnegative    - object can have only nonnegative values
-    - irrational     - object value cannot be represented exactly by Rational
-    - infinite       - object value is arbitrarily large
+.. glossary::
 
-Implementation note: assumption values are stored in
-._assumptions dictionary or are returned by getter methods (with
-property decorators) or are attributes of objects/classes.
+    commutative
+        object commutes with any other object with
+        respect to multiplication operation.
+
+    complex
+        object can have only values from the set
+        of complex numbers.
+
+    imaginary
+        object value is a number that can be written as a real
+        number multiplied by the imaginary unit ``I``.  See
+        [3]_.  Please note, that ``0`` is not considered to be an
+        imaginary number, see
+        `issue #7649 <https://github.com/sympy/sympy/issues/7649>`_.
+
+    real
+        object can have only values from the set
+        of real numbers.
+
+    integer
+        object can have only values from the set
+        of integers.
+
+    odd
+    even
+        object can have only values from the set of
+        odd (even) integers [2]_.
+
+    prime
+        object is a natural number greater than ``1`` that has
+        no positive divisors other than ``1`` and itself.  See [6]_.
+
+    composite
+        object is a positive integer that has at least one positive
+        divisor other than ``1`` or the number itself.  See [4]_.
+
+    zero
+    nonzero
+        object is zero (not zero and complex).
+
+    rational
+        object can have only values from the set
+        of rationals.
+
+    algebraic
+        object can have only values from the set
+        of algebraic numbers [11]_.
+
+    transcendental
+        object can have only values from the set
+        of transcendental numbers [10]_.
+
+    irrational
+        object value cannot be represented exactly by Rational, see [5]_.
+
+    finite
+    infinite
+        object absolute value is bounded (is value is
+        arbitrarily large).  See [7]_, [8]_, [9]_.
+
+    negative
+    nonnegative
+        object can have only negative (only
+        nonnegative) values [1]_.
+
+    positive
+    nonpositive
+        object can have only positive (only
+        nonpositive) values.
+
+    hermitian
+    antihermitian
+        object belongs to the field of hermitian
+        (antihermitian) operators.
 
 Examples
 ========
