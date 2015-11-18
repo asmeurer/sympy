@@ -397,7 +397,7 @@ def cse(exprs, symbols=None, optimizations=None, postprocess=None,
     postprocess : a function which accepts the two return values of cse and
         returns the desired form of output from cse, e.g. if you want the
         replacements reversed the function might be the following lambda:
-        lambda r, e: return reversed(r), e
+        lambda r, e: reversed(r), e
     order : string, 'none' or 'canonical'
         The order by which Mul and Add arguments are processed. If set to
         'canonical', arguments will be canonically ordered. If set to 'none',
