@@ -1,11 +1,11 @@
 package:
   name: sympy-release
-  version: 6.0
+  version: 7.0
 
 requirements:
   run:
-    # Also requires vagrant, but there isn't a conda package for that yet.
     - python
+    - mpmath
     # Not strictly needed, but it's useful
     - ipython
     # The whole thing is done in vagrant
