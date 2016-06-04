@@ -2171,8 +2171,7 @@ def lrs(s):
     """Returns the longest repeated subsequence in `s` that is
     lexically smaller than any other subsequences of the same
     length. If there is no repeated subsequence then a null
-    sequence is returned. By default, the subsequences must not
-    overlap.
+    sequence is returned.
 
     Examples
     ========
