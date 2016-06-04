@@ -15,7 +15,7 @@ from sympy.utilities.iterables import (
     multiset_permutations, necklaces, numbered_symbols, ordered, partitions,
     permutations, postfixes, postorder_traversal, prefixes, reshape,
     rotate_left, rotate_right, runs, sift, subsets, take, topological_sort,
-    unflatten, uniq, variations)
+    unflatten, uniq, variations, replace_subsequence)
 from sympy.utilities.enumerative import (
     factoring_visitor, multiset_partitions_taocp )
 
@@ -707,3 +707,62 @@ def test__partition():
         ['b', 'e'], ['a', 'c'], ['d']]
     output = (3, [1, 0, 1, 2, 0])
     assert _partition('abcde', *output) == [['b', 'e'], ['a', 'c'], ['d']]
+
+
+def test_replace_subsequence():
+    l = [1, 2, 3, 2, 3, 4]
+    replace_subsequence(l, [2, 3], 5)
+    assert l == [1, 5, 5, 4]
+
+    l = [1, 2, 1, 2, 3]
+    replace_subsequence(l, [1, 2, 3], 4)
+    assert l == [1, 2, 4]
+
+    l = [1, 2, 1, 2, 1, 2]
+    replace_subsequence(l, [1, 2], 3)
+    assert l == [3, 3, 3]
+
+    l = [1, 2, 1, 2, 1, 2]
+    replace_subsequence(l, [1, 2])
+    assert l == []
+
+    l = [1, 2, 1, 2, 1, 3]
+    replace_subsequence(l, [3])
+    assert l == [1, 2, 1, 2, 1]
+
+    l = [1, 2, 1, 2]
+    replace_subsequence(l, [1, 2], [1, 2])
+    assert l == [1, 2, 1, 2]
+
+    l = [1, 2, 1, 2]
+    replace_subsequence(l, [], [])
+    assert l == [1, 2, 1, 2]
+
+
+def test_lrs():
+    from sympy.utilities.iterables import lrs
+    assert lrs('a') == ''
+    assert lrs('aaa') == 'a'
+    assert lrs('aaaa') == 'aa'
+    assert lrs('aaaac') == 'aa'
+    assert lrs('babab') == 'ab'
+    assert lrs('bcbcb') == 'bc'
+    assert lrs('abcabd') == 'ab'
+    assert lrs('aabaabc') == 'aab'
+    assert lrs('abcxxabcxxabc') == 'abcxx'
+
+
+def test_find():
+    from sympy.utilities.iterables import find
+    assert find('a', '') == -1
+    assert find('a', 'a') == 0
+    assert find('a', 'aa') == 0
+    assert find('a', 'ba') == 1
+    assert find('a', 'aa', 1) == 1
+    assert find('a', 'aba', 1) == 2
+    assert find('a', 'aba', 3) == -1
+    assert find('a', 'aba', -1) == 2
+    assert find('a', 'aba', -2) == 2
+    assert find('a', 'aba', -3) == 0
+    assert find('a', 'aba', -4) == 0
+    assert find('a', 'aba', -5) == 0

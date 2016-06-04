@@ -2084,3 +2084,138 @@ def kbins(l, k, ordered=None):
     else:
         raise ValueError(
             'ordered must be one of 00, 01, 10 or 11, not %s' % ordered)
+
+
+def replace_subsequence(l, a, b=[]):
+    """
+    Replace subsequence a with b in-place in l. If list
+    b has a length of 1 it may be passed as the element
+    instead of wrapping it as a list.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import replace_subsequence
+    >>> l = [1, 2, 1, 2, 3]
+    >>> replace_subsequence(l, [1, 2], 4)
+    >>> l
+    [4, 4, 3]
+    >>> l = [1, 2, 1, 2, 3]
+    >>> replace_subsequence(l, [1, 2], [2, 1])
+    >>> l
+    [2, 1, 2, 1, 3]
+    """
+    a = list(a)
+    if type(b) is not list:
+        b = [b]
+    if not a or a == b:
+        return
+    start = 0
+    while True:
+        try:
+            i = l.index(a[0], start)
+        except ValueError:
+            break
+        if l[i:i+len(a)] == a:
+            l[i:i+len(a)] = b
+            start = i + len(b)
+        else:
+            start = i + 1
+
+
+def find(subsequence, sequence, start=0):
+    """Return starting index at which subsequence appears in sequence else -1.
+    """
+    # adapted from http://code.activestate.com/recipes/
+    # 117223-boyer-moore-horspool-string-searching/
+    from collections import defaultdict
+    m = len(subsequence)
+    n = len(sequence)
+    if m > n:
+        return -1
+    if start < 0:
+        start = max(-n, start) + n
+    skip = defaultdict(lambda: m)
+    for k in range(m - 1):
+        skip[subsequence[k]] = m - k - 1
+    k = m - 1 + start
+    while k < n:
+        j = m - 1
+        i = k
+        while j >= 0 and sequence[i] == subsequence[j]:
+            j -= 1
+            i -= 1
+        if j == -1:
+            return i + 1
+        k += skip[sequence[k]]
+    return -1
+
+
+def longest_run(s):
+    """Return the location and length of longest run, else 0, 0"""
+    i = j = 0
+    at = longest = 0
+    for j in range(1, len(s)):
+        if s[j] != s[j-1]:
+            if j - i > longest:
+                at = i
+                longest = j - i
+            i = j
+    if s[j] == s[j-1] and j - i > longest:
+        at = i
+        longest = j - i + 1
+    return at, longest
+
+
+def lrs(s):
+    """Returns the longest repeated subsequence in `s` that is
+    lexically smaller than any other subsequences of the same
+    length. If there is no repeated subsequence then a null
+    sequence is returned. By default, the subsequences must not
+    overlap.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import lrs
+    >>> lrs('ba')
+    ''
+    >>> lrs('bab')
+    'b'
+    >>> lrs('babab')
+    'ab'
+    """
+    # trivial case
+    if len(s) < 2:
+        return s[:0]
+    # sort the indices by suffix from that index
+    ix = list(range(len(s)))
+    ix.sort(key=lambda j: s[j:])
+    # initialize by the longest run (which is not handled by the
+    # code below, else start with 0, 0
+    start, length = longest_run(s)
+    length = length//2
+    # the find the longest prefix shared by pairs of suffixes
+    for a, b in zip(ix, ix[1:]):
+        # put leftmost index in `a`
+        if a > b:
+            a, b = b, a
+        # find common prefix
+        for m in range(len(s) - b):
+            if s[a + m] != s[b + m]:
+                break
+        else:
+            # they all matched
+            m += 1
+        if m > b - a:  # matches overlap in s
+            # trim the subsequence until it appears as a match in the
+            # latter half of s[A:]
+            m = (len(s) - a)//2
+            while m and m > length:
+                if find(s[a: a + m], s, a + m) != -1:
+                    break
+                m -= 1
+        # if it's the longest so far, store it
+        if m > length:
+            start, length = a, m
+    return s[start: start + length]
