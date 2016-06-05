@@ -9,13 +9,16 @@ from sympy.core.compatibility import range
 from sympy.utilities.iterables import (
     _partition, _set_partitions, binary_partitions, bracelets, capture,
     cartes, common_prefix, common_suffix, dict_merge, filter_symbols,
-    flatten, generate_bell, generate_derangements, generate_involutions,
+    flatten, generate_bell, generate_derangements,
+    generate_involutions,
     generate_oriented_forest, group, has_dups, kbins, minlex, multiset,
     multiset_combinations, multiset_partitions,
-    multiset_permutations, necklaces, numbered_symbols, ordered, partitions,
+    multiset_permutations, necklaces, numbered_symbols, ordered,
+    partitions,
     permutations, postfixes, postorder_traversal, prefixes, reshape,
-    rotate_left, rotate_right, runs, sift, subsets, take, topological_sort,
-    unflatten, uniq, variations)
+    rotate_left, rotate_right, runs, sift, subsets, take,
+    topological_sort, unflatten, uniq, variations,
+    replace_subsequence, find, split)
 from sympy.utilities.enumerative import (
     factoring_visitor, multiset_partitions_taocp )
 
@@ -92,6 +95,10 @@ def test_group():
     assert group([1, 1, 2, 2, 2, 1, 3, 3]) == [[1, 1], [2, 2, 2], [1], [3, 3]]
     assert group([1, 1, 2, 2, 2, 1, 3, 3], multiple=False) == [(1, 2),
                  (2, 3), (1, 1), (3, 2)]
+
+    f = lambda x: x <= 2
+    assert group([], f=f) == []
+    assert group([1, 2, 3, 1, 2, 3], f=f) == [[1, 2], [3], [1, 2], [3]]
 
 
 def test_subsets():
@@ -707,3 +714,80 @@ def test__partition():
         ['b', 'e'], ['a', 'c'], ['d']]
     output = (3, [1, 0, 1, 2, 0])
     assert _partition('abcde', *output) == [['b', 'e'], ['a', 'c'], ['d']]
+
+
+def test_replace_subsequence():
+    l = [1, 2, 3, 2, 3, 4]
+    replace_subsequence(l, [2, 3], 5)
+    assert l == [1, 5, 5, 4]
+
+    l = [1, 2, 1, 2, 3]
+    replace_subsequence(l, [1, 2, 3], 4)
+    assert l == [1, 2, 4]
+
+    l = [1, 2, 1, 2, 1, 2]
+    replace_subsequence(l, [1, 2], 3)
+    assert l == [3, 3, 3]
+
+    l = [1, 2, 1, 2, 1, 2]
+    replace_subsequence(l, [1, 2])
+    assert l == []
+
+    l = [1, 2, 1, 2, 1, 3]
+    replace_subsequence(l, [3])
+    assert l == [1, 2, 1, 2, 1]
+
+    l = [1, 2, 1, 2]
+    replace_subsequence(l, [1, 2], [1, 2])
+    assert l == [1, 2, 1, 2]
+
+    l = [1, 2, 1, 2]
+    replace_subsequence(l, [], [])
+    assert l == [1, 2, 1, 2]
+
+
+def test_lrs():
+    from sympy.utilities.iterables import lrs
+    assert lrs('a') == ''
+    assert lrs('aaa') == 'a'
+    assert lrs('aaaa') == 'aa'
+    assert lrs('aaaac') == 'aa'
+    assert lrs('babab') == 'ab'
+    assert lrs('bcbcb') == 'bc'
+    assert lrs('abcabd') == 'ab'
+    assert lrs('aabaabc') == 'aab'
+    assert lrs('abcxxabcxxabc') == 'abcxx'
+    assert lrs('aba$bxa$bab') == 'a$b'
+    assert lrs(*'aba$bxa$bab'.split('$')) == 'ab'
+    assert lrs('a$$$$$$aaaa') == '$$$'
+    assert lrs(*'a$$$$$$aaaa'.split('$')) == 'aa'
+    assert lrs(*split(list('a$$$$$$aaaabb'), list('a$'))) == ['b']
+    assert lrs(*'ab$aa$abba$'.split('$')) == 'ab'
+    assert lrs(*'baaabaaaa'.split('b')) == 'aaa'
+
+
+def test_split():
+    assert split('a') == ['a']
+    assert split('a', 'b') == ['a']
+    assert split('a', 'a') == ['', '']
+    assert split('ab', 'a') == ['', 'b']
+    assert split('cab', 'a') == ['c', 'b']
+    assert split('cab', 'b') == ['ca', '']
+    assert split('cab', 'c') == ['', 'ab']
+    assert split('ccab', 'c') == ['', 'ab']
+    assert split([1, 0, 2, 3, 4, 3], [3, 2]) == [[1, 0], [4], []]
+
+
+def test_find():
+    assert find('', 'a') == -1
+    assert find('a', 'a') == 0
+    assert find('aa', 'a') == 0
+    assert find('ba', 'a') == 1
+    assert find('aa', 'a', 1) == 1
+    assert find('aba', 'a', 1) == 2
+    assert find('aba', 'a', 3) == -1
+    assert find('aba', 'a', -1) == 2
+    assert find('aba', 'a', -2) == 2
+    assert find('aba', 'a', -3) == 0
+    assert find('aba', 'a', -4) == 0
+    assert find('aba', 'a', -5) == 0

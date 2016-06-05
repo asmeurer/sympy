@@ -7,8 +7,9 @@ from sympy.core.singleton import S
 from sympy.core.function import _coeff_isneg
 from sympy.core.exprtools import factor_terms
 from sympy.core.compatibility import iterable, range
-from sympy.utilities.iterables import filter_symbols, \
-    numbered_symbols, sift, topological_sort, ordered
+from sympy.utilities.iterables import (filter_symbols,
+    numbered_symbols, sift, topological_sort, ordered,
+    replace_subsequence)
 
 from . import cse_opts
 
@@ -681,18 +682,3 @@ def shortest_repeated_subsequence(S, ignore=(Marker,)):
     if shortest == oo:
         return None
     return S[x_shortest - shortest: x_shortest]
-
-
-def replace_subsequence(l, a, b):
-    """
-    Replace subsequence a with b in-place in l.
-
-    >>> from sympy.simplify.cse_main import replace_subsequence
-    >>> l = [1, 2, 1, 2, 3]
-    >>> replace_subsequence(l, [1, 2], 4)
-    >>> l
-    [4, 4, 3]
-    """
-    for i in range(len(l) - len(a) + 1):
-        if l[i:i+len(a)] == a:
-            l[i:i+len(a)] = [b]

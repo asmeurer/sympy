@@ -151,7 +151,7 @@ def reshape(seq, how):
     return type(seq)(rv)
 
 
-def group(seq, multiple=True):
+def group(seq, multiple=True, f=None):
     """
     Splits a sequence into a list of lists of equal, adjacent elements.
 
@@ -167,12 +167,25 @@ def group(seq, multiple=True):
     >>> group([1, 1, 3, 2, 2, 1], multiple=False)
     [(1, 2), (3, 1), (2, 2), (1, 1)]
 
+    For a sequence in which elements having a similar property
+    should be grouped together, an identity function can be
+    passed which defines whether an element of the sequence
+    belongs to the group or not.
+    
+    >>> group([1, 2, 3, 2, 3, 1, 4, 5, 2, 3], f=lambda x: x<4)
+    [[1, 2, 3, 2, 3, 1], [4, 5], [2, 3]]
+
     See Also
     ========
-    multiset
+    find, multiset, reshape, runs, split
     """
     if not seq:
         return []
+
+    if f is not None:
+        how = [[c] for b, c in group(
+            [f(i) for i in seq], multiple=False)]
+        return reshape(seq, how)[0]
 
     current, groups = [seq[0]], []
 
@@ -1935,6 +1948,10 @@ def runs(seq, op=gt):
     [[0, 1, 2], [2], [1, 4], [3], [2], [2]]
     >>> runs([0, 1, 2, 2, 1, 4, 3, 2, 2], op=ge)
     [[0, 1, 2, 2], [1, 4], [3], [2, 2]]
+
+    See Also
+    ========
+    find, group, multiset, split
     """
     cycles = []
     seq = iter(seq)
@@ -2084,3 +2101,191 @@ def kbins(l, k, ordered=None):
     else:
         raise ValueError(
             'ordered must be one of 00, 01, 10 or 11, not %s' % ordered)
+
+
+def replace_subsequence(l, a, b=[]):
+    """
+    Replace subsequence a with b in-place in l. If list
+    b has a length of 1 it may be passed as the element
+    instead of wrapping it as a list.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import replace_subsequence
+    >>> l = [1, 2, 1, 2, 3]
+    >>> replace_subsequence(l, [1, 2], 4)
+    >>> l
+    [4, 4, 3]
+    >>> l = [1, 2, 1, 2, 3]
+    >>> replace_subsequence(l, [1, 2], [2, 1])
+    >>> l
+    [2, 1, 2, 1, 3]
+    """
+    a = list(a)
+    if type(b) is not list:
+        b = [b]
+    if not a or a == b:
+        return
+    start = 0
+    while True:
+        try:
+            i = l.index(a[0], start)
+        except ValueError:
+            break
+        if l[i:i+len(a)] == a:
+            l[i:i+len(a)] = b
+            start = i + len(b)
+        else:
+            start = i + 1
+
+
+def find(sequence, subsequence, start=0):
+    """Return starting index at which subsequence appears in sequence
+    at or beyond the index corresponding to position `start`, else -1.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import find
+    >>> find('alabaster', 'ba')
+    3
+    >>> find('alabaster', 'a', 1)
+    2
+    >>> find('alabaster', 'e', -3)
+    7
+
+    See Also
+    ========
+    group, multiset, runs, split
+    """
+    # adapted from http://code.activestate.com/recipes/
+    # 117223-boyer-moore-horspool-string-searching/
+    from collections import defaultdict
+    m = len(subsequence)
+    n = len(sequence)
+    if m > n:
+        return -1
+    if start < 0:
+        start = max(-n, start) + n
+    skip = defaultdict(lambda: m)
+    for k in range(m - 1):
+        skip[subsequence[k]] = m - k - 1
+    k = m - 1 + start
+    while k < n:
+        j = m - 1
+        i = k
+        while j >= 0 and sequence[i] == subsequence[j]:
+            j -= 1
+            i -= 1
+        if j == -1:
+            return i + 1
+        k += skip[sequence[k]]
+    return -1
+
+
+def split(s, ignore=()):
+    """Split sequence into subsequences separated by elements that
+    are in ignore.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import split
+    >>> split('abbc', 'b')
+    ['a', 'c']
+
+    See Also
+    ========
+    find, group, multiset, runs
+    """
+    if not ignore:
+        return [s]
+    rv = []
+    i = 0
+    ignoring = False
+    for j in range(len(s)):
+        if s[j] in ignore:
+            if ignoring:
+                i = j
+            else:
+                rv.append(s[i:j])
+                ignoring = True
+        elif ignoring:
+            i = j
+            ignoring = False
+    if ignoring:
+        rv.append(s[j:j])
+    else:
+        rv.append(s[i:])
+    return rv
+
+
+def lrs(*s):
+    """Returns the longest repeated subsequence in `s` that is
+    lexically smaller than any other subsequences of the same
+    length, else returns None.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import lrs
+    >>> lrs('ba')
+    ''
+    >>> lrs('bab')
+    'b'
+    >>> lrs('babab')
+    'ab'
+    >>> lrs('ab', 'bca', 'bc')
+    'bc'
+
+    If there are characters that should be ignored,
+    split those out and process the fragments.
+
+    With strings, the `split` method can be used:
+
+    >>> lrs(*'ab$bca$bc'.split('$'))
+    'bc'
+
+    With sequences, the split function can be used:
+
+    >>> from sympy.utilities.iterables import split
+    >>> s = [(1, 2, -1, 2, 3, 4), (2, 3, 5, 0, 1, 2, 3, 0, 1, 2)]
+    >>> pieces = [i for si in s for i in split(si, [0, -1])]; pieces
+    [(1, 2), (2, 3, 4), (2, 3, 5), (1, 2, 3), (1, 2)]
+    >>> lrs(*pieces)
+    (1, 2)
+    """
+    # sort the indices by suffix from index j in sequence i
+    ix = [(i, j) for i in range(len(s)) for j in range(len(s[i]))]
+    ix.sort(key=lambda (i, j): s[i][j:])
+    start, length = (0, 0), 0
+    # the find the longest prefix shared by pairs of suffixes
+    for (i, a), (j, b) in zip(ix, ix[1:]):
+        # find common prefix
+        la = len(s[i]) - a
+        lb = len(s[j]) - b
+        for m in range(min(la, lb)):
+            if s[i][a + m] != s[j][b + m]:
+                break
+        else:
+            # they all matched
+            m += 1
+        if i == j and m > abs(b - a):  # matches overlap in s[i]
+            # mark the position of the middle of the the longer subsequence
+            if la > lb:
+                m = la//2
+            else:
+                a = b
+                m = lb//2
+            # trim the subsequence until it appears as a match in the
+            # latter half of the longer subsequence
+            while m and m > length:
+                if find(s[i], s[i][a: a + m], a + m) != -1:
+                    break
+                m -= 1
+        # if it's the longest so far, store it
+        if m > length:
+            start, length = (i, a), m
+    i, a = start
+    return s[i][a: a + length]
