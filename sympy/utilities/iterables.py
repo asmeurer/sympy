@@ -2209,41 +2209,6 @@ def split(s, ignore=()):
     return rv
 
 
-def _longest_run(s, ignore=()):
-    """Return the location and length of longest run, else 0, 0. Runs
-    will never contain an element of `ignore`.
-
-    Examples
-    ========
-
-    >>> from sympy.utilities.iterables import _longest_run as longest_run
-    >>> longest_run('', '')
-    (0, 0)
-    >>> longest_run('abb', '')
-    (1, 2)
-    >>> longest_run([1, 3, 3, 3, 2, 2], [3])
-    (4, 2)
-    """
-    if not s:
-        return 0, 0
-    i = j = 0
-    at = longest = 0
-    for j in range(1, len(s)):
-        if s[j] != s[j-1]:
-            if j - i > longest:
-                at = i
-                longest = j - i
-            i = j
-        if s[j] in ignore:
-            i = j
-    if s[j] not in ignore:
-        length = len(s) - i
-        if length > longest:
-            at = i
-            longest = length
-    return at, longest
-
-
 def lrs(*s):
     """Returns the longest repeated subsequence in `s` that is
     lexically smaller than any other subsequences of the same
@@ -2282,15 +2247,7 @@ def lrs(*s):
     # sort the indices by suffix from index j in sequence i
     ix = [(i, j) for i in range(len(s)) for j in range(len(s[i]))]
     ix.sort(key=lambda (i, j): s[i][j:])
-    # initialize by the longest run (which is not handled by the
-    # code below) else start with 0, 0
     start, length = (0, 0), 0
-    for i in range(len(s)):
-        st, le = _longest_run(s[i])
-        if le > length:
-            start = i, st
-            length = le
-    length = length//2
     # the find the longest prefix shared by pairs of suffixes
     for (i, a), (j, b) in zip(ix, ix[1:]):
         # find common prefix

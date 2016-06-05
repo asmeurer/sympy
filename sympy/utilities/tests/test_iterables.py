@@ -18,7 +18,7 @@ from sympy.utilities.iterables import (
     permutations, postfixes, postorder_traversal, prefixes, reshape,
     rotate_left, rotate_right, runs, sift, subsets, take,
     topological_sort, unflatten, uniq, variations,
-    replace_subsequence, find, split, _longest_run)
+    replace_subsequence, find, split)
 from sympy.utilities.enumerative import (
     factoring_visitor, multiset_partitions_taocp )
 
@@ -787,15 +787,3 @@ def test_find():
     assert find('aba', 'a', -3) == 0
     assert find('aba', 'a', -4) == 0
     assert find('aba', 'a', -5) == 0
-
-
-def test__longest_run():
-    longest_run = _longest_run
-    assert longest_run('', '') == (0, 0)
-    assert longest_run('abb', '') == (1, 2)
-    assert longest_run('caaabb', '') == (1, 3)
-    assert longest_run('$', '$') == (0, 0)
-    assert longest_run('aa$$$bbb', '$') == (5, 3)
-    assert longest_run('aa$$$b', '$') == (0, 2)
-    assert longest_run('aa$$$b', 'a') == (2, 3)
-    assert longest_run('aa$$$b', 'ab') == (2, 3)
