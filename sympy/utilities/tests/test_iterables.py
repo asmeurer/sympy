@@ -754,12 +754,12 @@ def test_lrs():
     assert lrs('aabaabc') == 'aab'
     assert lrs('abcxxabcxxabc') == 'abcxx'
     assert lrs('aba$bxa$bab') == 'a$b'
-    assert lrs('aba$bxa$bab', ignore=('$',)) == 'ab'
+    assert lrs(*'aba$bxa$bab'.split('$')) == 'ab'
     assert lrs('a$$$$$$aaaa') == '$$$'
-    assert lrs('a$$$$$$aaaa', ignore=('$',)) == 'aa'
-    assert lrs('a$$$$$$aaaabb', ignore=('$', 'a')) == 'b'
-    assert lrs('ab$aa$abba$', ignore=('$',)) == 'ab'
-    assert lrs('baaabaaaa', ignore='b') == 'aaa'
+    assert lrs(*'a$$$$$$aaaa'.split('$')) == 'aa'
+    assert lrs(*split(list('a$$$$$$aaaabb'), list('a$'))) == ['b']
+    assert lrs(*'ab$aa$abba$'.split('$')) == 'ab'
+    assert lrs(*'baaabaaaa'.split('b')) == 'aaa'
 
 
 def test_split():
@@ -771,21 +771,22 @@ def test_split():
     assert split('cab', 'b') == ['ca', '']
     assert split('cab', 'c') == ['', 'ab']
     assert split('ccab', 'c') == ['', 'ab']
+    assert split([1, 0, 2, 3, 4, 3], [3, 2]) == [[1, 0], [4], []]
 
 
 def test_find():
-    assert find('a', '') == -1
+    assert find('', 'a') == -1
     assert find('a', 'a') == 0
-    assert find('a', 'aa') == 0
-    assert find('a', 'ba') == 1
-    assert find('a', 'aa', 1) == 1
-    assert find('a', 'aba', 1) == 2
-    assert find('a', 'aba', 3) == -1
-    assert find('a', 'aba', -1) == 2
-    assert find('a', 'aba', -2) == 2
-    assert find('a', 'aba', -3) == 0
-    assert find('a', 'aba', -4) == 0
-    assert find('a', 'aba', -5) == 0
+    assert find('aa', 'a') == 0
+    assert find('ba', 'a') == 1
+    assert find('aa', 'a', 1) == 1
+    assert find('aba', 'a', 1) == 2
+    assert find('aba', 'a', 3) == -1
+    assert find('aba', 'a', -1) == 2
+    assert find('aba', 'a', -2) == 2
+    assert find('aba', 'a', -3) == 0
+    assert find('aba', 'a', -4) == 0
+    assert find('aba', 'a', -5) == 0
 
 
 def test__longest_run():

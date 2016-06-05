@@ -2128,8 +2128,20 @@ def replace_subsequence(l, a, b=[]):
             start = i + 1
 
 
-def find(subsequence, sequence, start=0):
-    """Return starting index at which subsequence appears in sequence else -1.
+def find(sequence, subsequence, start=0):
+    """Return starting index at which subsequence appears in sequence
+    at or beyond the index corresponding to position `start`, else -1.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import find
+    >>> find('alabaster', 'ba')
+    3
+    >>> find('alabaster', 'a', 1)
+    2
+    >>> find('alabaster', 'e', -3)
+    7
 
     See Also
     ========
@@ -2232,12 +2244,10 @@ def _longest_run(s, ignore=()):
     return at, longest
 
 
-def lrs(s, ignore=()):
+def lrs(*s):
     """Returns the longest repeated subsequence in `s` that is
     lexically smaller than any other subsequences of the same
-    length. If there is no repeated subsequence then a null
-    sequence is returned. Subsequences returned will not
-    contain any element in ignore.
+    length, else returns None.
 
     Examples
     ========
@@ -2249,51 +2259,64 @@ def lrs(s, ignore=()):
     'b'
     >>> lrs('babab')
     'ab'
-    >>> lrs('a$bca$bc')
-    'a$bc'
-    >>> lrs('a$bca$bc', ignore=['$'])
+    >>> lrs('ab', 'bca', 'bc')
     'bc'
-    >>> lrs('a$bca$bc', ignore=list('$b'))
-    'a'
+
+    If there are characters that should be ignored,
+    split those out and process the fragments.
+
+    With strings, the `split` method can be used:
+
+    >>> lrs(*'ab$bca$bc'.split('$'))
+    'bc'
+
+    With sequences, the split function can be used:
+
+    >>> from sympy.utilities.iterables import split
+    >>> s = [(1, 2, -1, 2, 3, 4), (2, 3, 5, 0, 1, 2, 3, 0, 1, 2)]
+    >>> pieces = [i for si in s for i in split(si, [0, -1])]; pieces
+    [(1, 2), (2, 3, 4), (2, 3, 5), (1, 2, 3), (1, 2)]
+    >>> lrs(*pieces)
+    (1, 2)
     """
-    # trivial case
-    if len(s) < 2:
-        return s[:0]
-    # sort the indices by suffix from that index
-    ix = list(range(len(s)))
-    ix.sort(key=lambda j: s[j:])
+    # sort the indices by suffix from index j in sequence i
+    ix = [(i, j) for i in range(len(s)) for j in range(len(s[i]))]
+    ix.sort(key=lambda (i, j): s[i][j:])
     # initialize by the longest run (which is not handled by the
     # code below) else start with 0, 0
-    start, length = _longest_run(s, ignore)
+    start, length = (0, 0), 0
+    for i in range(len(s)):
+        st, le = _longest_run(s[i])
+        if le > length:
+            start = i, st
+            length = le
     length = length//2
     # the find the longest prefix shared by pairs of suffixes
-    for a, b in zip(ix, ix[1:]):
-        # put leftmost index in `a`
-        if a > b:
-            a, b = b, a
+    for (i, a), (j, b) in zip(ix, ix[1:]):
         # find common prefix
-        for m in range(len(s) - b):
-            A, B = s[a + m], s[b + m]
-            if A != B or A in ignore or B in ignore:
+        la = len(s[i]) - a
+        lb = len(s[j]) - b
+        for m in range(min(la, lb)):
+            if s[i][a + m] != s[j][b + m]:
                 break
         else:
             # they all matched
             m += 1
-        if m > b - a:  # matches overlap in s
+        if i == j and m > abs(b - a):  # matches overlap in s[i]
             # mark the position of the middle of the the longer subsequence
-            m = (len(s) - a)//2
-            # test only up to first ignore element
-            for i in range(m):
-                if s[a + i] in ignore:
-                    m = i
-                    break
+            if la > lb:
+                m = la//2
+            else:
+                a = b
+                m = lb//2
             # trim the subsequence until it appears as a match in the
-            # latter half of s[A:]
+            # latter half of the longer subsequence
             while m and m > length:
-                if find(s[a: a + m], s, a + m) != -1:
+                if find(s[i], s[i][a: a + m], a + m) != -1:
                     break
                 m -= 1
         # if it's the longest so far, store it
         if m > length:
-            start, length = a, m
-    return s[start: start + length]
+            start, length = (i, a), m
+    i, a = start
+    return s[i][a: a + length]

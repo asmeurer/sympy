@@ -4,8 +4,8 @@ from sympy import (Add, Pow, Symbol, exp, sqrt, symbols, sympify, cse,
                    Matrix, S, cos, sin, Eq, Function, Tuple, CRootOf,
                    IndexedBase, Idx, Piecewise, O, Mul)
 from sympy.simplify.cse_opts import sub_pre, sub_post
-from sympy.simplify.cse_main import (replace_subsequence,
-    shortest_repeated_subsequence, match_common_args, match_common_args_nc)
+from sympy.simplify.cse_main import (shortest_repeated_subsequence,
+    match_common_args, match_common_args_nc)
 from sympy.functions.special.hyper import meijerg
 from sympy.simplify import cse_main, cse_opts
 from sympy.utilities.pytest import XFAIL, raises
@@ -441,20 +441,6 @@ def test_issue_8891():
         ans = ([(x0, x + y)], [x0, cls([[x0, 0], [0, 0]])])
         assert res == ans
         assert isinstance(res[1][-1], cls)
-
-def test_replace_subsequence():
-    l = [1, 2, 3, 2, 3, 4]
-    replace_subsequence(l, [2, 3], 5)
-    assert l == [1, 5, 5, 4]
-
-    l = [1, 2, 1, 2, 3]
-    replace_subsequence(l, [1, 2, 3], 4)
-    assert l == [1, 2, 4]
-
-    l = [1, 2, 1, 2, 1, 2]
-    replace_subsequence(l, [1, 2], 3)
-    assert l == [3, 3, 3]
-
 
 def test_shortest_repeated_subsequence():
     a, b, c = 'aabacde', 'aabade', 'abcde'
