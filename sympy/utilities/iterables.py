@@ -167,10 +167,30 @@ def group(seq, multiple=True):
     >>> group([1, 1, 3, 2, 2, 1], multiple=False)
     [(1, 2), (3, 1), (2, 2), (1, 1)]
 
+    For a sequence in which elements having a similar property
+    should be grouped together, a two step process can be used:
+
+    >>> s = [1, 2, 3, 2, 3, 1, 4, 5, 2, 3]
+
+    First define a sequence of truth values for the elements. e.g.
+    to group elements that are less than 4 together:
+
+    >>> t = [i < 4 for i in s]
+
+    Then group those values:
+
+    >>> group(t, multiple=False)
+    [(True, 6), (False, 2), (True, 2)]
+
+    And use those counts to reshape the original sequence:
+
+    >>> from sympy.utilities.iterables import reshape
+    >>> reshape(s, [[c] for b, c in _])
+    [[[1, 2, 3, 2, 3, 1], [4, 5], [2, 3]]]
 
     See Also
     ========
-    find, multiset, runs, split
+    find, multiset, reshape, runs, split
     """
     if not seq:
         return []
