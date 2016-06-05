@@ -151,7 +151,7 @@ def reshape(seq, how):
     return type(seq)(rv)
 
 
-def group(seq, multiple=True):
+def group(seq, multiple=True, f=None):
     """
     Splits a sequence into a list of lists of equal, adjacent elements.
 
@@ -168,25 +168,12 @@ def group(seq, multiple=True):
     [(1, 2), (3, 1), (2, 2), (1, 1)]
 
     For a sequence in which elements having a similar property
-    should be grouped together, a two step process can be used:
-
-    >>> s = [1, 2, 3, 2, 3, 1, 4, 5, 2, 3]
-
-    First define a sequence of truth values for the elements. e.g.
-    to group elements that are less than 4 together:
-
-    >>> t = [i < 4 for i in s]
-
-    Then group those values:
-
-    >>> group(t, multiple=False)
-    [(True, 6), (False, 2), (True, 2)]
-
-    And use those counts to reshape the original sequence:
-
-    >>> from sympy.utilities.iterables import reshape
-    >>> reshape(s, [[c] for b, c in _])
-    [[[1, 2, 3, 2, 3, 1], [4, 5], [2, 3]]]
+    should be grouped together, an identity function can be
+    passed which defines whether an element of the sequence
+    belongs to the group or not.
+    
+    >>> group([1, 2, 3, 2, 3, 1, 4, 5, 2, 3], f=lambda x: x<4)
+    [[1, 2, 3, 2, 3, 1], [4, 5], [2, 3]]
 
     See Also
     ========
@@ -194,6 +181,11 @@ def group(seq, multiple=True):
     """
     if not seq:
         return []
+
+    if f is not None:
+        how = [[c] for b, c in group(
+            [f(i) for i in seq], multiple=False)]
+        return reshape(seq, how)[0]
 
     current, groups = [seq[0]], []
 

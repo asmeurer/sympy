@@ -96,6 +96,10 @@ def test_group():
     assert group([1, 1, 2, 2, 2, 1, 3, 3], multiple=False) == [(1, 2),
                  (2, 3), (1, 1), (3, 2)]
 
+    f = lambda x: x <= 2
+    assert group([], f=f) == []
+    assert group([1, 2, 3, 1, 2, 3], f=f) == [[1, 2], [3], [1, 2], [3]]
+
 
 def test_subsets():
     # combinations
