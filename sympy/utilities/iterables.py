@@ -2191,7 +2191,7 @@ def lrs(s):
     ix = list(range(len(s)))
     ix.sort(key=lambda j: s[j:])
     # initialize by the longest run (which is not handled by the
-    # code below, else start with 0, 0
+    # code below) else start with 0, 0
     start, length = longest_run(s)
     length = length//2
     # the find the longest prefix shared by pairs of suffixes
