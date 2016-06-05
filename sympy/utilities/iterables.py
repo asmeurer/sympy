@@ -167,9 +167,10 @@ def group(seq, multiple=True):
     >>> group([1, 1, 3, 2, 2, 1], multiple=False)
     [(1, 2), (3, 1), (2, 2), (1, 1)]
 
+
     See Also
     ========
-    multiset
+    find, multiset, runs, split
     """
     if not seq:
         return []
@@ -1935,6 +1936,10 @@ def runs(seq, op=gt):
     [[0, 1, 2], [2], [1, 4], [3], [2], [2]]
     >>> runs([0, 1, 2, 2, 1, 4, 3, 2, 2], op=ge)
     [[0, 1, 2, 2], [1, 4], [3], [2, 2]]
+
+    See Also
+    ========
+    find, group, multiset, split
     """
     cycles = []
     seq = iter(seq)
@@ -2125,6 +2130,10 @@ def replace_subsequence(l, a, b=[]):
 
 def find(subsequence, sequence, start=0):
     """Return starting index at which subsequence appears in sequence else -1.
+
+    See Also
+    ========
+    group, multiset, runs, split
     """
     # adapted from http://code.activestate.com/recipes/
     # 117223-boyer-moore-horspool-string-searching/
@@ -2151,8 +2160,60 @@ def find(subsequence, sequence, start=0):
     return -1
 
 
-def longest_run(s):
-    """Return the location and length of longest run, else 0, 0"""
+def split(s, ignore=()):
+    """Split sequence into subsequences separated by elements that
+    are in ignore.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import split
+    >>> split('abbc', 'b')
+    ['a', 'c']
+
+    See Also
+    ========
+    find, group, multiset, runs
+    """
+    if not ignore:
+        return [s]
+    rv = []
+    i = 0
+    ignoring = False
+    for j in range(len(s)):
+        if s[j] in ignore:
+            if ignoring:
+                i = j
+            else:
+                rv.append(s[i:j])
+                ignoring = True
+        elif ignoring:
+            i = j
+            ignoring = False
+    if ignoring:
+        rv.append(s[j:j])
+    else:
+        rv.append(s[i:])
+    return rv
+
+
+def _longest_run(s, ignore=()):
+    """Return the location and length of longest run, else 0, 0. Runs
+    will never contain an element of `ignore`.
+
+    Examples
+    ========
+
+    >>> from sympy.utilities.iterables import _longest_run as longest_run
+    >>> longest_run('', '')
+    (0, 0)
+    >>> longest_run('abb', '')
+    (1, 2)
+    >>> longest_run([1, 3, 3, 3, 2, 2], [3])
+    (4, 2)
+    """
+    if not s:
+        return 0, 0
     i = j = 0
     at = longest = 0
     for j in range(1, len(s)):
@@ -2161,17 +2222,22 @@ def longest_run(s):
                 at = i
                 longest = j - i
             i = j
-    if s[j] == s[j-1] and j - i > longest:
-        at = i
-        longest = j - i + 1
+        if s[j] in ignore:
+            i = j
+    if s[j] not in ignore:
+        length = len(s) - i
+        if length > longest:
+            at = i
+            longest = length
     return at, longest
 
 
-def lrs(s):
+def lrs(s, ignore=()):
     """Returns the longest repeated subsequence in `s` that is
     lexically smaller than any other subsequences of the same
     length. If there is no repeated subsequence then a null
-    sequence is returned.
+    sequence is returned. Subsequences returned will not
+    contain any element in ignore.
 
     Examples
     ========
@@ -2183,6 +2249,12 @@ def lrs(s):
     'b'
     >>> lrs('babab')
     'ab'
+    >>> lrs('a$bca$bc')
+    'a$bc'
+    >>> lrs('a$bca$bc', ignore=['$'])
+    'bc'
+    >>> lrs('a$bca$bc', ignore=list('$b'))
+    'a'
     """
     # trivial case
     if len(s) < 2:
@@ -2192,7 +2264,7 @@ def lrs(s):
     ix.sort(key=lambda j: s[j:])
     # initialize by the longest run (which is not handled by the
     # code below) else start with 0, 0
-    start, length = longest_run(s)
+    start, length = _longest_run(s, ignore)
     length = length//2
     # the find the longest prefix shared by pairs of suffixes
     for a, b in zip(ix, ix[1:]):
@@ -2201,15 +2273,22 @@ def lrs(s):
             a, b = b, a
         # find common prefix
         for m in range(len(s) - b):
-            if s[a + m] != s[b + m]:
+            A, B = s[a + m], s[b + m]
+            if A != B or A in ignore or B in ignore:
                 break
         else:
             # they all matched
             m += 1
         if m > b - a:  # matches overlap in s
+            # mark the position of the middle of the the longer subsequence
+            m = (len(s) - a)//2
+            # test only up to first ignore element
+            for i in range(m):
+                if s[a + i] in ignore:
+                    m = i
+                    break
             # trim the subsequence until it appears as a match in the
             # latter half of s[A:]
-            m = (len(s) - a)//2
             while m and m > length:
                 if find(s[a: a + m], s, a + m) != -1:
                     break

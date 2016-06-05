@@ -9,13 +9,16 @@ from sympy.core.compatibility import range
 from sympy.utilities.iterables import (
     _partition, _set_partitions, binary_partitions, bracelets, capture,
     cartes, common_prefix, common_suffix, dict_merge, filter_symbols,
-    flatten, generate_bell, generate_derangements, generate_involutions,
+    flatten, generate_bell, generate_derangements,
+    generate_involutions,
     generate_oriented_forest, group, has_dups, kbins, minlex, multiset,
     multiset_combinations, multiset_partitions,
-    multiset_permutations, necklaces, numbered_symbols, ordered, partitions,
+    multiset_permutations, necklaces, numbered_symbols, ordered,
+    partitions,
     permutations, postfixes, postorder_traversal, prefixes, reshape,
-    rotate_left, rotate_right, runs, sift, subsets, take, topological_sort,
-    unflatten, uniq, variations, replace_subsequence)
+    rotate_left, rotate_right, runs, sift, subsets, take,
+    topological_sort, unflatten, uniq, variations,
+    replace_subsequence, find, split, _longest_run)
 from sympy.utilities.enumerative import (
     factoring_visitor, multiset_partitions_taocp )
 
@@ -750,10 +753,27 @@ def test_lrs():
     assert lrs('abcabd') == 'ab'
     assert lrs('aabaabc') == 'aab'
     assert lrs('abcxxabcxxabc') == 'abcxx'
+    assert lrs('aba$bxa$bab') == 'a$b'
+    assert lrs('aba$bxa$bab', ignore=('$',)) == 'ab'
+    assert lrs('a$$$$$$aaaa') == '$$$'
+    assert lrs('a$$$$$$aaaa', ignore=('$',)) == 'aa'
+    assert lrs('a$$$$$$aaaabb', ignore=('$', 'a')) == 'b'
+    assert lrs('ab$aa$abba$', ignore=('$',)) == 'ab'
+    assert lrs('baaabaaaa', ignore='b') == 'aaa'
+
+
+def test_split():
+    assert split('a') == ['a']
+    assert split('a', 'b') == ['a']
+    assert split('a', 'a') == ['', '']
+    assert split('ab', 'a') == ['', 'b']
+    assert split('cab', 'a') == ['c', 'b']
+    assert split('cab', 'b') == ['ca', '']
+    assert split('cab', 'c') == ['', 'ab']
+    assert split('ccab', 'c') == ['', 'ab']
 
 
 def test_find():
-    from sympy.utilities.iterables import find
     assert find('a', '') == -1
     assert find('a', 'a') == 0
     assert find('a', 'aa') == 0
@@ -766,3 +786,15 @@ def test_find():
     assert find('a', 'aba', -3) == 0
     assert find('a', 'aba', -4) == 0
     assert find('a', 'aba', -5) == 0
+
+
+def test__longest_run():
+    longest_run = _longest_run
+    assert longest_run('', '') == (0, 0)
+    assert longest_run('abb', '') == (1, 2)
+    assert longest_run('caaabb', '') == (1, 3)
+    assert longest_run('$', '$') == (0, 0)
+    assert longest_run('aa$$$bbb', '$') == (5, 3)
+    assert longest_run('aa$$$b', '$') == (0, 2)
+    assert longest_run('aa$$$b', 'a') == (2, 3)
+    assert longest_run('aa$$$b', 'ab') == (2, 3)
