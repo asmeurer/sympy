@@ -214,6 +214,8 @@ class Printer(object):
         # called. See StrPrinter._print_Float() for an example of usage
         self._print_level = 0
 
+        self._printmethod_cache = {}
+
     @classmethod
     def set_global_settings(cls, **settings):
         """Set system-wide printing settings. """
@@ -251,13 +253,19 @@ class Printer(object):
 
             # See if the class of expr is known, or if one of its super
             # classes is known, and use that print function
-            for cls in type(expr).__mro__:
-                printmethod = '_print_' + cls.__name__
-                if hasattr(self, printmethod):
-                    return getattr(self, printmethod)(expr, *args, **kwargs)
+            t = type(expr)
+            if t not in self._printmethod_cache:
+                for cls in type(expr).__mro__:
+                    printmethod = '_print_' + cls.__name__
+                    if hasattr(self, printmethod):
+                        self._printmethod_cache[t] = getattr(self, printmethod)
+                        break
+                else: # nobreak
+                    # Unknown object, fall back to the emptyPrinter.
+                    self._printmethod_cache[t] = self.emptyPrinter
 
-            # Unknown object, fall back to the emptyPrinter.
-            return self.emptyPrinter(expr)
+            return self._printmethod_cache[t](expr, *args, **kwargs)
+
         finally:
             self._print_level -= 1
 
