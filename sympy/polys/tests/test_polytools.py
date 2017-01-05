@@ -2121,26 +2121,31 @@ def test_shift():
 
 def test_transform():
     # Also test that 3-way unification is done correctly
-    assert Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1), Poly(x - 1)) == \
-        Poly(4, x) == \
+    t = Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1), Poly(x - 1))
+    assert t == Poly(4, x) == \
         cancel((x - 1)**2*(x**2 - 2*x + 1).subs(x, (x + 1)/(x - 1)))
+    assert t.domain == ZZ
 
-    assert Poly(x**2 - x/2 + 1, x).transform(Poly(x + 1), Poly(x - 1)) == \
-        Poly(3*x**2/2 + S(5)/2, x) == \
+    t = Poly(x**2 - x/2 + 1, x).transform(Poly(x + 1), Poly(x - 1))
+    assert t == Poly(3*x**2/2 + S(5)/2, x) == \
         cancel((x - 1)**2*(x**2 - x/2 + 1).subs(x, (x + 1)/(x - 1)))
+    assert t.domain == QQ
 
-    assert Poly(x**2 - 2*x + 1, x).transform(Poly(x + S(1)/2), Poly(x - 1)) == \
-        Poly(S(9)/4, x) == \
+    t = Poly(x**2 - 2*x + 1, x).transform(Poly(x + S(1)/2), Poly(x - 1))
+    assert t == Poly(S(9)/4, x) == \
         cancel((x - 1)**2*(x**2 - 2*x + 1).subs(x, (x + S(1)/2)/(x - 1)))
+    assert t.domain == QQ
 
-    assert Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1), Poly(x - S(1)/2)) == \
-        Poly(S(9)/4, x) == \
+    t = Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1), Poly(x - S(1)/2))
+    assert t == Poly(S(9)/4, x) == \
         cancel((x - S(1)/2)**2*(x**2 - 2*x + 1).subs(x, (x + 1)/(x - S(1)/2)))
+    assert t.domain == QQ
 
     # Unify ZZ, QQ, and RR
-    assert Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1.0), Poly(x - S(1)/2)) == \
-        Poly(9/4, x) == \
+    t = Poly(x**2 - 2*x + 1, x).transform(Poly(x + 1.0), Poly(x - S(1)/2))
+    assert t == Poly(9/4, x) == \
         cancel((x - S(1)/2)**2*(x**2 - 2*x + 1).subs(x, (x + 1.0)/(x - S(1)/2)))
+    assert t.domain == RR
 
     raises(ValueError, lambda: Poly(x*y).transform(Poly(x + 1), Poly(x - 1)))
     raises(ValueError, lambda: Poly(x).transform(Poly(y + 1), Poly(x - 1)))
