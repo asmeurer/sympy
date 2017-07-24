@@ -106,27 +106,27 @@ matrix:
       sudo: true
       dist: trusty
 
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_DOCTESTS="true"
         - FASTCACHE="false"
         - TEST_SETUP="true"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="1/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="2/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="3/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="4/4"
@@ -142,27 +142,27 @@ matrix:
       sudo: true
       dist: trusty
     # PyPy randomly fails because of some PyPy bugs (Fatal RPython error: AssertionError)
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_DOCTESTS="true"
         - FASTCACHE="false"
         - TEST_SETUP="true"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="1/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="2/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="3/4"
         - FASTCACHE="false"
-    - python: "pypy"
+    - python: "pypy3"
       env:
         - TEST_SYMPY="true"
         - SPLIT="4/4"
@@ -229,8 +229,8 @@ before_install:
     fi
 install:
 #The install cycle below is to test installation on systems without setuptools.
-  - if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ];
-      then virtualenv -p pypy ~/.venv;
+  - if [ "$TRAVIS_PYTHON_VERSION" = "pypy3" ];
+      then virtualenv -p pypy3 ~/.venv;
            . ~/.venv/bin/activate;
     fi
   - if [[ "${TEST_SAGE}" != "true" ]]; then
