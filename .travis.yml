@@ -111,56 +111,26 @@ matrix:
         - TEST_DOCTESTS="true"
         - FASTCACHE="false"
         - TEST_SETUP="true"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="1/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="2/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="3/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="4/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
 
   allow_failures:
     # The apt installation of sage fails sometimes
@@ -177,56 +147,26 @@ matrix:
         - TEST_DOCTESTS="true"
         - FASTCACHE="false"
         - TEST_SETUP="true"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="1/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="2/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="3/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
     - python: "pypy"
       env:
         - TEST_SYMPY="true"
         - SPLIT="4/4"
         - FASTCACHE="false"
-      addons:
-        apt:
-          sources:
-            - pypy
-          packages:
-            - pypy
 
 before_install:
   - if [[ "${FASTCACHE}" != "false" ]]; then
