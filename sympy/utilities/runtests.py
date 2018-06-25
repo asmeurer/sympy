@@ -148,12 +148,13 @@ def sys_normcase(f):
 
 def setup_pprint():
     from sympy import pprint_use_unicode, init_printing
+    from sympy.printing.str import ReprPrinter
 
     # force pprint to be in ascii mode in doctests
     pprint_use_unicode(False)
 
     # hook our nice, hash-stable strprinter
-    init_printing(pretty_print=False)
+    init_printing(pretty_print=False, str_printer=ReprPrinter().doprint)
 
 
 def run_in_subprocess_with_hash_randomization(

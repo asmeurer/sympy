@@ -852,6 +852,12 @@ class StrReprPrinter(StrPrinter):
     def _print_str(self, s):
         return repr(s)
 
+class ReprPrinter(StrPrinter):
+    """
+    A version of StrPrinter that fallsback to repr() instead of str()
+    """
+    def emptyPrinter(self, expr):
+        return repr(expr)
 
 def sstrrepr(expr, **settings):
     """return expr in mixed str/repr form
