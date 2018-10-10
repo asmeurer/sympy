@@ -181,6 +181,10 @@ fi
 
 # This is separate because it needs to be run with subprocess=False
 if [[ "${TEST_OPT_DEPENDENCY}" == *"matplotlib"* ]]; then
+    cat <<EOF | python
+import matplotlib
+print(matplotlib.__version__)
+EOF
     cat << EOF | python
 print('Testing MATPLOTLIB')
 # Set matplotlib so that it works correctly in headless Travis. We have to do
