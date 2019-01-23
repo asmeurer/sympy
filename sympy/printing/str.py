@@ -859,6 +859,9 @@ class ReprPrinter(StrPrinter):
     def emptyPrinter(self, expr):
         return repr(expr)
 
+    _print_str = _print_list = _print_tuple = _print_dict = _print_set = \
+    _print_int = _print_float = _print_mpq = emptyPrinter
+
 def sstrrepr(expr, **settings):
     """return expr in mixed str/repr form
 
