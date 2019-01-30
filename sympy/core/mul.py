@@ -237,6 +237,12 @@ class Mul(Expr, AssocOp):
             # O(x)
             if o.is_Order:
                 o, order_symbols = o.as_expr_variables(order_symbols)
+            elif isinstance(o, MatrixExpr):
+                if isinstance(coeff, MatrixExpr):
+                    coeff *= o
+                else:
+                    coeff = o.__mul__(coeff)
+                continue
 
             # Mul([...])
             if o.is_Mul:
@@ -271,13 +277,6 @@ class Mul(Expr, AssocOp):
 
             elif isinstance(o, AccumBounds):
                 coeff = o.__mul__(coeff)
-                continue
-
-            elif isinstance(o, MatrixExpr):
-                if isinstance(coeff, MatrixExpr):
-                    coeff *= o
-                else:
-                    coeff = o.__mul__(coeff)
                 continue
 
             elif o is S.ComplexInfinity:
