@@ -273,6 +273,8 @@ class Mul(Expr, AssocOp):
                     if coeff is S.NaN:
                         # we know for sure the result will be nan
                         return [S.NaN], [], None
+                elif isinstance(coeff, MatrixExpr):
+                    return [o*coeff], [], None
                 continue
 
             elif isinstance(o, AccumBounds):
