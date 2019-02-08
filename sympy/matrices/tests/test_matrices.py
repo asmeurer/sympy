@@ -1,7 +1,7 @@
 import random
 
 from sympy import (
-    Abs, Add, E, Float, I, Integer, Max, Min, N, Poly, Pow, PurePoly, Rational,
+    Abs, Add, E, Float, I, Integer, Max, Min, Mul, N, Poly, Pow, PurePoly, Rational,
     S, Symbol, cos, exp, expand_mul, oo, pi, signsimp, simplify, sin, sqrt, symbols,
     sympify, trigsimp, tan, sstr, diff, Function)
 from sympy.matrices.matrices import (ShapeError, MatrixError,
@@ -3258,3 +3258,7 @@ def test_case_6913():
     a = Symbol("a")
     a = m[0, 0]>0
     assert str(a) == 'm[0, 0] > 0'
+
+def test_issue_15528():
+    x = Symbol("x")
+    assert Mul(Matrix([[3]]), x).subs(x, 2.0) == Matrix([[6.0]])
