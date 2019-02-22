@@ -92,6 +92,8 @@ class Mul(Expr, AssocOp):
 
     __slots__ = []
 
+    _constructor_postprocessor_mapping = {}
+
     is_Mul = True
 
     @classmethod

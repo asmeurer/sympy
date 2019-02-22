@@ -585,10 +585,8 @@ def get_postprocessor(cls):
         return mat_class(cls._from_args(nonmatrices), *matrices).doit(deep=False)
     return _postprocessor
 
-Basic._constructor_postprocessor_mapping[MatrixExpr] = {
-    "Mul": [get_postprocessor(Mul)],
-    "Add": [get_postprocessor(Add)],
-}
+Mul._constructor_postprocessor_mapping[MatrixExpr] = [get_postprocessor(Mul)]
+Add._constructor_postprocessor_mapping[MatrixExpr] = [get_postprocessor(Add)]
 
 def _matrix_derivative(expr, x):
     from sympy import Derivative

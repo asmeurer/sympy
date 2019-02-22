@@ -73,6 +73,8 @@ class Add(Expr, AssocOp):
 
     __slots__ = []
 
+    _constructor_postprocessor_mapping = {}
+
     is_Add = True
 
     @classmethod

@@ -1,4 +1,4 @@
-from sympy import Symbol, Mul, symbols, Basic
+from sympy import Symbol, Mul, symbols, Basic, Add, Pow
 
 from sympy.utilities.pytest import XFAIL
 
@@ -7,12 +7,9 @@ class SymbolInMulOnce(Symbol):
     pass
 
 
-Basic._constructor_postprocessor_mapping[SymbolInMulOnce] = {
-    "Mul": [lambda x: x],
-    "Pow": [lambda x: x.base if isinstance(x.base, SymbolInMulOnce) else x],
-    "Add": [lambda x: x],
-}
-
+Mul._constructor_postprocessor_mapping[SymbolInMulOnce] = [lambda x: x]
+Pow._constructor_postprocessor_mapping[SymbolInMulOnce] = [lambda x: x.base if isinstance(x.base, SymbolInMulOnce) else x]
+Add._constructor_postprocessor_mapping[SymbolInMulOnce] = [lambda x: x]
 
 def _postprocess_SymbolRemovesOtherSymbols(expr):
     args = tuple(i for i in expr.args if not isinstance(i, Symbol) or isinstance(i, SymbolRemovesOtherSymbols))
@@ -25,9 +22,7 @@ class SymbolRemovesOtherSymbols(Symbol):
     # Test class for a symbol that removes other symbols in `Mul`.
     pass
 
-Basic._constructor_postprocessor_mapping[SymbolRemovesOtherSymbols] = {
-    "Mul": [_postprocess_SymbolRemovesOtherSymbols],
-}
+Mul._constructor_postprocessor_mapping[SymbolRemovesOtherSymbols] = [_postprocess_SymbolRemovesOtherSymbols]
 
 class SubclassSymbolInMulOnce(SymbolInMulOnce):
     pass

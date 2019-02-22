@@ -1757,6 +1757,15 @@ class Basic(with_metaclass(ManagedProperties)):
                 else:
                     return self
 
+
+
+    # Here for compatibility, but every subclass that wants to implement this
+    # should redefine this. Once we support only Python 3.6+ we can add it
+    # automatically using __init__subclass__ (it could also be done with a
+    # metaclass, but that could affect performance).
+
+    # XXX: If this dictionary is ever nonempty, that is a bug! Classes that
+    # implement postprocessors should have this line redefined in their class body.
     _constructor_postprocessor_mapping = {}
 
     @classmethod
@@ -1764,26 +1773,19 @@ class Basic(with_metaclass(ManagedProperties)):
         # WARNING: This API is experimental.
 
         # This is an experimental API that introduces constructor
-        # postprosessors for SymPy Core elements. If an argument of a SymPy
+        # postprocessors for SymPy Core elements. If an argument of a SymPy
         # expression has a `_constructor_postprocessor_mapping` attribute, it will
         # be interpreted as a dictionary containing lists of postprocessing
         # functions for matching expression node names.
 
-        clsname = obj.__class__.__name__
-        postprocessors = defaultdict(list)
-        for i in obj.args:
-            try:
-                postprocessor_mappings = (
-                    Basic._constructor_postprocessor_mapping[cls].items()
-                    for cls in type(i).mro()
-                    if cls in Basic._constructor_postprocessor_mapping
-                )
-                for k, v in chain.from_iterable(postprocessor_mappings):
-                    postprocessors[k].extend([j for j in v if j not in postprocessors[k]])
-            except TypeError:
-                pass
+        postprocessors = []
+        for k, v in cls._constructor_postprocessor_mapping.items():
+            for i in obj.args:
+                if issubclass(type(i), k):
+                    postprocessors.extend(v)
+                    break
 
-        for f in postprocessors.get(clsname, []):
+        for f in postprocessors:
             obj = f(obj)
 
         return obj

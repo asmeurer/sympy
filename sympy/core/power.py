@@ -239,6 +239,8 @@ class Pow(Expr):
     """
     is_Pow = True
 
+    _constructor_postprocessor_mapping = {}
+
     __slots__ = ['is_commutative']
 
     @cacheit
