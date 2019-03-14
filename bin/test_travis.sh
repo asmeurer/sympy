@@ -5,7 +5,7 @@ set -e
 # Echo each command
 set -x
 
-echo $PYTHONIOENCODING
+python -c 'import sys;print(sys.getdefaultencoding())'
 
 if [[ "${TEST_SETUP}" == "true" ]]; then
     python bin/test_setup.py
