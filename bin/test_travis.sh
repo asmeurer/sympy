@@ -37,6 +37,8 @@ if [[ -n "${TEST_OPT_DEPENDENCY}" ]]; then
     python bin/test_executable.py
 fi
 
+cat sympy/printing/mathematica.py
+
 # We change directories to make sure that we test the installed version of
 # sympy.
 mkdir empty
@@ -80,7 +82,6 @@ if not (sympy.test('print') and sympy.doctest()):
 EOF
 fi
 
-cat sympy/printing/mathematica.py
 
 if [[ "${TEST_DOCTESTS}" == "true" ]]; then
     # -We:invalid makes invalid escape sequences error in Python 3.6. See
