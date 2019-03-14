@@ -5,8 +5,6 @@ set -e
 # Echo each command
 set -x
 
-python -c 'import sys;print(sys.getdefaultencoding())'
-
 if [[ "${TEST_SETUP}" == "true" ]]; then
     python bin/test_setup.py
 fi
@@ -88,7 +86,7 @@ if [[ "${TEST_DOCTESTS}" == "true" ]]; then
     cat << EOF | python -We:invalid
 print('Testing DOCTESTS')
 import sympy
-if not sympy.doctest():
+if not sympy.doctest(subprocess=False):
     raise Exception('Tests failed')
 EOF
     cd ..
