@@ -80,13 +80,15 @@ if not (sympy.test('print') and sympy.doctest()):
 EOF
 fi
 
+cat sympy/printing/mathematica.py
+
 if [[ "${TEST_DOCTESTS}" == "true" ]]; then
     # -We:invalid makes invalid escape sequences error in Python 3.6. See
     # -#12028.
     cat << EOF | python -We:invalid
 print('Testing DOCTESTS')
 import sympy
-if not sympy.doctest(subprocess=False):
+if not sympy.doctest():
     raise Exception('Tests failed')
 EOF
     cd ..
