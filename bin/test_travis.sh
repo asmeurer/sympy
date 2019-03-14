@@ -5,6 +5,8 @@ set -e
 # Echo each command
 set -x
 
+echo $PYTHONIOENCODING
+
 if [[ "${TEST_SETUP}" == "true" ]]; then
     python bin/test_setup.py
 fi
