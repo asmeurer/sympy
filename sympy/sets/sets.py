@@ -12,6 +12,7 @@ from sympy.core.function import FunctionClass
 from sympy.core.logic import fuzzy_bool
 from sympy.core.mul import Mul
 from sympy.core.numbers import Float
+from sympy.core.operations import LatticeOp
 from sympy.core.relational import Eq, Ne
 from sympy.core.singleton import Singleton, S
 from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol
@@ -980,7 +981,7 @@ class Interval(Set, EvalfMixin):
                    self.right_open == other.right_open)
 
 
-class Union(Set, EvalfMixin):
+class Union(Set, LatticeOp):
     """
     Represents a union of sets as a :class:`Set`.
 
@@ -1009,34 +1010,31 @@ class Union(Set, EvalfMixin):
     """
     is_Union = True
 
-    def __new__(cls, *args, **kwargs):
-        evaluate = kwargs.get('evaluate', global_evaluate[0])
+    @property
+    def identity(self):
+        return S.EmptySet
+
+    @property
+    def zero(self):
+        return S.UniversalSet
+
+    def __new__(cls, *args, evaluate=None):
+        if evaluate is None:
+            evaluate = global_evaluate[0]
 
         # flatten inputs to merge intersections and iterables
-        args = list(args)
-
-        def flatten(arg):
-            if isinstance(arg, Set):
-                if arg.is_Union:
-                    return sum(map(flatten, arg.args), [])
-                else:
-                    return [arg]
-            if iterable(arg):  # and not isinstance(arg, Set) (implicit)
-                return sum(map(flatten, arg), [])
-            raise TypeError("Input must be Sets or iterables of Sets")
-        args = flatten(args)
-
-        # Union of no sets is EmptySet
-        if len(args) == 0:
-            return S.EmptySet
+        args = _sympify(args)
 
         # Reduce sets using known rules
         if evaluate:
+            args = list(cls._new_args_filter(args))
             return simplify_union(args)
 
         args = list(ordered(args, Set._infimum_key))
 
-        return Basic.__new__(cls, *args)
+        obj = Basic.__new__(cls, *args)
+        obj._argset = frozenset(args)
+        return obj
 
     def _complement(self, universe):
         # DeMorgan's Law
@@ -1127,15 +1125,6 @@ class Union(Set, EvalfMixin):
     def is_iterable(self):
         return all(arg.is_iterable for arg in self.args)
 
-    def _eval_evalf(self, prec):
-        try:
-            return Union(set._eval_evalf(prec) for set in self.args)
-        except (TypeError, ValueError, NotImplementedError):
-            import sys
-            raise (TypeError("Not all sets are evalf-able"),
-                   None,
-                   sys.exc_info()[2])
-
     def __iter__(self):
         import itertools
 
@@ -1162,7 +1151,7 @@ class Union(Set, EvalfMixin):
         else:
             raise TypeError("Not all constituent sets are iterable")
 
-class Intersection(Set):
+class Intersection(Set, LatticeOp):
     """
     Represents an intersection of sets as a :class:`Set`.
 
@@ -1190,35 +1179,31 @@ class Intersection(Set):
     """
     is_Intersection = True
 
-    def __new__(cls, *args, **kwargs):
-        evaluate = kwargs.get('evaluate', global_evaluate[0])
+    @property
+    def identity(self):
+        return S.UniversalSet
+
+    @property
+    def zero(self):
+        return S.EmptySet
+
+    def __new__(cls, *args, evaluate=None):
+        if evaluate is None:
+            evaluate = global_evaluate[0]
 
         # flatten inputs to merge intersections and iterables
-        args = list(args)
-
-        def flatten(arg):
-            if isinstance(arg, Set):
-                if arg.is_Intersection:
-                    return sum(map(flatten, arg.args), [])
-                else:
-                    return [arg]
-            if iterable(arg):  # and not isinstance(arg, Set) (implicit)
-                return sum(map(flatten, arg), [])
-            raise TypeError("Input must be Sets or iterables of Sets")
-        args = flatten(args)
-
-        if len(args) == 0:
-            return S.UniversalSet
-
-        # args can't be ordered for Partition see issue #9608
-        if 'Partition' not in [type(a).__name__ for a in args]:
-            args = list(ordered(args, Set._infimum_key))
+        args = _sympify(args)
 
         # Reduce sets using known rules
         if evaluate:
+            args = list(cls._new_args_filter(args))
             return simplify_intersection(args)
 
-        return Basic.__new__(cls, *args)
+        args = list(ordered(args, Set._infimum_key))
+
+        obj = Basic.__new__(cls, *args)
+        obj._argset = frozenset(args)
+        return obj
 
     @property
     def is_iterable(self):
@@ -1856,6 +1841,9 @@ def simplify_union(args):
     from sympy.sets.handlers.union import union_sets
 
     # ===== Global Rules =====
+    if not args:
+        return EmptySet
+
     # Merge all finite sets
     finite_sets = [x for x in args if x.is_FiniteSet]
     if len(finite_sets) > 1:
@@ -1886,7 +1874,7 @@ def simplify_union(args):
     if len(args) == 1:
         return args.pop()
     else:
-        return Union(args, evaluate=False)
+        return Union(*args, evaluate=False)
 
 
 def simplify_intersection(args):
@@ -1901,6 +1889,9 @@ def simplify_intersection(args):
     """
 
     # ===== Global Rules =====
+    if not args:
+        return S.UniversalSet
+
     # If any EmptySets return EmptySet
     if any(s.is_EmptySet for s in args):
         return S.EmptySet
@@ -1916,8 +1907,8 @@ def simplify_intersection(args):
         if s.is_Union:
             other_sets = set(args) - set((s,))
             if len(other_sets) > 0:
-                other = Intersection(other_sets)
-                return Union(Intersection(arg, other) for arg in s.args)
+                other = Intersection(*other_sets)
+                return Union(*(Intersection(arg, other) for arg in s.args))
             else:
                 return Union(*[arg for arg in s.args])
 
@@ -1955,7 +1946,7 @@ def simplify_intersection(args):
     if len(args) == 1:
         return args.pop()
     else:
-        return Intersection(args, evaluate=False)
+        return Intersection(*args, evaluate=False)
 
 
 def _handle_finite_sets(op, x, y, commutative):
