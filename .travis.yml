@@ -3,12 +3,14 @@ sudo: false
 dist: xenial
 
 python:
+  - 3.7
   - 3.8-dev
 
 matrix:
 
 script:
   - python -c "import sys;print(sys.executable)"
-  - ls /usr/lib/
+  - ls /home/travis/virtualenv/python3.7/lib/
+  - ls /home/travis/virtualenv/python3.8-dev/lib/
 notifications:
   email: false
