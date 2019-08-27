@@ -1,11 +1,10 @@
 """Inference in propositional logic"""
 from __future__ import print_function, division
 
-from sympy.logic.boolalg import And, Not, conjuncts, to_cnf
+from sympy.logic.boolalg import And, Not, conjuncts, to_cnf, Boolean
 from sympy.core.compatibility import ordered
 from sympy.core.sympify import sympify
 from sympy.external.importtools import import_module
-
 
 def literal_symbol(literal):
     """
@@ -100,6 +99,76 @@ def satisfiable(expr, algorithm=None, all_models=False):
         return pycosat_satisfiable(expr, all_models)
     raise NotImplementedError
 
+def minimal_unsatisfiable_subset(clauses, _check=True):
+    """
+    Given a set of clauses, find a minimal unsatisfiable subset (an unsatisfiable core)
+
+    A set is a minimal unsatisfiable subset if no proper subset is
+    unsatisfiable.  A set of clauses may have many minimal unsatisfiable
+    subsets of different sizes.
+
+
+    """
+    if isinstance(clauses, Boolean):
+        clauses = conjuncts(to_cnf(clauses))
+    if _check and satisfiable(clauses):
+        raise ValueError("Clauses are not unsatisfiable")
+
+    # Algorithm suggested from
+    # http://www.slideshare.net/pvcpvc9/lecture17-31382688. We do a binary
+    # search on the clauses by splitting them in halves A and B. If A or B is
+    # UNSAT, we use that and repeat. Otherwise, we recursively check A, but
+    # each time we do a sat query, we include B, until we have a minimal
+    # subset A* of A such that A* U B is UNSAT. Then we find a minimal subset
+    # B* of B such that A* U B* is UNSAT. Then A* U B* will be a minimal
+    # unsatisfiable subset of the original set of clauses.
+
+    # Proof: If some proper subset C of A* U B* is UNSAT, then there is some
+    # clause c in A* U B* not in C. If c is in A*, then that means (A* - {c})
+    # U B* is UNSAT, and hence (A* - {c}) U B is UNSAT, since it is a
+    # superset, which contradicts A* being the minimal subset of A with such
+    # property. Similarly, if c is in B, then A* U (B* - {c}) is UNSAT, but B*
+    # - {c} is a strict subset of B*, contradicting B* being the minimal
+    # subset of B with this property.
+
+    def split(S):
+        """
+        Split S into two equal parts
+        """
+        S = tuple(S)
+        L = len(S)
+        return S[:L//2], S[L//2:]
+
+    def minimal_unsat(clauses, include=()):
+        """
+        Return a minimal subset A of clauses such that A + include is
+        unsatisfiable.
+        Implicitly assumes that clauses + include is unsatisfiable.
+        """
+        # assert not satisfiable(clauses + include), (len(clauses), len(include))
+
+        # Base case: Since clauses + include is implicitly assumed to be
+        # unsatisfiable, if clauses has only one element, it must be its own
+        # minimal subset
+        if len(clauses) == 1:
+            return clauses
+
+        A, B = split(clauses)
+
+        # If one half is unsatisfiable (with include), we can discard the
+        # other half.
+
+        if not satisfiable(A + include):
+            return minimal_unsat(A, include)
+        if not satisfiable(B + include):
+            return minimal_unsat(B, include)
+
+        Astar = minimal_unsat(A, B + include)
+        Bstar = minimal_unsat(B, Astar + include)
+        return Astar + Bstar
+
+    ret = minimal_unsat(clauses)
+    return ret
 
 def valid(expr):
     """

@@ -193,6 +193,9 @@ class CNF(object):
     frozenset of Literal objects.
     """
     def __init__(self, clauses=None):
+        if isinstance(clauses, CNF):
+            self.clauses = clauses.clauses
+            return
         if not clauses:
             clauses = set()
         self.clauses = clauses
@@ -207,6 +210,14 @@ class CNF(object):
             for clause in self.clauses]
         )
         return s
+
+    def __index__(self, i):
+        return CNF(self.clauses[i])
+
+    def __add__(self, other):
+        if isinstance(other, CNF):
+            return CNF(self.clauses + other.clauses)
+        return NotImplemented
 
     def extend(self, props):
         for p in props:
