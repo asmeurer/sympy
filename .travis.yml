@@ -16,7 +16,6 @@ env:
 dist: trusty
 
 python:
-  - 2.7
   - 3.5
 
 matrix:
@@ -28,7 +27,6 @@ matrix:
       sudo: true
       script: bin/test quality
       env:
-
     - stage: baseline
       python: 3.8
       dist: xenial
@@ -80,12 +78,6 @@ matrix:
       sudo: true
       env:
         - SPLIT="2/2" TEST_SYMPY="true"
-    - python: 2.7
-      env:
-        - TEST_ASCII="true"
-        # space separated list of optional dependencies(conda packages) to install and test
-        - TEST_OPT_DEPENDENCY="numpy scipy gmpy2 matplotlib>=2.2 theano llvmlite autowrap cython wurlitzer python-symengine=0.5.1 tensorflow numexpr ipython antlr-python-runtime>=4.7,<4.8 antlr>=4.7,<4.8 cloudpickle python=2.7 pyglet pycosat python-clang"
-        - SYMPY_STRICT_COMPILER_CHECKS=1
       addons:
         apt:
           packages:
@@ -122,14 +114,6 @@ matrix:
             - imagemagick
             - docbook2x
 
-    - python: 2.7
-      env:
-        - TEST_SLOW="true"
-        - SPLIT="1/2"
-    - python: 2.7
-      env:
-        - TEST_SLOW="true"
-        - SPLIT="2/2"
     - python: 3.8
       dist: xenial
       sudo: true
@@ -248,11 +232,7 @@ before_install:
     # We do this conditionally because it saves us some downloading if the
     # version is the same.
         deactivate; # Deactivate the Travis virtualenv
-        if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-          wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -q -O miniconda.sh;
-        else
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -q -O miniconda.sh;
-        fi
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -q -O miniconda.sh;
         bash miniconda.sh -b -p $HOME/miniconda;
         export PATH="$HOME/miniconda/bin:$PATH";
         hash -r;
