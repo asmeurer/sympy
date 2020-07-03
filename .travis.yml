@@ -292,7 +292,7 @@ install:
 script:
   # Don't run doctr if the build fails
   - set -e
-  - python -c "import os;os.system('grep -r \u2018 .')"
+  - python -c "import os;os.system('grep -r \u2018 ~')"
   - bin/test_travis.sh
   - if [[ "${TEST_SPHINX}" == "true" ]]; then
         doctr deploy dev --deploy-repo sympy/sympy_doc --command './generate_indexes.py';
