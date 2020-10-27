@@ -209,6 +209,7 @@ an expression when customizing a printer. Mistakes include:
 
 """
 
+import sys
 from typing import Any, Dict, Type
 import inspect
 from contextlib import contextmanager
@@ -347,39 +348,42 @@ class Printer(object):
             return expr.as_ordered_terms(order=order)
 
 
+class _PrintFunction:
+    """
+    Function wrapper to replace ``**settings`` in the signature with printer defaults
+    """
+    def __init__(self, f, print_cls: Type[Printer]):
+        # find all the non-setting arguments
+        params = list(inspect.signature(f).parameters.values())
+        assert params.pop(-1).kind == inspect.Parameter.VAR_KEYWORD
+        self.__other_params = params
+
+        self.__print_cls = print_cls
+        update_wrapper(self, f)
+
+    def __call__(self, *args, **kwargs):
+        return self.__wrapped__(*args, **kwargs)
+
+    @property
+    def __signature__(self) -> inspect.Signature:
+        settings = self.__print_cls._get_initial_settings()
+        return inspect.Signature(
+            parameters=self.__other_params + [
+                inspect.Parameter(k, inspect.Parameter.KEYWORD_ONLY, default=v)
+                for k, v in settings.items()
+            ],
+            return_annotation=self.__wrapped__.__annotations__.get('return', inspect.Signature.empty)  # type:ignore
+        )
+
+
 def print_function(print_cls):
     """ A decorator to replace kwargs with the printer settings in __signature__ """
-    # functools.update_wrapper adds attributes like __doc__ to the class, so
-    # this class needs to be redefined for each decorated function (__doc__
-    # has to go on the class; if it is on the instance it will not work with
-    # help()).
-    class _PrintFunction:
-        """
-        Function wrapper to replace ``**settings`` in the signature with printer defaults
-        """
-        def __init__(self, f):
-            # find all the non-setting arguments
-            params = list(inspect.signature(f).parameters.values())
-            assert params.pop(-1).kind == inspect.Parameter.VAR_KEYWORD
-            self.__other_params = params
-            self.__print_cls = print_cls
-            update_wrapper(type(self), f, updated=())
-
-        def __repr__(self) -> str:
-            return repr(type(self).__wrapped__)  # type:ignore
-
-        def __call__(self, *args, **kwargs):
-            return type(self).__wrapped__(*args, **kwargs)
-
-        @property
-        def __signature__(self) -> inspect.Signature:
-            settings = self.__print_cls._get_initial_settings()
-            return inspect.Signature(
-                parameters=self.__other_params + [
-                    inspect.Parameter(k, inspect.Parameter.KEYWORD_ONLY, default=v)
-                    for k, v in settings.items()
-                ],
-                return_annotation=self.__wrapped__.__annotations__.get('return', inspect.Signature.empty)  # type:ignore
-            )
-
-    return _PrintFunction
+    def decorator(f):
+        if sys.version_info < (3, 9):
+            # We have to create a subclass so that `help` actually shows the docstring in older python versions.
+            # IPython and Sphinx do not need this, only a raw python console.
+            cls = type(f'{f.__qualname__}_function', (_PrintFunction,), dict(__doc__=f.__doc__))
+        else:
+            cls = _PrintFunction
+        return cls(f, print_cls)
+    return decorator
