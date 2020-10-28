@@ -382,7 +382,7 @@ def print_function(print_cls):
         if sys.version_info < (3, 9):
             # We have to create a subclass so that `help` actually shows the docstring in older python versions.
             # IPython and Sphinx do not need this, only a raw python console.
-            cls = type(f'{f.__qualname__}_function', (_PrintFunction,), dict(__doc__=f.__doc__))
+            cls = type(f'{f.__qualname__}_PrintFunction', (_PrintFunction,), dict(__doc__=f.__doc__))
         else:
             cls = _PrintFunction
         return cls(f, print_cls)
