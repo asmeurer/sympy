@@ -58,3 +58,4 @@ This is the central page for all of SymPy's documentation.
    reference/index.rst
    guides/index.rst
    miscellaneous/index.rst
+   markdown_demo.md
