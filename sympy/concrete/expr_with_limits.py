@@ -347,6 +347,8 @@ class ExprWithLimits(Expr):
         return not self.free_symbols
 
     def _eval_interval(self, x, a, b):
+        if x not in self.variables:
+            return super()._eval_interval(x, a, b)
         limits = [(i if i[0] != x else (x, a, b)) for i in self.limits]
         integrand = self.function
         return self.func(integrand, *limits)
@@ -559,6 +561,15 @@ class AddWithLimits(ExprWithLimits):
         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
+
+    def _eval_interval(self, x, a, b):
+        if x not in self.variables and not any(x in l.free_symbols for l in
+                                                self.limits):
+            function = self.function._eval_interval(x, a, b)
+            if function.is_zero:
+                return S.Zero
+            return self.func(function, *self.limits)
+        return super()._eval_interval(x, a, b)
 
     def _eval_adjoint(self):
         if all(x.is_real for x in flatten(self.limits)):

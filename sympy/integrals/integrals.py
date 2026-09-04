@@ -794,6 +794,20 @@ class Integral(AddWithLimits):
                 rv += self.func(arg, (x, a, b))
         return rv
 
+    def _integrate_nested(self, x, **kwargs):
+        """
+        Integrate this Integral with respect to ``x`` by integrating its
+        integrand, which is valid when ``x`` is not one of the integration
+        variables and does not appear in any of the limits.
+        """
+        if x in self.variables or any(x in l.free_symbols for l in
+                                       self.limits):
+            return None
+        h = self._eval_integral(self.function, x, **kwargs)
+        if h is None:
+            return None
+        return self.func(h, *self.limits)
+
     def _eval_integral(self, f, x, meijerg=None, risch=None, manual=None,
                        heurisch=None, conds='piecewise',final=None):
         """
@@ -973,6 +987,13 @@ class Integral(AddWithLimits):
             if g is S.One and not meijerg:
                 parts.append(coeff*x)
                 continue
+
+            # g(x) = Integral(h(x, y), y)
+            if isinstance(g, Integral):
+                h = g._integrate_nested(x, **eval_kwargs)
+                if h is not None:
+                    parts.append(coeff*h)
+                    continue
 
             # g(x) = expr + O(x**n)
             order_term = g.getO()
