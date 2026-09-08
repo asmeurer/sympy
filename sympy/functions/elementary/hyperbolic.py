@@ -1937,7 +1937,7 @@ class asech(InverseHyperbolicFunction):
     >>> from sympy import asech, sqrt, S
     >>> from sympy.abc import x
     >>> asech(x).diff(x)
-    -1/(x*sqrt(1 - x**2))
+    -1/(x**2*sqrt(-1 + 1/x)*sqrt(1 + 1/x))
     >>> asech(1).diff(x)
     0
     >>> asech(1)
@@ -1969,7 +1969,10 @@ class asech(InverseHyperbolicFunction):
     def fdiff(self, argindex=1):
         if argindex == 1:
             z = self.args[0]
-            return -1/(z*sqrt(1 - z**2))
+            # the derivative of acosh(1/z), which asech(z) equals on
+            # every branch; the real-interval form -1/(z*sqrt(1 - z**2))
+            # is wrong for z < -1
+            return -1/(z**2*sqrt(1/z - 1)*sqrt(1/z + 1))
         else:
             raise ArgumentIndexError(self, argindex)
 
